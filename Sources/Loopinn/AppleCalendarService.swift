@@ -25,8 +25,12 @@ final class AppleCalendarService {
     var isAuthorized: Bool { EKEventStore.authorizationStatus(for: .event) == .fullAccess }
 
     func requestAccess() async throws {
-        guard try await store.requestFullAccessToEvents() else {
-            throw CalendarIntegrationError.permissionDenied
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            store.requestFullAccessToEvents { granted, error in
+                if let error { continuation.resume(throwing: error) }
+                else if granted { continuation.resume() }
+                else { continuation.resume(throwing: CalendarIntegrationError.permissionDenied) }
+            }
         }
     }
 
