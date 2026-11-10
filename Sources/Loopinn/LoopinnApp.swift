@@ -56,9 +56,10 @@ final class AppState: ObservableObject {
     }
 
     func resetAppearance() {
-        var draft = AppSettings()
-        draft.hasCompletedOnboarding = settings.hasCompletedOnboarding
-        draft.showTodayPlan = settings.showTodayPlan
+        var draft = settings
+        draft.theme = .system
+        draft.accent = .blue
+        draft.compactLayout = false
         saveSettings(draft)
     }
 
@@ -308,5 +309,6 @@ struct LoopinnApp: App {
                 .frame(minWidth: 900, minHeight: 600)
         }
         .defaultLaunchBehavior(.suppressed)
+        .commands { DashboardCommands(state: state) }
     }
 }

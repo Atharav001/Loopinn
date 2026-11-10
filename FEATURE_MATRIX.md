@@ -6,7 +6,7 @@
 | FR-41 | P01 | Menu-bar command center | IN REVIEW | PR #5 merged; P01 shell branch | Quick capture, next-task completion, routes and Settings access compile; runtime UI smoke and future feature actions pending. |
 | FR-42 | P01 | Floating panel system | IN REVIEW | PR #7 | Keyed floating tasks panel, pinned setting, saved frame and visible-screen recovery compile; more panel types and runtime smoke pending. |
 | FR-43 | P01 | Themes & customization | IN REVIEW | PR #6 merged; PR #7 | Theme, accent, compact layout, Dock icon and Today plan visibility persist and apply; accessibility and runtime appearance checks pending. |
-| FR-46 | P01 | Keyboard & quick actions | IN REVIEW | P01 shell branch | Command palette routes and task actions, ⌘K, ⌘N and undo compile; global shortcuts and deeper action coverage pending. |
+| FR-46 | P01 | Keyboard & quick actions | IN REVIEW | PR #7 | Command palette routes and task actions, ⌘K, ⌘N, ⌘1–3, ⌘, and undo compile; global shortcuts and deeper action coverage pending. |
 | FR-47 | P01 | Onboarding & tutorials | IN REVIEW | P01 shell branch | Skippable first-run welcome and reopen action compile; runtime first-run smoke pending. |
 | FR-51 | P01 | Privacy, backup & restore | IN REVIEW | PR #7 | Local backup/export with attachments, validated restore and confirmed erase; 4 backup tests pass. Runtime import/export and migration review pending. |
 | FR-01 | P02 | Multi-list task management | IN REVIEW | PR #1, `93a4e63` | CRUD, ordering and one-step undo tested; relaunch UI evidence pending. |

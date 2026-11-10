@@ -6,7 +6,7 @@
 - Added an explicit no-reuse matrix for the available source and an issue template for feature acceptance. The archived reference projects have no source trees in this checkout; Android has no target to build.
 
 ## 10 November 2026 — P01 app shell, panels and local data controls (in review)
-- Added a native Today surface with summary cards, a single floating task panel with pin/position settings, a command palette, ⌘K/⌘N actions, and a skippable welcome flow.
+- Added a native Today surface with summary cards, a single floating task panel with pin/position settings, a command palette, ⌘K/⌘N and direct navigation shortcuts, and a skippable welcome flow.
 - Added persistent compact layout, Today plan visibility, panel pinning and Dock icon preferences. Added local backup export/restore containing attachments and settings, validation before restore, a safety backup, and confirmed local erase.
 - Local Swift build, unsigned app package and 13/13 checks pass. Runtime UI, accessibility, multi-display panel behavior and import/export through macOS dialogs remain pending. Rollback: revert this branch; existing workspace schema is unchanged.
 
