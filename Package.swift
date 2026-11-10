@@ -9,7 +9,7 @@ let package = Package(
         .executable(name: "Loopinn", targets: ["Loopinn"])
     ],
     targets: [
-        .target(name: "LoopinnCore"),
+        .target(name: "LoopinnCore", linkerSettings: [.linkedLibrary("sqlite3")]),
         .executableTarget(name: "Loopinn", dependencies: ["LoopinnCore"]),
         .testTarget(name: "LoopinnCoreTests", dependencies: ["LoopinnCore"])
     ]
