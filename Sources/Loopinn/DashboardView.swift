@@ -398,6 +398,8 @@ struct DashboardView: View {
                 ))
             }
             Section("Apple Calendar") {
+                Text("For regional holidays, subscribe to your region's holiday calendar in Apple Calendar and keep it visible here.")
+                    .foregroundStyle(.secondary)
                 Toggle("Show Apple Events", isOn: Binding(
                     get: { state.settings.showAppleEvents != false },
                     set: { state.setShowAppleEvents($0) }
@@ -418,6 +420,8 @@ struct DashboardView: View {
                 }
             }
             Section("Google Calendar") {
+                Text("Subscribed regional holiday calendars appear alongside your other Google calendars.")
+                    .foregroundStyle(.secondary)
                 TextField("OAuth Desktop client ID", text: Binding(
                     get: { state.settings.googleClientID ?? "" },
                     set: { state.setGoogleClientID($0) }

@@ -43,7 +43,7 @@ final class AppleCalendarService {
             ExternalCalendarEvent(id: $0.eventIdentifier, title: $0.title ?? "Untitled event", startAt: $0.startDate,
                                   endAt: $0.endDate, source: "Apple Calendar", isAllDay: $0.isAllDay,
                                   calendarID: $0.calendar.calendarIdentifier,
-                                  isHoliday: $0.calendar.title.localizedCaseInsensitiveContains("holiday"))
+                                  isHoliday: $0.calendar.title.localizedCaseInsensitiveContains("holiday") || $0.calendar.calendarIdentifier.localizedCaseInsensitiveContains("holiday"))
         }
     }
 

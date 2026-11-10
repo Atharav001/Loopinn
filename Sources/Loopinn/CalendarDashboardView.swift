@@ -13,7 +13,7 @@ struct CalendarDashboardView: View {
 
     private let calendar = Calendar.current
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 7), count: 7)
-    private var externalEvents: [ExternalCalendarEvent] { state.visibleAppleEvents + state.visibleGoogleEvents }
+    private var externalEvents: [ExternalCalendarEvent] { state.visibleCalendarEvents }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -70,26 +70,12 @@ struct CalendarDashboardView: View {
                     ContentUnavailableView("A clear day", systemImage: "calendar", description: Text("Drag on Week or add a block to make a plan."))
                 }
                 ForEach(blocks) { block in blockRow(block) }
-                if state.settings.showAppleEvents != false {
-                    ForEach(state.visibleAppleEvents.filter { $0.startAt < CalendarLayout.interval(containing: selectedDate, scope: .day).end && $0.endAt > CalendarLayout.interval(containing: selectedDate, scope: .day).start }) { event in
-                        HStack {
-                            Image(systemName: "calendar.badge.clock").foregroundStyle(.secondary)
-                            VStack(alignment: .leading) {
-                                Text(event.title).font(.headline)
-                                Text("\(event.isHoliday ? "Holiday" : event.source) · \(event.isAllDay ? "All day" : event.startAt.formatted(date: .omitted, time: .shortened))")
-                                    .font(.caption).foregroundStyle(.secondary)
-                            }
-                        }
-                        .padding(15).frame(maxWidth: .infinity, alignment: .leading)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
-                    }
-                }
-                ForEach(state.visibleGoogleEvents.filter { $0.startAt < CalendarLayout.interval(containing: selectedDate, scope: .day).end && $0.endAt > CalendarLayout.interval(containing: selectedDate, scope: .day).start }) { event in
+                ForEach(events(on: selectedDate)) { event in
                     HStack {
                         Image(systemName: "calendar.badge.clock").foregroundStyle(.secondary)
                         VStack(alignment: .leading) {
                             Text(event.title).font(.headline)
-                            Text("Google Calendar · \(event.isAllDay ? "All day" : event.startAt.formatted(date: .omitted, time: .shortened))")
+                            Text("\(event.isHoliday ? "Holiday" : event.source) · \(event.isAllDay ? "All day" : event.startAt.formatted(date: .omitted, time: .shortened))")
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                     }

@@ -116,7 +116,7 @@ final class GoogleCalendarService {
                 guard event.status != "cancelled", let start = event.start?.value, let end = event.end?.value else { return nil }
                 return ExternalCalendarEvent(id: "google:\(calendarID):\(event.id)", title: event.summary ?? "Untitled event", startAt: start,
                                              endAt: end, source: "Google Calendar", isAllDay: event.start?.date != nil,
-                                             calendarID: "google:\(calendarID)", isHoliday: calendarTitle.localizedCaseInsensitiveContains("holiday"))
+                                             calendarID: "google:\(calendarID)", isHoliday: calendarTitle.localizedCaseInsensitiveContains("holiday") || calendarID.localizedCaseInsensitiveContains("holiday"))
             }
             page = payload.nextPageToken
             if page == nil { return result }

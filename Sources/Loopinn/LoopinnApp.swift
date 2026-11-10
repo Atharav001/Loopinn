@@ -195,6 +195,15 @@ final class AppState: ObservableObject {
         return googleEvents.filter { !hidden.contains($0.calendarID.replacingOccurrences(of: "google:", with: "")) }
     }
 
+    var visibleCalendarEvents: [ExternalCalendarEvent] {
+        var seenHolidays: Set<String> = []
+        return (visibleAppleEvents + visibleGoogleEvents).filter { event in
+            guard event.isHoliday else { return true }
+            let day = Calendar.current.startOfDay(for: event.startAt).timeIntervalSince1970
+            return seenHolidays.insert("\(event.title.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current))|\(day)").inserted
+        }
+    }
+
     func publishGoogleBlock(_ block: CalendarBlock, title: String, calendarID: String) {
         guard let clientID = settings.googleClientID else { errorMessage = GoogleCalendarError.missingClientID.localizedDescription; return }
         Task {
