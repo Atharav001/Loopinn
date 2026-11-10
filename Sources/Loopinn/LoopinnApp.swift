@@ -9,6 +9,7 @@ final class AppState: ObservableObject {
     @Published private(set) var canUndo = false
     private let service = WorkspaceService()
     private var database: WorkspaceDatabase?
+    private var attachmentStore: AttachmentStore?
     private var previousWorkspace: Workspace?
 
     init() {
@@ -18,8 +19,13 @@ final class AppState: ObservableObject {
             let database = try WorkspaceDatabase(directory: directory)
             workspace = try database.load()
             self.database = database
+            let attachmentStore = try AttachmentStore(directory: directory)
+            self.attachmentStore = attachmentStore
+            try? attachmentStore.prune(keeping: workspace.tasks.flatMap { $0.attachments ?? [] })
         } catch {
             workspace = Workspace()
+            database = nil
+            attachmentStore = nil
             errorMessage = "Saved data could not be opened. Editing is disabled to protect it: \(error.localizedDescription)"
         }
     }
@@ -54,6 +60,31 @@ final class AppState: ObservableObject {
         mutate { try service.deleteTask(task.id, in: &$0) }
     }
 
+    func addAttachment(to task: LoopTask, from source: URL) {
+        guard let attachmentStore else { errorMessage = "Attachment storage is unavailable."; return }
+        do {
+            let attachment = try attachmentStore.copy(source)
+            mutate { try service.addAttachment(attachment, to: task.id, in: &$0) }
+            if errorMessage != nil { try? attachmentStore.remove(attachment) }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func removeAttachment(_ attachment: TaskAttachment, from task: LoopTask) {
+        mutate { try service.removeAttachment(attachment.id, from: task.id, in: &$0) }
+    }
+
+    func openAttachment(_ attachment: TaskAttachment) {
+        guard let attachmentStore else { errorMessage = "Attachment storage is unavailable."; return }
+        let url = attachmentStore.fileURL(for: attachment)
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            errorMessage = "The attachment file is missing."
+            return
+        }
+        NSWorkspace.shared.open(url)
+    }
+
     func moveList(_ list: TaskList, by offset: Int) {
         mutate { try service.moveList(list.id, by: offset, in: &$0) }
     }
@@ -70,6 +101,7 @@ final class AppState: ObservableObject {
             self.previousWorkspace = nil
             canUndo = false
             errorMessage = nil
+            try? attachmentStore?.prune(keeping: workspace.tasks.flatMap { $0.attachments ?? [] })
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -96,6 +128,11 @@ final class AppState: ObservableObject {
             canUndo = true
             workspace = draft
             errorMessage = nil
+            if let attachmentStore {
+                let current = draft.tasks.flatMap { $0.attachments ?? [] }
+                let previous = previousWorkspace?.tasks.flatMap { $0.attachments ?? [] } ?? []
+                try? attachmentStore.prune(keeping: current + previous)
+            }
         } catch {
             errorMessage = error.localizedDescription
         }

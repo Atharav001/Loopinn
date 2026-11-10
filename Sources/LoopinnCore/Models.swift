@@ -19,6 +19,7 @@ public struct LoopTask: Codable, Identifiable, Equatable, Sendable {
     public var notes: String
     public var priority: Int?
     public var isStarred: Bool?
+    public var attachments: [TaskAttachment]?
     public var dueAt: Date?
     public var startAt: Date?
     public var endAt: Date?
@@ -32,11 +33,26 @@ public struct LoopTask: Codable, Identifiable, Equatable, Sendable {
         self.notes = notes
         self.priority = nil
         self.isStarred = false
+        self.attachments = []
         self.dueAt = dueAt
         self.startAt = startAt
         self.endAt = endAt
         self.completedAt = completedAt
         self.createdAt = createdAt
+    }
+}
+
+public struct TaskAttachment: Codable, Identifiable, Equatable, Sendable {
+    public let id: UUID
+    public let originalName: String
+    public let storedName: String
+    public let byteCount: Int64
+
+    public init(id: UUID, originalName: String, storedName: String, byteCount: Int64) {
+        self.id = id
+        self.originalName = originalName
+        self.storedName = storedName
+        self.byteCount = byteCount
     }
 }
 
@@ -76,6 +92,7 @@ public enum WorkspaceError: LocalizedError, Sendable {
     case emptyListName
     case lastList
     case invalidMove
+    case missingAttachment
 
     public var errorDescription: String? {
         switch self {
@@ -87,6 +104,7 @@ public enum WorkspaceError: LocalizedError, Sendable {
         case .emptyListName: "Enter a list name."
         case .lastList: "Keep at least one list."
         case .invalidMove: "This item cannot move further."
+        case .missingAttachment: "The attachment no longer exists."
         }
     }
 }

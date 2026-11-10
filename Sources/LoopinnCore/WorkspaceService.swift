@@ -61,6 +61,21 @@ public struct WorkspaceService: Sendable {
         workspace.blocks.removeAll { $0.taskID == taskID }
     }
 
+    public func addAttachment(_ attachment: TaskAttachment, to taskID: UUID, in workspace: inout Workspace) throws {
+        guard let index = workspace.tasks.firstIndex(where: { $0.id == taskID }) else { throw WorkspaceError.missingTask }
+        var attachments = workspace.tasks[index].attachments ?? []
+        attachments.append(attachment)
+        workspace.tasks[index].attachments = attachments
+    }
+
+    public func removeAttachment(_ attachmentID: UUID, from taskID: UUID, in workspace: inout Workspace) throws {
+        guard let index = workspace.tasks.firstIndex(where: { $0.id == taskID }) else { throw WorkspaceError.missingTask }
+        var attachments = workspace.tasks[index].attachments ?? []
+        guard attachments.contains(where: { $0.id == attachmentID }) else { throw WorkspaceError.missingAttachment }
+        attachments.removeAll { $0.id == attachmentID }
+        workspace.tasks[index].attachments = attachments
+    }
+
     public func addTask(to workspace: inout Workspace, title: String, listID: UUID) throws {
         let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanTitle.isEmpty else { throw WorkspaceError.emptyTitle }
