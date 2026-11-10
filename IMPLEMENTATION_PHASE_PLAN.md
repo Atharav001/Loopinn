@@ -30,7 +30,7 @@
 
 ## P01 — App shell, design system, settings & CI
 
-**Entry dependency:** P00. **Phase state:** NOT STARTED (unverified).
+**Entry dependency:** P00. **Phase state:** IN REVIEW (P01 shell PR #7; acceptance pending).
 
 ### FR-41 — Menu-bar command center
 **Implementation ticket:** `P01-FR41`. **Technical path:** define domain contract and UI states; implement service/repository with typed errors; bind relevant SwiftUI/AppKit or Android surface; add settings/toggles and migration only where required. **Specific verification:** Menu bar stays alive without dashboard; actions open exactly one target window.
@@ -120,7 +120,7 @@
 
 ## P04 — Timers, prompts & logging
 
-**Entry dependency:** P01; P02 for linked activity. **Phase state:** NOT STARTED (unverified).
+**Entry dependency:** P01; P02 for linked activity. **Phase state:** IN PROGRESS (Pomodoro and floating timer included by user request; remaining P04 features unverified).
 
 ### FR-08 — Pomodoro timer
 **Implementation ticket:** `P04-FR08`. **Technical path:** define domain contract and UI states; implement service/repository with typed errors; bind relevant SwiftUI/AppKit or Android surface; add settings/toggles and migration only where required. **Specific verification:** Focus/break phases and cycle count survive pause, sleep and relaunch with persisted deadlines.

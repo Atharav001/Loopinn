@@ -15,6 +15,7 @@ public enum TaskRecommendations {
         else if task.isStarred == true { reason = "Starred priority" }
         else if task.priority == 3 { reason = "High priority" }
         else if task.startAt != nil { reason = "Scheduled work" }
+        else if let minutes = task.estimateMinutes, minutes <= 15 { reason = "Quick win (\(minutes) min)" }
         else { reason = "Ready to start" }
         return TaskRecommendation(taskID: task.id, reason: reason)
     }
