@@ -27,6 +27,10 @@ struct MenuContent: View {
             Button("Open Today", systemImage: "sun.max") { show(.today) }
             Button("Open Tasks", systemImage: "checklist") { show(.tasks) }
             Button("Open Planner", systemImage: "calendar") { show(.planner) }
+            Button("Open Settings", systemImage: "gearshape") { show(.settings) }
+            Button("Floating Tasks", systemImage: "square.on.square") {
+                FloatingPanelManager.shared.showTasks(state: state)
+            }
             Divider()
             Text("Local data only").font(.caption).foregroundStyle(.secondary)
             if let error = state.errorMessage {
@@ -77,6 +81,11 @@ struct DashboardView: View {
     @State private var renamingList: TaskList?
     @State private var renamedListName = ""
     @State private var listToDelete: TaskList?
+    @State private var showCommandPalette = false
+    @State private var confirmRestore = false
+    @State private var confirmErase = false
+    @State private var backupToRestore: URL?
+    @FocusState private var taskInputFocused: Bool
 
     var body: some View {
         NavigationSplitView {
@@ -84,18 +93,35 @@ struct DashboardView: View {
                 Label(item.rawValue, systemImage: item.icon).tag(item)
             }
             .navigationTitle("Loopinn")
-            .frame(minWidth: 200)
+            .listStyle(.sidebar)
+            .frame(minWidth: LoopinnDesign.sidebarWidth)
         } detail: {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: state.settings.compactLayout == true ? 12 : 20) {
                 HStack {
-                    Text(state.selectedPage.rawValue).font(.largeTitle.bold())
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(state.selectedPage.rawValue).font(.largeTitle.bold())
+                        Text(Date.now.formatted(date: .complete, time: .omitted))
+                            .font(.subheadline).foregroundStyle(.secondary)
+                    }
                     Spacer()
+                    Button("Commands", systemImage: "command") { showCommandPalette = true }
+                        .keyboardShortcut("k", modifiers: .command)
+                    Button("New Task", systemImage: "plus") {
+                        state.selectedPage = .tasks
+                        taskInputFocused = true
+                    }
+                    .keyboardShortcut("n", modifiers: .command)
+                    Button("Floating Tasks", systemImage: "square.on.square") {
+                        FloatingPanelManager.shared.showTasks(state: state)
+                    }
                     Button("Undo", systemImage: "arrow.uturn.backward") { state.undoLastChange() }
                         .disabled(!state.canUndo)
                         .keyboardShortcut("z", modifiers: .command)
                 }
                 switch state.selectedPage {
-                case .today, .tasks:
+                case .today:
+                    todayContent
+                case .tasks:
                     taskContent
                 case .planner:
                     plannerContent
@@ -108,8 +134,9 @@ struct DashboardView: View {
                 }
                 Spacer(minLength: 0)
             }
-            .padding(28)
+            .padding(state.settings.compactLayout == true ? 18 : 28)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(Color(nsColor: .windowBackgroundColor))
         }
         .alert("Loopinn", isPresented: Binding(get: { state.errorMessage != nil }, set: { if !$0 { state.errorMessage = nil } })) {
             Button("OK", role: .cancel) { state.errorMessage = nil }
@@ -121,6 +148,15 @@ struct DashboardView: View {
         }
         .sheet(item: $taskToEdit) { task in
             TaskDetailSheet(task: task, state: state)
+        }
+        .sheet(isPresented: $showCommandPalette) {
+            CommandPaletteView(state: state)
+        }
+        .sheet(isPresented: Binding(
+            get: { state.canEditSettings && state.settings.hasCompletedOnboarding != true },
+            set: { if !$0 { state.completeOnboarding() } }
+        )) {
+            OnboardingView(state: state)
         }
         .preferredColorScheme(state.settings.theme.colorScheme)
         .tint(state.settings.accent.color)
@@ -138,6 +174,74 @@ struct DashboardView: View {
                 if state.errorMessage == nil { selectedListID = nil }
                 listToDelete = nil
             }
+        }
+        .confirmationDialog("Restore this backup?", isPresented: $confirmRestore) {
+            Button("Restore Backup") {
+                if let backupToRestore { state.restoreBackup(from: backupToRestore) }
+                backupToRestore = nil
+            }
+            Button("Cancel", role: .cancel) { backupToRestore = nil }
+        } message: {
+            Text("Your current data will be saved in a local safety backup first.")
+        }
+        .confirmationDialog("Erase all Loopinn data on this Mac?", isPresented: $confirmErase) {
+            Button("Erase Local Data", role: .destructive) { state.eraseLocalData() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This removes tasks, lists, schedules, attachments, settings and local safety backups. Export a backup first if you need a copy.")
+        }
+    }
+
+    private var todayContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: LoopinnDesign.contentSpacing) {
+                HStack(spacing: 16) {
+                    LoopinnCard {
+                        Label("Open tasks", systemImage: "checklist").foregroundStyle(.secondary)
+                        Text("\(state.workspace.tasks.filter { $0.completedAt == nil }.count)")
+                            .font(.system(size: 34, weight: .semibold, design: .rounded))
+                    }
+                    LoopinnCard {
+                        Label("Planned blocks", systemImage: "calendar").foregroundStyle(.secondary)
+                        Text("\(state.workspace.blocks.count)")
+                            .font(.system(size: 34, weight: .semibold, design: .rounded))
+                    }
+                }
+                SectionHeading("Up next", subtitle: "A clear place to start")
+                LoopinnCard {
+                    if let task = state.nextTask {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(task.title).font(.title3.weight(.semibold))
+                                Text(task.dueAt.map { "Due \($0.formatted(date: .abbreviated, time: .omitted))" } ?? "Ready when you are")
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Button("Complete") { state.toggleTask(task) }.buttonStyle(.borderedProminent)
+                        }
+                    } else {
+                        Text("Add a task to begin your day.").foregroundStyle(.secondary)
+                    }
+                }
+                if state.settings.showTodayPlan != false {
+                    SectionHeading("Your plan", subtitle: "Scheduled work stays separate from actual activity")
+                    LoopinnCard {
+                        if state.workspace.blocks.isEmpty {
+                            Text("No blocks scheduled yet.").foregroundStyle(.secondary)
+                        } else {
+                            ForEach(state.workspace.blocks.sorted(by: { $0.startAt < $1.startAt }).prefix(3)) { block in
+                                HStack {
+                                    Text(state.workspace.tasks.first(where: { $0.id == block.taskID })?.title ?? "Task")
+                                    Spacer()
+                                    Text(block.startAt, style: .time).foregroundStyle(.secondary)
+                                }
+                                .padding(.vertical, 4)
+                            }
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: 900)
         }
     }
 
@@ -170,7 +274,7 @@ struct DashboardView: View {
                 Button("Add List", action: addList)
             }
             HStack {
-                TextField("Add a task", text: $taskTitle).onSubmit(addTask)
+                TextField("Add a task", text: $taskTitle).focused($taskInputFocused).onSubmit(addTask)
                 Button("Add Task", action: addTask).buttonStyle(.borderedProminent)
             }
             if visibleTasks.isEmpty {
@@ -236,14 +340,59 @@ struct DashboardView: View {
                     }
                 }
                 Button("Reset Appearance") { state.resetAppearance() }
+                Toggle("Compact Layout", isOn: Binding(
+                    get: { state.settings.compactLayout == true },
+                    set: { state.setCompactLayout($0) }
+                ))
+            }
+            Section("Dashboard") {
+                Toggle("Show Today Plan", isOn: Binding(
+                    get: { state.settings.showTodayPlan != false },
+                    set: { state.setShowTodayPlan($0) }
+                ))
+            }
+            Section("Floating tasks") {
+                Toggle("Keep Panel Above Windows", isOn: Binding(
+                    get: { state.settings.pinFloatingTasks != false },
+                    set: { state.setPinFloatingTasks($0) }
+                ))
+                Button("Open Floating Tasks") { FloatingPanelManager.shared.showTasks(state: state) }
             }
             Section("About this build") {
                 Text("Tasks and planning are stored locally. Cloud sync and calendar integrations are still in development.")
                     .foregroundStyle(.secondary)
+                Button("Reopen Welcome") { state.reopenOnboarding() }
+            }
+            Section("Privacy & data") {
+                Label("Stored on this Mac", systemImage: "internaldrive")
+                Text("Loopinn does not request calendar access or send your tasks to a server in this build.")
+                    .foregroundStyle(.secondary)
+                Button("Export Backup…") { chooseBackupDestination() }
+                Button("Restore Backup…") { chooseBackupSource() }
+                Button("Erase Local Data…", role: .destructive) { confirmErase = true }
             }
         }
         .formStyle(.grouped)
         .frame(maxWidth: 620)
+    }
+
+    private func chooseBackupDestination() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "Loopinn-\(Date.now.formatted(.iso8601.year().month().day())).loopinnbackup"
+        panel.message = "Save your tasks, settings and attachments as a Loopinn backup folder."
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        state.exportBackup(to: url)
+    }
+
+    private func chooseBackupSource() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = true
+        panel.allowsMultipleSelection = false
+        panel.message = "Choose a .loopinnbackup folder."
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        backupToRestore = url
+        confirmRestore = true
     }
 
     private func addTask() {
@@ -261,7 +410,7 @@ struct DashboardView: View {
     }
 }
 
-private extension ThemeMode {
+extension ThemeMode {
     var colorScheme: ColorScheme? {
         switch self {
         case .system: nil
@@ -271,7 +420,7 @@ private extension ThemeMode {
     }
 }
 
-private extension AccentChoice {
+extension AccentChoice {
     var color: Color {
         switch self {
         case .blue: .blue
