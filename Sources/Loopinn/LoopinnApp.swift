@@ -5,15 +5,25 @@ import SwiftUI
 @MainActor
 final class AppState: ObservableObject {
     @Published private(set) var workspace: Workspace
+    @Published private(set) var settings: AppSettings
     @Published var selectedPage: DashboardPage = .today
     @Published var errorMessage: String?
     @Published private(set) var canUndo = false
     private let service = WorkspaceService()
+    private let settingsStore = SettingsStore()
+    private var settingsWritable = true
     private var database: WorkspaceDatabase?
     private var attachmentStore: AttachmentStore?
     private var previousWorkspace: Workspace?
 
     init() {
+        do {
+            settings = try settingsStore.load()
+        } catch {
+            settings = AppSettings()
+            settingsWritable = false
+            errorMessage = "Saved settings could not be opened. Appearance editing is disabled: \(error.localizedDescription)"
+        }
         let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Loopinn", isDirectory: true)
         do {
@@ -28,6 +38,36 @@ final class AppState: ObservableObject {
             database = nil
             attachmentStore = nil
             errorMessage = "Saved data could not be opened. Editing is disabled to protect it: \(error.localizedDescription)"
+        }
+    }
+
+    func setTheme(_ theme: ThemeMode) {
+        var draft = settings
+        draft.theme = theme
+        saveSettings(draft)
+    }
+
+    func setAccent(_ accent: AccentChoice) {
+        var draft = settings
+        draft.accent = accent
+        saveSettings(draft)
+    }
+
+    func resetAppearance() {
+        saveSettings(AppSettings())
+    }
+
+    private func saveSettings(_ draft: AppSettings) {
+        guard settingsWritable else {
+            errorMessage = "Appearance settings are unavailable to edit."
+            return
+        }
+        do {
+            try settingsStore.save(draft)
+            settings = draft
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 

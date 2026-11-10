@@ -5,13 +5,13 @@
 **Baseline SHA:** `2aa1509` on `main`; audit branch `feat/aud-01-baseline`  
 **CI status:** PR #3 had two passing macOS build jobs before merge  
 **Latest packaged build:** Local unsigned `dist/Loopinn.app` built after a clean package build; Info.plist lint passed  
-**Current ticket:** P01-FR41 menu-bar command center, IN REVIEW on feature branch  
+**Current ticket:** P01-FR43 appearance settings integrated with FR-41 menu-bar command center  
 **Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent for selective-reuse audit; Android target and signed release setup do not exist.
 
 ## Completion counters
 - Selected scope: **51 features**.
 - Verified DONE: **0/51** under the full acceptance definition (0.0%).
-- Verified IN REVIEW: **5** (FR-01, FR-03, FR-05, FR-29, FR-41); these have partial implementation and missing runtime/edge-case evidence.
+- Verified IN REVIEW: **6** (FR-01, FR-03, FR-05, FR-29, FR-41, FR-43); these have partial implementation and missing runtime/edge-case evidence.
 - Verified IN PROGRESS: **1** (FR-02); other feature IDs remain UNVERIFIED/TODO.
 - Verified blocked feature IDs: **0**; the source-reuse audit is limited by missing original repositories.
 - Notch: **optional final P08**, must not be treated as core-complete.
@@ -35,8 +35,8 @@ Do **not** equate lines of code, commits, passing unit tests or phase starts wit
 | P08 | Optional notch integration — LAST | UNVERIFIED | ? / 4 | Not verified | — |
 
 ## Current sprint / next action
-- **Current:** P01-FR41 — quick capture, next-task completion, local status and direct Today/Tasks/Planner routing implemented. Six unit checks and release bundle build pass; runtime UI inspection timed out and remains outstanding.
-- **Next engineering ticket:** P01-FR43 — typed settings and theme controls, after P01-FR41 review. Then remaining P01 shell work and P02 task workflows.
+- **Current:** P01-FR41 and P01-FR43 code integrated on the appearance branch. Menu routing and typed theme/accent settings compile; runtime UI evidence and broader P01 controls remain outstanding.
+- **Next engineering ticket:** Complete P01 floating panels, keyboard actions, onboarding and privacy controls.
 - **Notch:** P08 remains absent; user previously directed a pause before implementing it.
 
 ## Agent update template (append after every merged ticket)
