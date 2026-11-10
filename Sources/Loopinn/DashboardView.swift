@@ -401,7 +401,7 @@ struct DashboardView: View {
                 ))
                 if state.appleCalendarConnected {
                     Label("Connected for calendar access", systemImage: "checkmark.circle")
-                    Button("Refresh Apple Events") { state.refreshAppleCalendar() }
+                    Button("Refresh Apple Events") { state.refreshAppleCalendar(force: true) }
                     ForEach(state.appleCalendars) { calendar in
                         Toggle(calendar.title, isOn: Binding(
                             get: { !(state.settings.hiddenAppleCalendarIDs ?? []).contains(calendar.id) },
@@ -423,7 +423,7 @@ struct DashboardView: View {
                 .disabled(state.googleCalendarConnected)
                 if state.googleCalendarConnected {
                     Label("Connected", systemImage: "checkmark.circle")
-                    Button("Refresh Google Events") { state.refreshGoogleCalendar() }
+                    Button("Refresh Google Events") { state.refreshGoogleCalendar(force: true) }
                     ForEach(state.googleCalendars) { calendar in
                         Toggle(calendar.title, isOn: Binding(
                             get: { !(state.settings.hiddenGoogleCalendarIDs ?? []).contains(calendar.id) },
