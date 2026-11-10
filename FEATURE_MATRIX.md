@@ -3,7 +3,7 @@
 
 | ID | Phase | Feature | Status | PR / merged SHA | Evidence |
 |---|---|---|---|---|---|
-| FR-41 | P01 | Menu-bar command center | IN REVIEW | `0390e4d` | Menu bar and dashboard route compile; full command set and UI smoke pending. |
+| FR-41 | P01 | Menu-bar command center | IN REVIEW | `0390e4d`; P01-FR41 PR pending | Quick capture, next-task completion and Today/Tasks/Planner routes compile; runtime UI smoke and future feature actions pending. |
 | FR-42 | P01 | Floating panel system | UNVERIFIED | — | — |
 | FR-43 | P01 | Themes & customization | UNVERIFIED | — | — |
 | FR-46 | P01 | Keyboard & quick actions | UNVERIFIED | — | — |
