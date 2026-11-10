@@ -42,7 +42,7 @@ public struct WorkspaceService: Sendable {
         workspace.tasks.swapAt(index, peers[peerIndex + offset])
     }
 
-    public func updateTask(_ taskID: UUID, title: String, notes: String, dueAt: Date?, priority: Int?, listID: UUID, isStarred: Bool, in workspace: inout Workspace) throws {
+    public func updateTask(_ taskID: UUID, title: String, notes: String, dueAt: Date?, priority: Int?, listID: UUID, isStarred: Bool, firstStep: String? = nil, estimateMinutes: Int? = nil, colorTag: String? = nil, in workspace: inout Workspace) throws {
         let clean = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !clean.isEmpty else { throw WorkspaceError.emptyTitle }
         guard workspace.lists.contains(where: { $0.id == listID }) else { throw WorkspaceError.missingList }
@@ -53,6 +53,9 @@ public struct WorkspaceService: Sendable {
         workspace.tasks[index].priority = priority
         workspace.tasks[index].listID = listID
         workspace.tasks[index].isStarred = isStarred
+        workspace.tasks[index].firstStep = firstStep?.trimmingCharacters(in: .whitespacesAndNewlines)
+        workspace.tasks[index].estimateMinutes = estimateMinutes.flatMap { $0 > 0 ? $0 : nil }
+        workspace.tasks[index].colorTag = colorTag
     }
 
     public func deleteTask(_ taskID: UUID, in workspace: inout Workspace) throws {
@@ -83,6 +86,15 @@ public struct WorkspaceService: Sendable {
         workspace.tasks.append(LoopTask(listID: listID, title: cleanTitle))
     }
 
+    public func captureTasks(_ text: String, listID: UUID, in workspace: inout Workspace) throws {
+        let titles = text.components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        guard !titles.isEmpty else { throw WorkspaceError.emptyTitle }
+        guard workspace.lists.contains(where: { $0.id == listID }) else { throw WorkspaceError.missingList }
+        for title in titles { workspace.tasks.append(LoopTask(listID: listID, title: title)) }
+    }
+
     public func setCompleted(_ completed: Bool, taskID: UUID, in workspace: inout Workspace) throws {
         guard let index = workspace.tasks.firstIndex(where: { $0.id == taskID }) else { throw WorkspaceError.missingTask }
         workspace.tasks[index].completedAt = completed ? .now : nil
@@ -106,5 +118,43 @@ public struct WorkspaceService: Sendable {
         } else {
             workspace.blocks.append(CalendarBlock(taskID: taskID, startAt: startAt, endAt: endAt))
         }
+    }
+
+    public func createBlock(title: String, startAt: Date, endAt: Date, in workspace: inout Workspace) throws {
+        let clean = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.isEmpty else { throw WorkspaceError.emptyTitle }
+        guard endAt > startAt else { throw WorkspaceError.invalidInterval }
+        workspace.blocks.append(CalendarBlock(title: clean, startAt: startAt, endAt: endAt))
+    }
+
+    public func updateBlock(_ id: UUID, title: String, startAt: Date, endAt: Date, in workspace: inout Workspace) throws {
+        guard let index = workspace.blocks.firstIndex(where: { $0.id == id }) else { throw WorkspaceError.missingBlock }
+        guard endAt > startAt else { throw WorkspaceError.invalidInterval }
+        if let taskID = workspace.blocks[index].taskID {
+            try schedule(taskID: taskID, startAt: startAt, endAt: endAt, in: &workspace)
+        } else {
+            let clean = title.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !clean.isEmpty else { throw WorkspaceError.emptyTitle }
+            workspace.blocks[index].title = clean
+            workspace.blocks[index].startAt = startAt
+            workspace.blocks[index].endAt = endAt
+        }
+    }
+
+    public func deleteBlock(_ id: UUID, in workspace: inout Workspace) throws {
+        guard let block = workspace.blocks.first(where: { $0.id == id }) else { throw WorkspaceError.missingBlock }
+        if let taskID = block.taskID {
+            try schedule(taskID: taskID, startAt: nil, endAt: nil, in: &workspace)
+        } else {
+            workspace.blocks.removeAll { $0.id == id }
+        }
+    }
+
+    public func recordPublishedEvent(_ link: ExternalCalendarLink, for blockID: UUID, in workspace: inout Workspace) throws {
+        guard let index = workspace.blocks.firstIndex(where: { $0.id == blockID }) else { throw WorkspaceError.missingBlock }
+        var links = workspace.blocks[index].externalLinks ?? []
+        links.removeAll { $0.provider == link.provider && $0.calendarID == link.calendarID }
+        links.append(link)
+        workspace.blocks[index].externalLinks = links
     }
 }

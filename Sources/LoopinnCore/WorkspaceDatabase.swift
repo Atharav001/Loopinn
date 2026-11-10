@@ -43,6 +43,20 @@ public final class WorkspaceDatabase {
                     throw error
                 }
             }
+            if version < 2 {
+                if existed && version == 1 {
+                    try backupDatabase(to: directory.appendingPathComponent("loopinn-before-v2-\(UUID().uuidString).sqlite3"))
+                }
+                try execute("BEGIN IMMEDIATE")
+                do {
+                    try execute("CREATE TABLE independent_blocks (id TEXT PRIMARY KEY, start_at REAL NOT NULL, payload BLOB NOT NULL)")
+                    try execute("PRAGMA user_version = 2")
+                    try execute("COMMIT")
+                } catch {
+                    try? execute("ROLLBACK")
+                    throw error
+                }
+            }
             if try rowCount("lists") == 0 {
                 let legacyURL = directory.appendingPathComponent("workspace.json")
                 if FileManager.default.fileExists(atPath: legacyURL.path) {
@@ -66,6 +80,8 @@ public final class WorkspaceDatabase {
         workspace.lists = try fetch("SELECT payload FROM lists ORDER BY sort_order", as: TaskList.self)
         workspace.tasks = try fetch("SELECT payload FROM tasks ORDER BY sort_order", as: LoopTask.self)
         workspace.blocks = try fetch("SELECT payload FROM blocks ORDER BY start_at", as: CalendarBlock.self)
+        workspace.blocks += try fetch("SELECT payload FROM independent_blocks ORDER BY start_at", as: CalendarBlock.self)
+        workspace.blocks.sort { $0.startAt < $1.startAt }
         return workspace
     }
 
@@ -73,6 +89,7 @@ public final class WorkspaceDatabase {
         try execute("BEGIN IMMEDIATE")
         do {
             try execute("DELETE FROM blocks")
+            try execute("DELETE FROM independent_blocks")
             try execute("DELETE FROM tasks")
             try execute("DELETE FROM lists")
             for (position, list) in workspace.lists.enumerated() {
@@ -82,7 +99,11 @@ public final class WorkspaceDatabase {
                 try insert("INSERT INTO tasks (id, list_id, sort_order, payload) VALUES (?, ?, ?, ?)", id: task.id, foreignID: task.listID, position: position, payload: task)
             }
             for block in workspace.blocks {
-                try insert("INSERT INTO blocks (id, task_id, start_at, payload) VALUES (?, ?, ?, ?)", id: block.id, foreignID: block.taskID, position: Int(block.startAt.timeIntervalSince1970), payload: block)
+                if let taskID = block.taskID {
+                    try insert("INSERT INTO blocks (id, task_id, start_at, payload) VALUES (?, ?, ?, ?)", id: block.id, foreignID: taskID, position: Int(block.startAt.timeIntervalSince1970), payload: block)
+                } else {
+                    try insertIndependentBlock(block)
+                }
             }
             try execute("COMMIT")
         } catch {
@@ -96,6 +117,19 @@ public final class WorkspaceDatabase {
         defer { sqlite3_finalize(statement) }
         guard sqlite3_prepare_v2(handle, "PRAGMA user_version", -1, &statement, nil) == SQLITE_OK else { return -1 }
         return sqlite3_step(statement) == SQLITE_ROW ? sqlite3_column_int(statement, 0) : -1
+    }
+
+    private func backupDatabase(to url: URL) throws {
+        var backupHandle: OpaquePointer?
+        guard sqlite3_open_v2(url.path, &backupHandle, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nil) == SQLITE_OK else {
+            sqlite3_close(backupHandle)
+            throw DatabaseError.failed("Could not create migration backup")
+        }
+        defer { sqlite3_close(backupHandle) }
+        guard let operation = sqlite3_backup_init(backupHandle, "main", handle, "main") else { throw failure() }
+        let result = sqlite3_backup_step(operation, -1)
+        let finish = sqlite3_backup_finish(operation)
+        guard result == SQLITE_DONE, finish == SQLITE_OK else { throw DatabaseError.failed("Could not finish migration backup") }
     }
 
     private func rowCount(_ table: String) throws -> Int32 {
@@ -138,6 +172,18 @@ public final class WorkspaceDatabase {
             sqlite3_bind_blob(statement, payloadIndex, bytes.baseAddress, Int32(bytes.count), transient)
         }
         guard bindResult == SQLITE_OK, sqlite3_step(statement) == SQLITE_DONE else { throw failure() }
+    }
+
+    private func insertIndependentBlock(_ block: CalendarBlock) throws {
+        var statement: OpaquePointer?
+        defer { sqlite3_finalize(statement) }
+        let sql = "INSERT INTO independent_blocks (id, start_at, payload) VALUES (?, ?, ?)"
+        guard sqlite3_prepare_v2(handle, sql, -1, &statement, nil) == SQLITE_OK else { throw failure() }
+        guard sqlite3_bind_text(statement, 1, block.id.uuidString, -1, transient) == SQLITE_OK else { throw failure() }
+        sqlite3_bind_double(statement, 2, block.startAt.timeIntervalSince1970)
+        let data = try JSONEncoder().encode(block)
+        let result = data.withUnsafeBytes { sqlite3_bind_blob(statement, 3, $0.baseAddress, Int32($0.count), transient) }
+        guard result == SQLITE_OK, sqlite3_step(statement) == SQLITE_DONE else { throw failure() }
     }
 
     private func execute(_ sql: String) throws {

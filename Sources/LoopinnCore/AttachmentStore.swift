@@ -15,10 +15,13 @@ public final class AttachmentStore {
         let suffix = source.pathExtension.isEmpty ? "" : ".\(source.pathExtension)"
         let storedName = id.uuidString + suffix
         let destination = directory.appendingPathComponent(storedName)
+        let sourceSize = try source.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
+        guard sourceSize <= 100 * 1024 * 1024 else { throw DatabaseError.failed("Attachments must be 100 MB or smaller") }
         try FileManager.default.copyItem(at: source, to: destination)
         do {
             let values = try destination.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
             guard values.isRegularFile == true else { throw DatabaseError.failed("Only regular files can be attached") }
+            guard (values.fileSize ?? 0) <= 100 * 1024 * 1024 else { throw DatabaseError.failed("Attachments must be 100 MB or smaller") }
             return TaskAttachment(id: id, originalName: source.lastPathComponent, storedName: storedName, byteCount: Int64(values.fileSize ?? 0))
         } catch {
             try? FileManager.default.removeItem(at: destination)
@@ -38,7 +41,7 @@ public final class AttachmentStore {
     }
 
     public func prune(keeping attachments: [TaskAttachment]) throws {
-        let names = Set(attachments.map(\.storedName))
+        let names = Set(attachments.filter { $0.linkURLString == nil }.map(\.storedName))
         for file in try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) {
             if !names.contains(file.lastPathComponent) {
                 try FileManager.default.removeItem(at: file)

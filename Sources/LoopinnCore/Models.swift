@@ -25,6 +25,9 @@ public struct LoopTask: Codable, Identifiable, Equatable, Sendable {
     public var endAt: Date?
     public var completedAt: Date?
     public var createdAt: Date
+    public var firstStep: String?
+    public var estimateMinutes: Int?
+    public var colorTag: String?
 
     public init(id: UUID = UUID(), listID: UUID, title: String, notes: String = "", dueAt: Date? = nil, startAt: Date? = nil, endAt: Date? = nil, completedAt: Date? = nil, createdAt: Date = .now) {
         self.id = id
@@ -39,6 +42,9 @@ public struct LoopTask: Codable, Identifiable, Equatable, Sendable {
         self.endAt = endAt
         self.completedAt = completedAt
         self.createdAt = createdAt
+        self.firstStep = nil
+        self.estimateMinutes = nil
+        self.colorTag = nil
     }
 }
 
@@ -47,26 +53,43 @@ public struct TaskAttachment: Codable, Identifiable, Equatable, Sendable {
     public let originalName: String
     public let storedName: String
     public let byteCount: Int64
+    public let linkURLString: String?
 
-    public init(id: UUID, originalName: String, storedName: String, byteCount: Int64) {
+    public init(id: UUID, originalName: String, storedName: String, byteCount: Int64, linkURLString: String? = nil) {
         self.id = id
         self.originalName = originalName
         self.storedName = storedName
         self.byteCount = byteCount
+        self.linkURLString = linkURLString
     }
 }
 
 public struct CalendarBlock: Codable, Identifiable, Equatable, Sendable {
     public var id: UUID
-    public var taskID: UUID
+    public var taskID: UUID?
+    public var title: String?
+    public var externalLinks: [ExternalCalendarLink]?
     public var startAt: Date
     public var endAt: Date
 
-    public init(id: UUID = UUID(), taskID: UUID, startAt: Date, endAt: Date) {
+    public init(id: UUID = UUID(), taskID: UUID? = nil, title: String? = nil, startAt: Date, endAt: Date) {
         self.id = id
         self.taskID = taskID
+        self.title = title
+        self.externalLinks = []
         self.startAt = startAt
         self.endAt = endAt
+    }
+}
+
+public struct ExternalCalendarLink: Codable, Equatable, Sendable {
+    public let provider: String
+    public let calendarID: String
+    public let eventID: String
+    public init(provider: String, calendarID: String, eventID: String) {
+        self.provider = provider
+        self.calendarID = calendarID
+        self.eventID = eventID
     }
 }
 
@@ -93,6 +116,7 @@ public enum WorkspaceError: LocalizedError, Sendable {
     case lastList
     case invalidMove
     case missingAttachment
+    case missingBlock
 
     public var errorDescription: String? {
         switch self {
@@ -105,6 +129,7 @@ public enum WorkspaceError: LocalizedError, Sendable {
         case .lastList: "Keep at least one list."
         case .invalidMove: "This item cannot move further."
         case .missingAttachment: "The attachment no longer exists."
+        case .missingBlock: "The time block no longer exists."
         }
     }
 }

@@ -9,8 +9,20 @@ final class AppState: ObservableObject {
     @Published var selectedPage: DashboardPage = .today
     @Published var errorMessage: String?
     @Published private(set) var canUndo = false
+    @Published var dismissedRecommendationID: UUID?
+    @Published private(set) var pomodoro: PomodoroSession
+    @Published private(set) var appleEvents: [ExternalCalendarEvent] = []
+    @Published private(set) var appleCalendars: [CalendarChoice] = []
+    @Published private(set) var appleCalendarConnected = false
+    @Published private(set) var googleEvents: [ExternalCalendarEvent] = []
+    @Published private(set) var googleCalendars: [CalendarChoice] = []
+    @Published private(set) var googleCalendarConnected = false
     private let service = WorkspaceService()
     private let settingsStore = SettingsStore()
+    private let pomodoroStore = PomodoroStore()
+    private let appleCalendar = AppleCalendarService()
+    private let googleCalendar = GoogleCalendarService()
+    private var timer: Timer?
     private var settingsWritable = true
     private var database: WorkspaceDatabase?
     private var attachmentStore: AttachmentStore?
@@ -20,6 +32,9 @@ final class AppState: ObservableObject {
     var canEditSettings: Bool { settingsWritable }
 
     init() {
+        var restoredPomodoro = (try? pomodoroStore.load()) ?? PomodoroSession()
+        restoredPomodoro.reconcile()
+        pomodoro = restoredPomodoro
         do {
             let loadedSettings = try settingsStore.load()
             settings = loadedSettings
@@ -41,6 +56,169 @@ final class AppState: ObservableObject {
             attachmentStore = nil
             errorMessage = "Saved data could not be opened. Editing is disabled to protect it: \(error.localizedDescription)"
         }
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.reconcilePomodoro() }
+        }
+        appleCalendarConnected = appleCalendar.isAuthorized
+        if appleCalendarConnected { refreshAppleCalendar() }
+        googleCalendarConnected = googleCalendar.isConnected
+        if googleCalendarConnected { refreshGoogleCalendar() }
+    }
+
+    func connectAppleCalendar() {
+        Task {
+            do {
+                try await appleCalendar.requestAccess()
+                appleCalendarConnected = true
+                appleCalendars = appleCalendar.calendars()
+                refreshAppleCalendar()
+            } catch { errorMessage = error.localizedDescription }
+        }
+    }
+
+    func refreshAppleCalendar(around date: Date = .now) {
+        guard appleCalendar.isAuthorized else {
+            appleCalendarConnected = false
+            appleEvents = []
+            appleCalendars = []
+            return
+        }
+        appleCalendarConnected = true
+        appleCalendars = appleCalendar.calendars()
+        let calendar = Calendar.current
+        let start = calendar.date(byAdding: .month, value: -1, to: date) ?? date
+        let end = calendar.date(byAdding: .month, value: 13, to: date) ?? date
+        do { appleEvents = try appleCalendar.events(from: start, to: end) }
+        catch { errorMessage = error.localizedDescription }
+    }
+
+    func setShowAppleEvents(_ enabled: Bool) {
+        var draft = settings
+        draft.showAppleEvents = enabled
+        saveSettings(draft)
+    }
+
+    func setAppleCalendarVisible(_ id: String, visible: Bool) {
+        var draft = settings
+        var hidden = Set(draft.hiddenAppleCalendarIDs ?? [])
+        if visible { hidden.remove(id) } else { hidden.insert(id) }
+        draft.hiddenAppleCalendarIDs = hidden.sorted()
+        saveSettings(draft)
+    }
+
+    var visibleAppleEvents: [ExternalCalendarEvent] {
+        guard settings.showAppleEvents != false else { return [] }
+        let hidden = Set(settings.hiddenAppleCalendarIDs ?? [])
+        let visible = appleEvents.filter { !hidden.contains($0.calendarID) }
+        var seen: Set<String> = []
+        return visible.filter { event in
+            guard event.isHoliday else { return true }
+            return seen.insert("\(event.title)|\(event.startAt.timeIntervalSince1970)|\(event.endAt.timeIntervalSince1970)").inserted
+        }
+    }
+
+    func setGoogleClientID(_ id: String) {
+        var draft = settings
+        draft.googleClientID = id.trimmingCharacters(in: .whitespacesAndNewlines)
+        saveSettings(draft)
+    }
+
+    func setGoogleCalendarVisible(_ id: String, visible: Bool) {
+        var draft = settings
+        var hidden = Set(draft.hiddenGoogleCalendarIDs ?? [])
+        if visible { hidden.remove(id) } else { hidden.insert(id) }
+        draft.hiddenGoogleCalendarIDs = hidden.sorted()
+        saveSettings(draft)
+    }
+
+    func connectGoogleCalendar() {
+        guard let clientID = settings.googleClientID else { errorMessage = GoogleCalendarError.missingClientID.localizedDescription; return }
+        Task {
+            do {
+                try await googleCalendar.connect(clientID: clientID)
+                googleCalendarConnected = true
+                await loadGoogleCalendar(around: .now)
+            } catch { errorMessage = error.localizedDescription }
+        }
+    }
+
+    func disconnectGoogleCalendar() {
+        do {
+            try googleCalendar.disconnect()
+            googleCalendarConnected = false
+            googleEvents = []
+            googleCalendars = []
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func refreshGoogleCalendar(around date: Date = .now) {
+        Task { await loadGoogleCalendar(around: date) }
+    }
+
+    private func loadGoogleCalendar(around date: Date) async {
+        guard googleCalendar.isConnected, let clientID = settings.googleClientID, !clientID.isEmpty else { return }
+        do {
+            let choices = try await googleCalendar.calendars(clientID: clientID)
+            googleCalendars = choices
+            let start = Calendar.current.date(byAdding: .month, value: -1, to: date) ?? date
+            let end = Calendar.current.date(byAdding: .month, value: 13, to: date) ?? date
+            var events: [ExternalCalendarEvent] = []
+            for choice in choices where !(settings.hiddenGoogleCalendarIDs ?? []).contains(choice.id) {
+                events += try await googleCalendar.events(calendarID: choice.id, calendarTitle: choice.title, from: start, to: end, clientID: clientID)
+            }
+            googleEvents = events
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    var visibleGoogleEvents: [ExternalCalendarEvent] {
+        let hidden = Set(settings.hiddenGoogleCalendarIDs ?? [])
+        return googleEvents.filter { !hidden.contains($0.calendarID.replacingOccurrences(of: "google:", with: "")) }
+    }
+
+    func publishGoogleBlock(_ block: CalendarBlock, title: String, calendarID: String) {
+        guard let clientID = settings.googleClientID else { errorMessage = GoogleCalendarError.missingClientID.localizedDescription; return }
+        Task {
+            do {
+                let link = try await googleCalendar.publish(block: block, title: title, calendarID: calendarID, clientID: clientID)
+                mutate { try service.recordPublishedEvent(link, for: block.id, in: &$0) }
+                refreshGoogleCalendar(around: block.startAt)
+            } catch { errorMessage = error.localizedDescription }
+        }
+    }
+
+    func publishAppleBlock(_ block: CalendarBlock, title: String, calendarID: String) {
+        do {
+            let link = try appleCalendar.publish(block: block, title: title, calendarID: calendarID)
+            mutate { try service.recordPublishedEvent(link, for: block.id, in: &$0) }
+            refreshAppleCalendar(around: block.startAt)
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    private func reconcilePomodoro() {
+        let previous = pomodoro
+        pomodoro.reconcile()
+        if pomodoro != previous { try? pomodoroStore.save(pomodoro) }
+        objectWillChange.send()
+    }
+
+    func startPomodoro() {
+        pomodoro.start()
+        savePomodoro()
+    }
+
+    func pausePomodoro() {
+        pomodoro.pause()
+        savePomodoro()
+    }
+
+    func resetPomodoro() {
+        pomodoro.reset()
+        savePomodoro()
+    }
+
+    private func savePomodoro() {
+        do { try pomodoroStore.save(pomodoro); errorMessage = nil }
+        catch { errorMessage = error.localizedDescription }
     }
 
     func setTheme(_ theme: ThemeMode) {
@@ -157,6 +335,12 @@ final class AppState: ObservableObject {
             if FileManager.default.fileExists(atPath: backups.path) { try FileManager.default.removeItem(at: backups) }
             try settingsStore.save(freshSettings)
             settings = freshSettings
+            try googleCalendar.disconnect()
+            googleCalendarConnected = false
+            googleEvents = []
+            googleCalendars = []
+            pomodoro.reset()
+            try pomodoroStore.save(pomodoro)
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }
@@ -184,6 +368,10 @@ final class AppState: ObservableObject {
         mutate { try service.addTask(to: &$0, title: title, listID: listID) }
     }
 
+    func captureTasks(_ text: String, to listID: UUID) {
+        mutate { try service.captureTasks(text, listID: listID, in: &$0) }
+    }
+
     func addList(_ name: String) {
         mutate { try service.addList(named: name, to: &$0) }
     }
@@ -197,8 +385,8 @@ final class AppState: ObservableObject {
         mutate { try service.deleteList(list.id, movingTasksTo: destination.id, in: &$0) }
     }
 
-    func updateTask(_ task: LoopTask, title: String, notes: String, dueAt: Date?, priority: Int?, listID: UUID, isStarred: Bool) {
-        mutate { try service.updateTask(task.id, title: title, notes: notes, dueAt: dueAt, priority: priority, listID: listID, isStarred: isStarred, in: &$0) }
+    func updateTask(_ task: LoopTask, title: String, notes: String, dueAt: Date?, priority: Int?, listID: UUID, isStarred: Bool, firstStep: String?, estimateMinutes: Int?, colorTag: String?) {
+        mutate { try service.updateTask(task.id, title: title, notes: notes, dueAt: dueAt, priority: priority, listID: listID, isStarred: isStarred, firstStep: firstStep, estimateMinutes: estimateMinutes, colorTag: colorTag, in: &$0) }
     }
 
     func deleteTask(_ task: LoopTask) {
@@ -220,7 +408,21 @@ final class AppState: ObservableObject {
         mutate { try service.removeAttachment(attachment.id, from: task.id, in: &$0) }
     }
 
+    func addLink(to task: LoopTask, rawURL: String) {
+        guard let url = URL(string: rawURL.trimmingCharacters(in: .whitespacesAndNewlines)),
+              (url.scheme == "https" || url.scheme == "http"), let host = url.host else {
+            errorMessage = "Enter a valid http or https link."
+            return
+        }
+        let attachment = TaskAttachment(id: UUID(), originalName: host, storedName: "", byteCount: 0, linkURLString: url.absoluteString)
+        mutate { try service.addAttachment(attachment, to: task.id, in: &$0) }
+    }
+
     func openAttachment(_ attachment: TaskAttachment) {
+        if let string = attachment.linkURLString, let url = URL(string: string) {
+            NSWorkspace.shared.open(url)
+            return
+        }
         guard let attachmentStore else { errorMessage = "Attachment storage is unavailable."; return }
         let url = attachmentStore.fileURL(for: attachment)
         guard FileManager.default.fileExists(atPath: url.path) else {
@@ -257,11 +459,26 @@ final class AppState: ObservableObject {
     }
 
     var nextTask: LoopTask? {
-        workspace.tasks.first(where: { $0.completedAt == nil })
+        guard let recommendation = TaskRecommendations.next(in: workspace, excluding: dismissedRecommendationID) else { return nil }
+        return workspace.tasks.first { $0.id == recommendation.taskID }
     }
+
+    var nextTaskReason: String? { TaskRecommendations.next(in: workspace, excluding: dismissedRecommendationID)?.reason }
 
     func schedule(_ task: LoopTask, start: Date?, end: Date?) {
         mutate { try service.schedule(taskID: task.id, startAt: start, endAt: end, in: &$0) }
+    }
+
+    func createBlock(title: String, start: Date, end: Date) {
+        mutate { try service.createBlock(title: title, startAt: start, endAt: end, in: &$0) }
+    }
+
+    func updateBlock(_ block: CalendarBlock, title: String, start: Date, end: Date) {
+        mutate { try service.updateBlock(block.id, title: title, startAt: start, endAt: end, in: &$0) }
+    }
+
+    func deleteBlock(_ block: CalendarBlock) {
+        mutate { try service.deleteBlock(block.id, in: &$0) }
     }
 
     private func mutate(_ change: (inout Workspace) throws -> Void) {

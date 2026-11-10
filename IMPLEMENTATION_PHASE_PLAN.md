@@ -60,7 +60,7 @@
 
 ## P02 — Tasks & internal scheduling
 
-**Entry dependency:** P01. **Phase state:** NOT STARTED (unverified).
+**Entry dependency:** P01. **Phase state:** IN PROGRESS (task and planner implementation branch; acceptance pending).
 
 ### FR-01 — Multi-list task management
 **Implementation ticket:** `P02-FR01`. **Technical path:** define domain contract and UI states; implement service/repository with typed errors; bind relevant SwiftUI/AppKit or Android surface; add settings/toggles and migration only where required. **Specific verification:** Create, rename, reorder, complete, delete and restore lists/tasks; verify restart persistence and duplicate IDs.
@@ -94,7 +94,7 @@
 
 ## P03 — Calendar & external provider integrations
 
-**Entry dependency:** P02. **Phase state:** NOT STARTED (unverified).
+**Entry dependency:** P02. **Phase state:** IN PROGRESS (calendar views and provider adapters implemented locally; live provider acceptance pending).
 
 ### FR-24 — Day/week/month/year calendar
 **Implementation ticket:** `P03-FR24`. **Technical path:** define domain contract and UI states; implement service/repository with typed errors; bind relevant SwiftUI/AppKit or Android surface; add settings/toggles and migration only where required. **Specific verification:** Day/week/month/year render correct boundaries, navigation, timezone and empty states.

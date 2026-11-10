@@ -90,7 +90,7 @@ public enum WorkspaceBackup {
     }
 
     private static func attachmentNames(in workspace: Workspace) throws -> Set<String> {
-        let names = workspace.tasks.flatMap { $0.attachments ?? [] }.map(\.storedName)
+        let names = workspace.tasks.flatMap { $0.attachments ?? [] }.filter { $0.linkURLString == nil }.map(\.storedName)
         for name in names where name.isEmpty || name == "." || name == ".." || name != (name as NSString).lastPathComponent || name.contains("/") || name.contains("\\") {
             throw BackupError.unsafeAttachmentName
         }
@@ -104,8 +104,8 @@ public enum WorkspaceBackup {
               listIDs.count == workspace.lists.count,
               taskIDs.count == workspace.tasks.count,
               workspace.tasks.allSatisfy({ listIDs.contains($0.listID) }),
-              workspace.blocks.allSatisfy({ taskIDs.contains($0.taskID) && $0.startAt < $0.endAt }),
-              Set(workspace.blocks.map(\.taskID)).count == workspace.blocks.count else {
+              workspace.blocks.allSatisfy({ ($0.taskID == nil || taskIDs.contains($0.taskID!)) && $0.startAt < $0.endAt }),
+              Set(workspace.blocks.compactMap(\.taskID)).count == workspace.blocks.compactMap(\.taskID).count else {
             throw BackupError.invalidWorkspace
         }
     }

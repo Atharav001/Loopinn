@@ -24,6 +24,8 @@ cat > "$app_dir/Contents/Info.plist" <<'PLIST'
   <key>LSMinimumSystemVersion</key><string>15.0</string>
   <key>LSUIElement</key><true/>
   <key>NSHighResolutionCapable</key><true/>
+  <key>NSCalendarsFullAccessUsageDescription</key><string>Loopinn reads selected calendars after you connect Apple Calendar, and publishes only events you explicitly approve.</string>
+  <key>NSCalendarsWriteOnlyAccessUsageDescription</key><string>Loopinn publishes a planned block only after you confirm that event.</string>
 </dict></plist>
 PLIST
 echo "$app_dir"

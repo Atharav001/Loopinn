@@ -3,6 +3,26 @@ import XCTest
 @testable import LoopinnCore
 
 final class WorkspaceServiceTests: XCTestCase {
+    func testCaptureRejectsBlankAndKeepsSeparateLines() throws {
+        var workspace = Workspace()
+        let listID = workspace.lists[0].id
+        let service = WorkspaceService()
+        XCTAssertThrowsError(try service.captureTasks("  \n ", listID: listID, in: &workspace))
+        XCTAssertTrue(workspace.tasks.isEmpty)
+        try service.captureTasks("First\n\n Second ", listID: listID, in: &workspace)
+        XCTAssertEqual(workspace.tasks.map(\.title), ["First", "Second"])
+    }
+
+    func testIndependentBlockCanMoveAndResizeWithoutTask() throws {
+        var workspace = Workspace()
+        let service = WorkspaceService()
+        let start = Date(timeIntervalSince1970: 123_456)
+        try service.createBlock(title: "Reading", startAt: start, endAt: start.addingTimeInterval(1800), in: &workspace)
+        let id = try XCTUnwrap(workspace.blocks.first?.id)
+        try service.updateBlock(id, title: "Writing", startAt: start.addingTimeInterval(900), endAt: start.addingTimeInterval(2700), in: &workspace)
+        XCTAssertEqual(workspace.blocks.first?.title, "Writing")
+        XCTAssertTrue(workspace.tasks.isEmpty)
+    }
     func testScheduleUpdatesOneBlockAndRemovalKeepsTask() throws {
         let service = WorkspaceService()
         var workspace = Workspace()
