@@ -1,0 +1,20 @@
+name: macOS build
+on:
+  push:
+    branches: [main, "feat/**"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and test
+        run: swift test --disable-sandbox
+      - name: Package app
+        run: sh scripts/build-app.sh
+      - name: Upload app
+        uses: actions/upload-artifact@v4
+        with:
+          name: Loopinn-macOS
+          path: dist/Loopinn.app

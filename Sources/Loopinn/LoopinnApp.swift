@@ -6,8 +6,10 @@ import SwiftUI
 final class AppState: ObservableObject {
     @Published private(set) var workspace: Workspace
     @Published var errorMessage: String?
+    @Published private(set) var canUndo = false
     private let service = WorkspaceService()
     private let fileURL: URL
+    private var previousWorkspace: Workspace?
 
     init() {
         let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -27,7 +29,54 @@ final class AppState: ObservableObject {
     }
 
     func addTask(_ title: String) {
-        mutate { try service.addTask(to: &$0, title: title, listID: $0.lists[0].id) }
+        guard let listID = workspace.lists.first?.id else { errorMessage = "No task list is available."; return }
+        addTask(title, to: listID)
+    }
+
+    func addTask(_ title: String, to listID: UUID) {
+        mutate { try service.addTask(to: &$0, title: title, listID: listID) }
+    }
+
+    func addList(_ name: String) {
+        mutate { try service.addList(named: name, to: &$0) }
+    }
+
+    func renameList(_ list: TaskList, to name: String) {
+        mutate { try service.renameList(list.id, to: name, in: &$0) }
+    }
+
+    func deleteList(_ list: TaskList) {
+        guard let destination = workspace.lists.first(where: { $0.id != list.id }) else { errorMessage = "Keep at least one list."; return }
+        mutate { try service.deleteList(list.id, movingTasksTo: destination.id, in: &$0) }
+    }
+
+    func updateTask(_ task: LoopTask, title: String, notes: String, dueAt: Date?, priority: Int?, listID: UUID, isStarred: Bool) {
+        mutate { try service.updateTask(task.id, title: title, notes: notes, dueAt: dueAt, priority: priority, listID: listID, isStarred: isStarred, in: &$0) }
+    }
+
+    func deleteTask(_ task: LoopTask) {
+        mutate { try service.deleteTask(task.id, in: &$0) }
+    }
+
+    func moveList(_ list: TaskList, by offset: Int) {
+        mutate { try service.moveList(list.id, by: offset, in: &$0) }
+    }
+
+    func moveTask(_ task: LoopTask, by offset: Int) {
+        mutate { try service.moveTask(task.id, by: offset, in: &$0) }
+    }
+
+    func undoLastChange() {
+        guard let previousWorkspace else { return }
+        do {
+            try JSONEncoder().encode(previousWorkspace).write(to: fileURL, options: .atomic)
+            workspace = previousWorkspace
+            self.previousWorkspace = nil
+            canUndo = false
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     func toggleTask(_ task: LoopTask) {
@@ -44,6 +93,8 @@ final class AppState: ObservableObject {
             try change(&draft)
             let data = try JSONEncoder().encode(draft)
             try data.write(to: fileURL, options: .atomic)
+            previousWorkspace = workspace
+            canUndo = true
             workspace = draft
             errorMessage = nil
         } catch {

@@ -3,6 +3,64 @@ import Foundation
 public struct WorkspaceService: Sendable {
     public init() {}
 
+    public func addList(named name: String, to workspace: inout Workspace) throws {
+        let clean = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.isEmpty else { throw WorkspaceError.emptyListName }
+        workspace.lists.append(TaskList(name: clean, order: workspace.lists.count))
+    }
+
+    public func renameList(_ id: UUID, to name: String, in workspace: inout Workspace) throws {
+        let clean = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.isEmpty else { throw WorkspaceError.emptyListName }
+        guard let index = workspace.lists.firstIndex(where: { $0.id == id }) else { throw WorkspaceError.missingList }
+        workspace.lists[index].name = clean
+    }
+
+    public func deleteList(_ id: UUID, movingTasksTo destinationID: UUID, in workspace: inout Workspace) throws {
+        guard workspace.lists.count > 1 else { throw WorkspaceError.lastList }
+        guard id != destinationID, workspace.lists.contains(where: { $0.id == id }), workspace.lists.contains(where: { $0.id == destinationID }) else { throw WorkspaceError.missingList }
+        for index in workspace.tasks.indices where workspace.tasks[index].listID == id {
+            workspace.tasks[index].listID = destinationID
+        }
+        workspace.lists.removeAll { $0.id == id }
+        for index in workspace.lists.indices { workspace.lists[index].order = index }
+    }
+
+    public func moveList(_ id: UUID, by offset: Int, in workspace: inout Workspace) throws {
+        guard let index = workspace.lists.firstIndex(where: { $0.id == id }) else { throw WorkspaceError.missingList }
+        let destination = index + offset
+        guard workspace.lists.indices.contains(destination) else { throw WorkspaceError.invalidMove }
+        workspace.lists.swapAt(index, destination)
+        for index in workspace.lists.indices { workspace.lists[index].order = index }
+    }
+
+    public func moveTask(_ id: UUID, by offset: Int, in workspace: inout Workspace) throws {
+        guard let index = workspace.tasks.firstIndex(where: { $0.id == id }) else { throw WorkspaceError.missingTask }
+        let listID = workspace.tasks[index].listID
+        let peers = workspace.tasks.indices.filter { workspace.tasks[$0].listID == listID }
+        guard let peerIndex = peers.firstIndex(of: index), peers.indices.contains(peerIndex + offset) else { throw WorkspaceError.invalidMove }
+        workspace.tasks.swapAt(index, peers[peerIndex + offset])
+    }
+
+    public func updateTask(_ taskID: UUID, title: String, notes: String, dueAt: Date?, priority: Int?, listID: UUID, isStarred: Bool, in workspace: inout Workspace) throws {
+        let clean = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.isEmpty else { throw WorkspaceError.emptyTitle }
+        guard workspace.lists.contains(where: { $0.id == listID }) else { throw WorkspaceError.missingList }
+        guard let index = workspace.tasks.firstIndex(where: { $0.id == taskID }) else { throw WorkspaceError.missingTask }
+        workspace.tasks[index].title = clean
+        workspace.tasks[index].notes = notes
+        workspace.tasks[index].dueAt = dueAt
+        workspace.tasks[index].priority = priority
+        workspace.tasks[index].listID = listID
+        workspace.tasks[index].isStarred = isStarred
+    }
+
+    public func deleteTask(_ taskID: UUID, in workspace: inout Workspace) throws {
+        guard workspace.tasks.contains(where: { $0.id == taskID }) else { throw WorkspaceError.missingTask }
+        workspace.tasks.removeAll { $0.id == taskID }
+        workspace.blocks.removeAll { $0.taskID == taskID }
+    }
+
     public func addTask(to workspace: inout Workspace, title: String, listID: UUID) throws {
         let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanTitle.isEmpty else { throw WorkspaceError.emptyTitle }
