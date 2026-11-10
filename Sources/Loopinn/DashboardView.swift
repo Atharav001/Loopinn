@@ -26,6 +26,8 @@ struct MenuContent: View {
         }
         .padding(16)
         .frame(width: 280)
+        .preferredColorScheme(state.settings.theme.colorScheme)
+        .tint(state.settings.accent.color)
     }
 
     private func add() {
@@ -87,7 +89,7 @@ struct DashboardView: View {
                 case .analytics:
                     ContentUnavailableView("No activity yet", systemImage: "chart.bar", description: Text("Reports will use recorded activity, separate from planned time."))
                 case .settings:
-                    ContentUnavailableView("Settings", systemImage: "gearshape", description: Text("Preferences and integrations will appear here."))
+                    settingsContent
                 }
                 Spacer(minLength: 0)
             }
@@ -105,6 +107,8 @@ struct DashboardView: View {
         .sheet(item: $taskToEdit) { task in
             TaskDetailSheet(task: task, state: state)
         }
+        .preferredColorScheme(state.settings.theme.colorScheme)
+        .tint(state.settings.accent.color)
         .alert("Rename list", isPresented: Binding(get: { renamingList != nil }, set: { if !$0 { renamingList = nil } })) {
             TextField("List name", text: $renamedListName)
             Button("Save") {
@@ -197,6 +201,36 @@ struct DashboardView: View {
         }
     }
 
+    private var settingsContent: some View {
+        Form {
+            Section("Appearance") {
+                Picker("Theme", selection: Binding(
+                    get: { state.settings.theme },
+                    set: { state.setTheme($0) }
+                )) {
+                    Text("System").tag(ThemeMode.system)
+                    Text("Light").tag(ThemeMode.light)
+                    Text("Dark").tag(ThemeMode.dark)
+                }
+                Picker("Accent", selection: Binding(
+                    get: { state.settings.accent },
+                    set: { state.setAccent($0) }
+                )) {
+                    ForEach(AccentChoice.allCases) { accent in
+                        Text(accent.rawValue.capitalized).tag(accent)
+                    }
+                }
+                Button("Reset Appearance") { state.resetAppearance() }
+            }
+            Section("About this build") {
+                Text("Tasks and planning are stored locally. Cloud sync and calendar integrations are still in development.")
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .frame(maxWidth: 620)
+    }
+
     private func addTask() {
         state.addTask(taskTitle, to: selectedListID ?? state.workspace.lists[0].id)
         if state.errorMessage == nil { taskTitle = "" }
@@ -209,6 +243,27 @@ struct DashboardView: View {
     private func addList() {
         state.addList(newListName)
         if state.errorMessage == nil { newListName = "" }
+    }
+}
+
+private extension ThemeMode {
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
+        }
+    }
+}
+
+private extension AccentChoice {
+    var color: Color {
+        switch self {
+        case .blue: .blue
+        case .indigo: .indigo
+        case .teal: .teal
+        case .orange: .orange
+        }
     }
 }
 

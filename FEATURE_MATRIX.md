@@ -5,7 +5,7 @@
 |---|---|---|---|---|---|
 | FR-41 | P01 | Menu-bar command center | IN REVIEW | `0390e4d` | Menu bar and dashboard route compile; full command set and UI smoke pending. |
 | FR-42 | P01 | Floating panel system | UNVERIFIED | — | — |
-| FR-43 | P01 | Themes & customization | UNVERIFIED | — | — |
+| FR-43 | P01 | Themes & customization | IN REVIEW | P01-FR43 branch | Theme and accent choices persist and apply to dashboard/menu; broader appearance toggles and UI smoke pending. |
 | FR-46 | P01 | Keyboard & quick actions | UNVERIFIED | — | — |
 | FR-47 | P01 | Onboarding & tutorials | UNVERIFIED | — | — |
 | FR-51 | P01 | Privacy, backup & restore | UNVERIFIED | — | — |
