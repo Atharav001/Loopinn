@@ -6,7 +6,7 @@
 **CI status:** PR #5 and #6 passed macOS checks before merge; current branch CI pending  
 **Latest packaged build:** Local unsigned `dist/Loopinn.app` built after a clean package build; Info.plist lint passed  
 **Current ticket:** P01-FR42/46/47/51 shell implementation; local build, package and 13/13 checks pass; PR #7 open  
-**Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent for selective-reuse audit; Android target and signed release setup do not exist.
+**Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent; no code from them is being reused. Android target and signed release setup do not exist.
 
 ## Completion counters
 - Selected scope: **51 features**.
@@ -24,7 +24,7 @@ Do **not** equate lines of code, commits, passing unit tests or phase starts wit
 ## Phase board
 | Phase | Scope | Status | Completed / Total FRs | Exit gate | Latest PR |
 |---|---|---|---|---|---|
-| P00 | Baseline, repo audit & decisions | IN PROGRESS | 0 / 0 | Clean macOS baseline verified; source-reuse audit limited | Audit PR pending |
+| P00 | Baseline, repo audit & decisions | IN REVIEW | 0 / 0 | Current source inventory, no-reuse decision, macOS baseline and ADRs recorded; missing source trees cannot be audited | PR #4; PR #7 adds issue template |
 | P01 | App shell, design system, settings & CI | IN REVIEW | 0 / 6 | Six feature slices compile; UI smoke, panel behavior, global actions and privacy review pending | PR #5, #6, #7 |
 | P02 | Tasks & internal scheduling | IN PROGRESS | 0 / 7 | Tasks and attachments partial | PR #3 merged |
 | P03 | Calendar & external provider integrations | UNVERIFIED | ? / 5 | Not verified | — |
