@@ -8,7 +8,7 @@
 ## 10 November 2026 — P01 app shell, panels and local data controls (in review)
 - Added a native Today surface with summary cards, a single floating task panel with pin/position settings, a command palette, ⌘K/⌘N and direct navigation shortcuts, and a skippable welcome flow.
 - Added persistent compact layout, Today plan visibility, panel pinning and Dock icon preferences. Added local backup export/restore containing attachments and settings, validation before restore, a safety backup, and confirmed local erase.
-- Local Swift build, unsigned app package and 13/13 checks pass. Runtime UI, accessibility, multi-display panel behavior and import/export through macOS dialogs remain pending. Rollback: revert this branch; existing workspace schema is unchanged.
+- Local Swift build, unsigned app package and 13/13 checks pass. The packaged app launched and stayed running on macOS. Interactive UI, accessibility, multi-display panel behavior and import/export through macOS dialogs remain pending. Rollback: revert this branch; existing workspace schema is unchanged.
 
 ## 10 November 2026 — P01-FR43 appearance settings (in review)
 - Added typed, versioned theme and accent settings with immediate dashboard/menu application and reset controls.

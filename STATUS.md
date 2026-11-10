@@ -4,7 +4,7 @@
 **Repository:** [Atharav001/Loopinn](https://github.com/Atharav001/Loopinn), public  
 **Baseline SHA:** `3170cc6` on `main`; current branch `feat/p01-shell-experience`  
 **CI status:** PR #5 and #6 passed macOS checks before merge; current branch CI pending  
-**Latest packaged build:** Local unsigned `dist/Loopinn.app` built after a clean package build; Info.plist lint passed  
+**Latest packaged build:** Local unsigned `dist/Loopinn.app` built, Info.plist lint passed and app launched as a live macOS process  
 **Current ticket:** P01-FR42/46/47/51 shell implementation; local build, package and 13/13 checks pass; PR #7 open  
 **Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent; no code from them is being reused. Android target and signed release setup do not exist.
 
