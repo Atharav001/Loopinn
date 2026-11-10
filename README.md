@@ -16,6 +16,6 @@ Requires macOS 15 or later and Swift 6 / Xcode 26.
 swift run --disable-sandbox Loopinn
 ```
 
-Local data is stored at `~/Library/Application Support/Loopinn/workspace.json`.
+Local data is stored in SQLite at `~/Library/Application Support/Loopinn/loopinn.sqlite3`. On first launch after upgrading, Loopinn imports the prior `workspace.json` and leaves that file in place as a backup.
 
 To build a macOS app bundle for local use, run `sh scripts/build-app.sh`. The output is `dist/Loopinn.app`. This development bundle is unsigned and has not been notarized.

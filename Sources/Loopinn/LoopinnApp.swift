@@ -8,23 +8,19 @@ final class AppState: ObservableObject {
     @Published var errorMessage: String?
     @Published private(set) var canUndo = false
     private let service = WorkspaceService()
-    private let fileURL: URL
+    private var database: WorkspaceDatabase?
     private var previousWorkspace: Workspace?
 
     init() {
         let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Loopinn", isDirectory: true)
-        fileURL = directory.appendingPathComponent("workspace.json")
         do {
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            if FileManager.default.fileExists(atPath: fileURL.path) {
-                workspace = try JSONDecoder().decode(Workspace.self, from: Data(contentsOf: fileURL))
-            } else {
-                workspace = Workspace()
-            }
+            let database = try WorkspaceDatabase(directory: directory)
+            workspace = try database.load()
+            self.database = database
         } catch {
             workspace = Workspace()
-            errorMessage = "Saved data could not be opened: \(error.localizedDescription)"
+            errorMessage = "Saved data could not be opened. Editing is disabled to protect it: \(error.localizedDescription)"
         }
     }
 
@@ -67,9 +63,9 @@ final class AppState: ObservableObject {
     }
 
     func undoLastChange() {
-        guard let previousWorkspace else { return }
+        guard let previousWorkspace, let database else { return }
         do {
-            try JSONEncoder().encode(previousWorkspace).write(to: fileURL, options: .atomic)
+            try database.save(previousWorkspace)
             workspace = previousWorkspace
             self.previousWorkspace = nil
             canUndo = false
@@ -88,11 +84,14 @@ final class AppState: ObservableObject {
     }
 
     private func mutate(_ change: (inout Workspace) throws -> Void) {
+        guard let database else {
+            errorMessage = "The local database is unavailable. Editing is disabled to protect saved data."
+            return
+        }
         var draft = workspace
         do {
             try change(&draft)
-            let data = try JSONEncoder().encode(draft)
-            try data.write(to: fileURL, options: .atomic)
+            try database.save(draft)
             previousWorkspace = workspace
             canUndo = true
             workspace = draft
