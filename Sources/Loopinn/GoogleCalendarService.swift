@@ -74,7 +74,7 @@ final class GoogleCalendarService {
             "client_id": clientID, "code": code, "code_verifier": verifier,
             "redirect_uri": redirect, "grant_type": "authorization_code"
         ])
-        token = GoogleToken(accessToken: response.access_token, refreshToken: response.refresh_token ?? "",
+        token = GoogleToken(accessToken: response.access_token, refreshToken: response.refresh_token ?? token?.refreshToken ?? "",
                             expiresAt: .now.addingTimeInterval(Double(response.expires_in)))
         try saveToken()
     }
@@ -105,7 +105,7 @@ final class GoogleCalendarService {
         var result: [ExternalCalendarEvent] = []
         var page: String?
         for _ in 0..<50 {
-            var parts = URLComponents(string: "https://www.googleapis.com/calendar/v3/calendars/\(calendarID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? calendarID)/events")!
+            var parts = URLComponents(string: "https://www.googleapis.com/calendar/v3/calendars/\(encodedCalendarID(calendarID))/events")!
             parts.queryItems = [URLQueryItem(name: "timeMin", value: ISO8601DateFormatter().string(from: start)),
                                 URLQueryItem(name: "timeMax", value: ISO8601DateFormatter().string(from: end)),
                                 URLQueryItem(name: "singleEvents", value: "true"), URLQueryItem(name: "maxResults", value: "250")]
@@ -127,7 +127,7 @@ final class GoogleCalendarService {
     func publish(block: CalendarBlock, title: String, calendarID: String, clientID: String) async throws -> ExternalCalendarLink {
         let eventID = block.externalLinks?.first(where: { $0.provider == "google" && $0.calendarID == calendarID })?.eventID
             ?? "loopinn" + block.id.uuidString.replacingOccurrences(of: "-", with: "").lowercased()
-        let calendarPath = calendarID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? calendarID
+        let calendarPath = encodedCalendarID(calendarID)
         let url = URL(string: "https://www.googleapis.com/calendar/v3/calendars/\(calendarPath)/events\(block.externalLinks?.contains(where: { $0.provider == "google" && $0.calendarID == calendarID }) == true ? "/\(eventID)" : "")")!
         let body: [String: Any] = ["id": eventID, "summary": title,
                                    "start": ["dateTime": ISO8601DateFormatter().string(from: block.startAt)],
@@ -211,6 +211,11 @@ final class GoogleCalendarService {
         var bytes = [UInt8](repeating: 0, count: 32)
         _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
         return Data(bytes).base64URLEncodedString()
+    }
+
+    private func encodedCalendarID(_ id: String) -> String {
+        let allowed = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
+        return id.addingPercentEncoding(withAllowedCharacters: allowed) ?? id
     }
 }
 

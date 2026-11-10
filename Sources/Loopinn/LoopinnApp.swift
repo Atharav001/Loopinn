@@ -22,6 +22,10 @@ final class AppState: ObservableObject {
     private let pomodoroStore = PomodoroStore()
     private let appleCalendar = AppleCalendarService()
     private let googleCalendar = GoogleCalendarService()
+    private var appleLoadedRange: DateInterval?
+    private var googleLoadedRange: DateInterval?
+    private var googleRefreshInFlight = false
+    private var pendingGoogleDate: Date?
     private var timer: Timer?
     private var settingsWritable = true
     private var database: WorkspaceDatabase?
@@ -76,7 +80,7 @@ final class AppState: ObservableObject {
         }
     }
 
-    func refreshAppleCalendar(around date: Date = .now) {
+    func refreshAppleCalendar(around date: Date = .now, force: Bool = false) {
         guard appleCalendar.isAuthorized else {
             appleCalendarConnected = false
             appleEvents = []
@@ -85,10 +89,14 @@ final class AppState: ObservableObject {
         }
         appleCalendarConnected = true
         appleCalendars = appleCalendar.calendars()
+        if !force, appleLoadedRange?.contains(date) == true { return }
         let calendar = Calendar.current
         let start = calendar.date(byAdding: .month, value: -1, to: date) ?? date
         let end = calendar.date(byAdding: .month, value: 13, to: date) ?? date
-        do { appleEvents = try appleCalendar.events(from: start, to: end) }
+        do {
+            appleEvents = try appleCalendar.events(from: start, to: end)
+            appleLoadedRange = DateInterval(start: start, end: end)
+        }
         catch { errorMessage = error.localizedDescription }
     }
 
@@ -129,6 +137,7 @@ final class AppState: ObservableObject {
         if visible { hidden.remove(id) } else { hidden.insert(id) }
         draft.hiddenGoogleCalendarIDs = hidden.sorted()
         saveSettings(draft)
+        if visible { refreshGoogleCalendar(force: true) }
     }
 
     func connectGoogleCalendar() {
@@ -151,12 +160,22 @@ final class AppState: ObservableObject {
         } catch { errorMessage = error.localizedDescription }
     }
 
-    func refreshGoogleCalendar(around date: Date = .now) {
+    func refreshGoogleCalendar(around date: Date = .now, force: Bool = false) {
+        guard force || googleLoadedRange?.contains(date) != true else { return }
         Task { await loadGoogleCalendar(around: date) }
     }
 
     private func loadGoogleCalendar(around date: Date) async {
         guard googleCalendar.isConnected, let clientID = settings.googleClientID, !clientID.isEmpty else { return }
+        guard !googleRefreshInFlight else { pendingGoogleDate = date; return }
+        googleRefreshInFlight = true
+        defer {
+            googleRefreshInFlight = false
+            if let pendingGoogleDate {
+                self.pendingGoogleDate = nil
+                Task { await loadGoogleCalendar(around: pendingGoogleDate) }
+            }
+        }
         do {
             let choices = try await googleCalendar.calendars(clientID: clientID)
             googleCalendars = choices
@@ -167,6 +186,7 @@ final class AppState: ObservableObject {
                 events += try await googleCalendar.events(calendarID: choice.id, calendarTitle: choice.title, from: start, to: end, clientID: clientID)
             }
             googleEvents = events
+            googleLoadedRange = DateInterval(start: start, end: end)
         } catch { errorMessage = error.localizedDescription }
     }
 
