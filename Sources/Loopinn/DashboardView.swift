@@ -15,12 +15,22 @@ struct MenuContent: View {
                     .onSubmit(add)
                 Button("Add", action: add)
             }
-            if let task = state.workspace.tasks.first(where: { $0.completedAt == nil }) {
-                Text("Next: \(task.title)").font(.caption)
+            if let task = state.nextTask {
+                Text("Next: \(task.title)").font(.caption).lineLimit(2)
+                Button("Complete Next Task", systemImage: "checkmark.circle") {
+                    state.toggleTask(task)
+                }
+            } else {
+                Text("No open tasks").font(.caption).foregroundStyle(.secondary)
             }
-            Button("Open Dashboard") {
-                openWindow(id: "dashboard")
-                NSApp.activate(ignoringOtherApps: true)
+            Divider()
+            Button("Open Today", systemImage: "sun.max") { show(.today) }
+            Button("Open Tasks", systemImage: "checklist") { show(.tasks) }
+            Button("Open Planner", systemImage: "calendar") { show(.planner) }
+            Divider()
+            Text("Local data only").font(.caption).foregroundStyle(.secondary)
+            if let error = state.errorMessage {
+                Text(error).font(.caption).foregroundStyle(.red).lineLimit(3)
             }
             Button("Quit Loopinn") { NSApp.terminate(nil) }
         }
@@ -34,9 +44,15 @@ struct MenuContent: View {
         state.addTask(quickTitle)
         if state.errorMessage == nil { quickTitle = "" }
     }
+
+    private func show(_ page: DashboardPage) {
+        state.selectedPage = page
+        openWindow(id: "dashboard")
+        NSApp.activate(ignoringOtherApps: true)
+    }
 }
 
-private enum Page: String, CaseIterable, Identifiable {
+enum DashboardPage: String, CaseIterable, Identifiable {
     case today = "Today", tasks = "Tasks", planner = "Planner", focus = "Focus", analytics = "Analytics", settings = "Settings"
     var id: Self { self }
     var icon: String {
@@ -53,7 +69,6 @@ private enum Page: String, CaseIterable, Identifiable {
 
 struct DashboardView: View {
     @ObservedObject var state: AppState
-    @State private var page: Page = .today
     @State private var taskTitle = ""
     @State private var selectedTask: LoopTask?
     @State private var taskToEdit: LoopTask?
@@ -65,7 +80,7 @@ struct DashboardView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(Page.allCases, selection: $page) { item in
+            List(DashboardPage.allCases, selection: $state.selectedPage) { item in
                 Label(item.rawValue, systemImage: item.icon).tag(item)
             }
             .navigationTitle("Loopinn")
@@ -73,13 +88,13 @@ struct DashboardView: View {
         } detail: {
             VStack(alignment: .leading, spacing: 20) {
                 HStack {
-                    Text(page.rawValue).font(.largeTitle.bold())
+                    Text(state.selectedPage.rawValue).font(.largeTitle.bold())
                     Spacer()
                     Button("Undo", systemImage: "arrow.uturn.backward") { state.undoLastChange() }
                         .disabled(!state.canUndo)
                         .keyboardShortcut("z", modifiers: .command)
                 }
-                switch page {
+                switch state.selectedPage {
                 case .today, .tasks:
                     taskContent
                 case .planner:

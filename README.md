@@ -7,6 +7,7 @@ Loopinn is an offline-first productivity app for macOS. It brings tasks, plannin
 The current development slice includes a menu bar launch, an on-demand dashboard, local task capture and completion, task lists, task details, and task-linked internal calendar blocks. Tasks support notes, due dates, priorities, stars, ordering, moving between lists, file attachments, and one-step undo. Scheduling needs both start and end times; changing a schedule updates its existing block. No external calendar write occurs from these actions.
 
 The dashboard Settings page applies a System, Light or Dark theme and one of four accent colors immediately; these choices persist across launches and can be reset.
+The menu bar offers quick capture, completion of the next open task, and direct routes to Today, Tasks and Planner. Its status label reflects the current local-only build.
 
 Focus, analytics, integrations, widgets, and the Android companion remain planned work. The notch is a separate optional final phase and has no implementation in this repository.
 

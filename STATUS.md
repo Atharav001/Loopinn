@@ -5,7 +5,7 @@
 **Baseline SHA:** `2aa1509` on `main`; audit branch `feat/aud-01-baseline`  
 **CI status:** PR #3 had two passing macOS build jobs before merge  
 **Latest packaged build:** Local unsigned `dist/Loopinn.app` built after a clean package build; Info.plist lint passed  
-**Current ticket:** P01-FR43 appearance settings, IN REVIEW on feature branch  
+**Current ticket:** P01-FR43 appearance settings integrated with FR-41 menu-bar command center  
 **Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent for selective-reuse audit; Android target and signed release setup do not exist.
 
 ## Completion counters
@@ -35,8 +35,8 @@ Do **not** equate lines of code, commits, passing unit tests or phase starts wit
 | P08 | Optional notch integration — LAST | UNVERIFIED | ? / 4 | Not verified | — |
 
 ## Current sprint / next action
-- **Current:** P01-FR43 — typed theme/accent settings and live dashboard controls implemented on a separate branch. Eight unit checks and release bundle build pass; runtime UI inspection and broader customization controls remain outstanding. P01-FR41 PR #5 is still awaiting GitHub runners.
-- **Next engineering ticket:** P01-FR46 keyboard and quick actions, then remaining P01 shell work and P02 task workflows.
+- **Current:** P01-FR41 and P01-FR43 code integrated on the appearance branch. Menu routing and typed theme/accent settings compile; runtime UI evidence and broader P01 controls remain outstanding.
+- **Next engineering ticket:** Complete P01 floating panels, keyboard actions, onboarding and privacy controls.
 - **Notch:** P08 remains absent; user previously directed a pause before implementing it.
 
 ## Agent update template (append after every merged ticket)
