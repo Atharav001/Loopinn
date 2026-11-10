@@ -6,8 +6,10 @@ import SwiftUI
 final class AppState: ObservableObject {
     @Published private(set) var workspace: Workspace
     @Published var errorMessage: String?
+    @Published private(set) var canUndo = false
     private let service = WorkspaceService()
     private let fileURL: URL
+    private var previousWorkspace: Workspace?
 
     init() {
         let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -56,6 +58,27 @@ final class AppState: ObservableObject {
         mutate { try service.deleteTask(task.id, in: &$0) }
     }
 
+    func moveList(_ list: TaskList, by offset: Int) {
+        mutate { try service.moveList(list.id, by: offset, in: &$0) }
+    }
+
+    func moveTask(_ task: LoopTask, by offset: Int) {
+        mutate { try service.moveTask(task.id, by: offset, in: &$0) }
+    }
+
+    func undoLastChange() {
+        guard let previousWorkspace else { return }
+        do {
+            try JSONEncoder().encode(previousWorkspace).write(to: fileURL, options: .atomic)
+            workspace = previousWorkspace
+            self.previousWorkspace = nil
+            canUndo = false
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     func toggleTask(_ task: LoopTask) {
         mutate { try service.setCompleted(task.completedAt == nil, taskID: task.id, in: &$0) }
     }
@@ -70,6 +93,8 @@ final class AppState: ObservableObject {
             try change(&draft)
             let data = try JSONEncoder().encode(draft)
             try data.write(to: fileURL, options: .atomic)
+            previousWorkspace = workspace
+            canUndo = true
             workspace = draft
             errorMessage = nil
         } catch {

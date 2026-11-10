@@ -75,6 +75,7 @@ public enum WorkspaceError: LocalizedError, Sendable {
     case invalidInterval
     case emptyListName
     case lastList
+    case invalidMove
 
     public var errorDescription: String? {
         switch self {
@@ -85,6 +86,7 @@ public enum WorkspaceError: LocalizedError, Sendable {
         case .invalidInterval: "The end time must be after the start time."
         case .emptyListName: "Enter a list name."
         case .lastList: "Keep at least one list."
+        case .invalidMove: "This item cannot move further."
         }
     }
 }

@@ -4,7 +4,7 @@ Loopinn is an offline-first productivity app for macOS. It brings tasks, plannin
 
 ## Current implementation
 
-The current development slice includes a menu bar launch, an on-demand dashboard, local task capture and completion, task lists, task details, and task-linked internal calendar blocks. Tasks support notes, due dates, priorities, stars, and moving between lists. Scheduling needs both start and end times; changing a schedule updates its existing block. No external calendar write occurs from these actions.
+The current development slice includes a menu bar launch, an on-demand dashboard, local task capture and completion, task lists, task details, and task-linked internal calendar blocks. Tasks support notes, due dates, priorities, stars, ordering, moving between lists, and one-step undo. Scheduling needs both start and end times; changing a schedule updates its existing block. No external calendar write occurs from these actions.
 
 Focus, analytics, integrations, widgets, and the Android companion remain planned work. The notch is a separate optional final phase and has no implementation in this repository.
 
@@ -17,3 +17,5 @@ swift run --disable-sandbox Loopinn
 ```
 
 Local data is stored at `~/Library/Application Support/Loopinn/workspace.json`.
+
+To build a macOS app bundle for local use, run `sh scripts/build-app.sh`. The output is `dist/Loopinn.app`. This development bundle is unsigned and has not been notarized.

@@ -38,4 +38,21 @@ final class WorkspaceServiceTests: XCTestCase {
         XCTAssertEqual(workspace.tasks.first?.listID, inboxID)
         XCTAssertEqual(workspace.tasks.first?.dueAt != nil, true)
     }
+
+    func testTaskAndListReorderingPreserveOwnership() throws {
+        let service = WorkspaceService()
+        var workspace = Workspace()
+        let inboxID = try XCTUnwrap(workspace.lists.first?.id)
+        try service.addList(named: "Work", to: &workspace)
+        let workID = try XCTUnwrap(workspace.lists.last?.id)
+        try service.addTask(to: &workspace, title: "First", listID: inboxID)
+        try service.addTask(to: &workspace, title: "Work item", listID: workID)
+        try service.addTask(to: &workspace, title: "Second", listID: inboxID)
+        let secondID = try XCTUnwrap(workspace.tasks.last?.id)
+        try service.moveTask(secondID, by: -1, in: &workspace)
+        XCTAssertEqual(workspace.tasks.filter { $0.listID == inboxID }.map(\.title), ["Second", "First"])
+        XCTAssertEqual(workspace.tasks.filter { $0.listID == workID }.map(\.title), ["Work item"])
+        try service.moveList(workID, by: -1, in: &workspace)
+        XCTAssertEqual(workspace.lists.first?.id, workID)
+    }
 }

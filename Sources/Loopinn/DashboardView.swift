@@ -69,7 +69,13 @@ struct DashboardView: View {
             .frame(minWidth: 200)
         } detail: {
             VStack(alignment: .leading, spacing: 20) {
-                Text(page.rawValue).font(.largeTitle.bold())
+                HStack {
+                    Text(page.rawValue).font(.largeTitle.bold())
+                    Spacer()
+                    Button("Undo", systemImage: "arrow.uturn.backward") { state.undoLastChange() }
+                        .disabled(!state.canUndo)
+                        .keyboardShortcut("z", modifiers: .command)
+                }
                 switch page {
                 case .today, .tasks:
                     taskContent
@@ -126,6 +132,10 @@ struct DashboardView: View {
                 }
                 .frame(maxWidth: 250)
                 if let list = state.workspace.lists.first(where: { $0.id == selectedListID }) {
+                    Button("Move List Up", systemImage: "arrow.up") { state.moveList(list, by: -1) }
+                        .disabled(state.workspace.lists.first?.id == list.id)
+                    Button("Move List Down", systemImage: "arrow.down") { state.moveList(list, by: 1) }
+                        .disabled(state.workspace.lists.last?.id == list.id)
                     Button("Rename") {
                         renamedListName = list.name
                         renamingList = list
@@ -157,6 +167,10 @@ struct DashboardView: View {
                         Spacer()
                         if let due = task.dueAt { Text(due, style: .date).foregroundStyle(.secondary) }
                         if task.startAt != nil { Image(systemName: "calendar").foregroundStyle(.secondary) }
+                        Button("Move Up", systemImage: "arrow.up") { state.moveTask(task, by: -1) }
+                            .disabled(visibleTasks.first(where: { $0.listID == task.listID })?.id == task.id)
+                        Button("Move Down", systemImage: "arrow.down") { state.moveTask(task, by: 1) }
+                            .disabled(visibleTasks.last(where: { $0.listID == task.listID })?.id == task.id)
                         Button("Details") { taskToEdit = task }
                         Button("Schedule") { selectedTask = task }
                     }

@@ -26,6 +26,22 @@ public struct WorkspaceService: Sendable {
         for index in workspace.lists.indices { workspace.lists[index].order = index }
     }
 
+    public func moveList(_ id: UUID, by offset: Int, in workspace: inout Workspace) throws {
+        guard let index = workspace.lists.firstIndex(where: { $0.id == id }) else { throw WorkspaceError.missingList }
+        let destination = index + offset
+        guard workspace.lists.indices.contains(destination) else { throw WorkspaceError.invalidMove }
+        workspace.lists.swapAt(index, destination)
+        for index in workspace.lists.indices { workspace.lists[index].order = index }
+    }
+
+    public func moveTask(_ id: UUID, by offset: Int, in workspace: inout Workspace) throws {
+        guard let index = workspace.tasks.firstIndex(where: { $0.id == id }) else { throw WorkspaceError.missingTask }
+        let listID = workspace.tasks[index].listID
+        let peers = workspace.tasks.indices.filter { workspace.tasks[$0].listID == listID }
+        guard let peerIndex = peers.firstIndex(of: index), peers.indices.contains(peerIndex + offset) else { throw WorkspaceError.invalidMove }
+        workspace.tasks.swapAt(index, peers[peerIndex + offset])
+    }
+
     public func updateTask(_ taskID: UUID, title: String, notes: String, dueAt: Date?, priority: Int?, listID: UUID, isStarred: Bool, in workspace: inout Workspace) throws {
         let clean = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !clean.isEmpty else { throw WorkspaceError.emptyTitle }
