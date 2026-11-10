@@ -1,5 +1,6 @@
 import LoopinnCore
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct MenuContent: View {
     @ObservedObject var state: AppState
@@ -223,6 +224,7 @@ private struct TaskDetailSheet: View {
     @State private var listID = UUID()
     @State private var isStarred = false
     @State private var confirmDelete = false
+    @State private var showingImporter = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -243,6 +245,17 @@ private struct TaskDetailSheet: View {
             }
             Text("A due date does not add a calendar block. Use Schedule to set a start and end time.")
                 .font(.caption).foregroundStyle(.secondary)
+            Text("Attachments").font(.headline)
+            ForEach(currentTask.attachments ?? []) { attachment in
+                HStack {
+                    Button(attachment.originalName) { state.openAttachment(attachment) }
+                    Spacer()
+                    Text(ByteCountFormatter.string(fromByteCount: attachment.byteCount, countStyle: .file))
+                        .foregroundStyle(.secondary)
+                    Button("Remove", role: .destructive) { state.removeAttachment(attachment, from: task) }
+                }
+            }
+            Button("Attach File") { showingImporter = true }
             HStack {
                 Button("Delete Task", role: .destructive) { confirmDelete = true }
                 Spacer()
@@ -270,6 +283,16 @@ private struct TaskDetailSheet: View {
                 if state.errorMessage == nil { dismiss() }
             }
         }
+        .fileImporter(isPresented: $showingImporter, allowedContentTypes: [.item]) { result in
+            switch result {
+            case .success(let url): state.addAttachment(to: task, from: url)
+            case .failure(let error): state.errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private var currentTask: LoopTask {
+        state.workspace.tasks.first(where: { $0.id == task.id }) ?? task
     }
 }
 
