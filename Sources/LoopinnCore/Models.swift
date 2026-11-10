@@ -82,10 +82,11 @@ public struct CalendarBlock: Codable, Identifiable, Equatable, Sendable {
     }
 }
 
-public struct ExternalCalendarLink: Codable, Equatable, Sendable {
+public struct ExternalCalendarLink: Codable, Equatable, Identifiable, Sendable {
     public let provider: String
     public let calendarID: String
     public let eventID: String
+    public var id: String { "\(provider)|\(calendarID)|\(eventID)" }
     public init(provider: String, calendarID: String, eventID: String) {
         self.provider = provider
         self.calendarID = calendarID

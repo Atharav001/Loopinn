@@ -18,8 +18,8 @@
 | FR-29 | P02 | Task and time-block planning | IN REVIEW | PR #8 | Linked and independent blocks persist; drag and editor paths compile; approval UX and edge checks pending. |
 | FR-24 | P03 | Day/week/month/year calendar | IN REVIEW | PR #8 | Four views and cross-midnight day filtering compile; UI/timezone checks pending. |
 | FR-25 | P03 | Interactive weekly planner | IN REVIEW | PR #8 | Weekly drag create/move/resize plus date editor compile; gesture/overlap UI checks pending. |
-| FR-26 | P03 | Apple Calendar integration | IN REVIEW | PR #8 | EventKit permission read and per-block confirmed publish compile; live permission/revocation tests pending. |
-| FR-27 | P03 | Google Calendar integration | IN REVIEW | PR #8 | Desktop OAuth PKCE, Keychain, calendar listing, bounded API reads/publish compile; client ID/live acceptance pending. |
+| FR-26 | P03 | Apple Calendar integration | IN REVIEW | PR #8 | EventKit permission read and per-block confirmed publish/remove compile; live permission/revocation tests pending. |
+| FR-27 | P03 | Google Calendar integration | IN REVIEW | PR #8 | Desktop OAuth PKCE, Keychain, calendar listing, bounded API reads/publish/remove compile; client ID/live acceptance pending. |
 | FR-28 | P03 | Calendar filters & holidays | IN REVIEW | PR #8 | Persisted source filters, all-day labels and subscribed regional holiday calendar deduplication; live region acceptance pending. |
 | FR-08 | P04 | Pomodoro timer | IN REVIEW | PR #8 | Persisted deadline, pause/resume, focus/break recovery and cycle tests pass; runtime alert/UI acceptance pending. |
 | FR-09 | P04 | Stopwatch & countdown | UNVERIFIED | — | — |

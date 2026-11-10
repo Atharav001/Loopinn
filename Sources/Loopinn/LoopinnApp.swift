@@ -215,11 +215,30 @@ final class AppState: ObservableObject {
         }
     }
 
+    func unpublishGoogleBlock(_ block: CalendarBlock, link: ExternalCalendarLink) {
+        guard let clientID = settings.googleClientID else { errorMessage = GoogleCalendarError.missingClientID.localizedDescription; return }
+        Task {
+            do {
+                try await googleCalendar.remove(link, clientID: clientID)
+                mutate { try service.removePublishedEvent(link, from: block.id, in: &$0) }
+                refreshGoogleCalendar(around: block.startAt, force: true)
+            } catch { errorMessage = error.localizedDescription }
+        }
+    }
+
     func publishAppleBlock(_ block: CalendarBlock, title: String, calendarID: String) {
         do {
             let link = try appleCalendar.publish(block: block, title: title, calendarID: calendarID)
             mutate { try service.recordPublishedEvent(link, for: block.id, in: &$0) }
             refreshAppleCalendar(around: block.startAt)
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func unpublishAppleBlock(_ block: CalendarBlock, link: ExternalCalendarLink) {
+        do {
+            try appleCalendar.remove(link)
+            mutate { try service.removePublishedEvent(link, from: block.id, in: &$0) }
+            refreshAppleCalendar(around: block.startAt, force: true)
         } catch { errorMessage = error.localizedDescription }
     }
 

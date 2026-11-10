@@ -66,6 +66,12 @@ final class AppleCalendarService {
         guard let eventID = event.eventIdentifier else { throw CalendarIntegrationError.saveFailed }
         return ExternalCalendarLink(provider: "apple", calendarID: calendarID, eventID: eventID)
     }
+
+    func remove(_ link: ExternalCalendarLink) throws {
+        guard isAuthorized else { throw CalendarIntegrationError.permissionDenied }
+        guard let event = store.event(withIdentifier: link.eventID) else { return }
+        try store.remove(event, span: .thisEvent, commit: true)
+    }
 }
 
 enum CalendarIntegrationError: LocalizedError {

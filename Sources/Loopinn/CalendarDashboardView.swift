@@ -320,6 +320,8 @@ private struct BlockEditor: View {
     @State private var publishCalendarID = ""
     @State private var googlePublishCalendarID = ""
     @State private var confirmGooglePublish = false
+    @State private var linkToRemove: ExternalCalendarLink?
+    @State private var confirmUnpublish = false
 
     init(state: AppState, block: CalendarBlock?, start: Date, end: Date) {
         self.state = state
@@ -365,6 +367,17 @@ private struct BlockEditor: View {
                     confirmGooglePublish = true
                 }
             }
+            ForEach(currentLinks) { link in
+                HStack {
+                    Label("Published to \(link.provider.capitalized)", systemImage: "checkmark.circle")
+                        .font(.caption)
+                    Spacer()
+                    Button("Remove Event…", role: .destructive) {
+                        linkToRemove = link
+                        confirmUnpublish = true
+                    }
+                }
+            }
             HStack {
                 if block != nil { Button("Delete", role: .destructive) { confirmDelete = true } }
                 Spacer()
@@ -407,9 +420,26 @@ private struct BlockEditor: View {
         } message: {
             Text("Any event already published to Apple or Google Calendar remains there. Remove it in that calendar if needed.")
         }
+        .confirmationDialog("Remove the published event?", isPresented: $confirmUnpublish) {
+            Button("Remove From Calendar", role: .destructive) {
+                if let block, let linkToRemove {
+                    if linkToRemove.provider == "apple" { state.unpublishAppleBlock(block, link: linkToRemove) }
+                    if linkToRemove.provider == "google" { state.unpublishGoogleBlock(block, link: linkToRemove) }
+                }
+                linkToRemove = nil
+            }
+            Button("Cancel", role: .cancel) { linkToRemove = nil }
+        } message: {
+            Text("This removes the event from \(linkToRemove?.provider.capitalized ?? "the provider") Calendar. Your Loopinn block stays here.")
+        }
     }
 
     private var overlapCount: Int {
         state.workspace.blocks.filter { $0.id != block?.id && $0.startAt < end && $0.endAt > start }.count
+    }
+
+    private var currentLinks: [ExternalCalendarLink] {
+        guard let block else { return [] }
+        return state.workspace.blocks.first(where: { $0.id == block.id })?.externalLinks ?? []
     }
 }

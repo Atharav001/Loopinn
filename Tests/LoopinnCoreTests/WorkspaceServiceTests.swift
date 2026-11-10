@@ -23,6 +23,20 @@ final class WorkspaceServiceTests: XCTestCase {
         XCTAssertEqual(workspace.blocks.first?.title, "Writing")
         XCTAssertTrue(workspace.tasks.isEmpty)
     }
+
+    func testPublishedLinkCanBeRemovedWithoutDeletingLocalBlock() throws {
+        var workspace = Workspace()
+        let service = WorkspaceService()
+        let start = Date(timeIntervalSince1970: 123_456)
+        try service.createBlock(title: "Reading", startAt: start, endAt: start.addingTimeInterval(1800), in: &workspace)
+        let id = try XCTUnwrap(workspace.blocks.first?.id)
+        let link = ExternalCalendarLink(provider: "google", calendarID: "primary", eventID: "event")
+        try service.recordPublishedEvent(link, for: id, in: &workspace)
+        XCTAssertEqual(workspace.blocks[0].externalLinks, [link])
+        try service.removePublishedEvent(link, from: id, in: &workspace)
+        XCTAssertEqual(workspace.blocks.count, 1)
+        XCTAssertTrue(workspace.blocks[0].externalLinks?.isEmpty == true)
+    }
     func testScheduleUpdatesOneBlockAndRemovalKeepsTask() throws {
         let service = WorkspaceService()
         var workspace = Workspace()

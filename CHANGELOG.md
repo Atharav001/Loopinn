@@ -4,9 +4,9 @@
 
 ## 10 November 2026 — P02/P03 macOS feature build and floating focus (in review)
 - Added multi-line paste/drop task capture with documented `!high`, `@tomorrow` and `#ListName` metadata, explainable next-task ranking, first-step/estimate/appearance fields, link attachments, a filtered glass task panel, and independent planner blocks with a backed-up SQLite v2 migration.
-- Added day/week/month/year calendar views, weekly drag create/move/resize, overlap warnings, Apple EventKit read and confirmed publish, Google Desktop OAuth PKCE with Keychain tokens and Calendar API read/publish, source filters, regional holiday calendar display/deduplication, and bounded calendar refresh ranges. Google live connection requires a user-provided Desktop client ID.
+- Added day/week/month/year calendar views, weekly drag create/move/resize, overlap warnings, Apple EventKit read and confirmed publish/remove, Google Desktop OAuth PKCE with Keychain tokens and Calendar API read/publish/remove, source filters, regional holiday calendar display/deduplication, and bounded calendar refresh ranges. Google live connection requires a user-provided Desktop client ID.
 - Added a persisted Pomodoro cycle with a glass always-on-top timer panel. Both extra panels animate into view while honoring Reduce Motion. The notch remains absent.
-- Local build, unsigned app package and 26/26 core checks pass, including the v1→v2 migration backup, capture parser and recommendation ranking checks. Provider permission, OAuth, full UI, multi-display, holiday-region, and packaged runtime acceptance remain pending. Rollback: revert branch and restore the pre-v2 SQLite backup if needed.
+- Local build, unsigned app package and 27/27 core checks pass, including the v1→v2 migration backup, capture parser, recommendation ranking and published-link removal checks. Provider permission, OAuth, full UI, multi-display, holiday-region, and packaged runtime acceptance remain pending. Rollback: revert branch and restore the pre-v2 SQLite backup if needed.
 - PR #8 macOS CI found a stricter Swift concurrency check around EventKit's async permission API. Switched to its completion callback wrapped in a continuation and guarded an early Google OAuth callback. The latest CI build passed on `8240010`.
 
 ## 10 November 2026 — P00 source inventory and issue intake (in review)

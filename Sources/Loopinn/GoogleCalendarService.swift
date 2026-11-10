@@ -141,6 +141,12 @@ final class GoogleCalendarService {
         return ExternalCalendarLink(provider: "google", calendarID: calendarID, eventID: eventID)
     }
 
+    func remove(_ link: ExternalCalendarLink, clientID: String) async throws {
+        let url = URL(string: "https://www.googleapis.com/calendar/v3/calendars/\(encodedCalendarID(link.calendarID))/events/\(link.eventID)")!
+        do { _ = try await request(url, clientID: clientID, method: "DELETE") }
+        catch GoogleCalendarError.api(404) { return }
+    }
+
     private func request(_ url: URL, clientID: String, method: String = "GET", body: Data? = nil) async throws -> Data {
         let access = try await accessToken(clientID: clientID)
         var request = URLRequest(url: url)

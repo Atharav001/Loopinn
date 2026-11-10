@@ -154,4 +154,9 @@ public struct WorkspaceService: Sendable {
         links.append(link)
         workspace.blocks[index].externalLinks = links
     }
+
+    public func removePublishedEvent(_ link: ExternalCalendarLink, from blockID: UUID, in workspace: inout Workspace) throws {
+        guard let index = workspace.blocks.firstIndex(where: { $0.id == blockID }) else { throw WorkspaceError.missingBlock }
+        workspace.blocks[index].externalLinks?.removeAll { $0 == link }
+    }
 }
