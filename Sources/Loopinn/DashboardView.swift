@@ -336,6 +336,14 @@ struct DashboardView: View {
 
     private var settingsContent: some View {
         Form {
+            Section("General") {
+                Toggle("Show Dock Icon", isOn: Binding(
+                    get: { state.settings.showDockIcon == true },
+                    set: { state.setShowDockIcon($0) }
+                ))
+                Text("Loopinn opens from the menu bar by default.")
+                    .foregroundStyle(.secondary)
+            }
             Section("Appearance") {
                 Picker("Theme", selection: Binding(
                     get: { state.settings.theme },

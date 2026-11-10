@@ -21,7 +21,8 @@ final class AppState: ObservableObject {
 
     init() {
         do {
-            settings = try settingsStore.load()
+            let loadedSettings = try settingsStore.load()
+            settings = loadedSettings
         } catch {
             settings = AppSettings()
             settingsWritable = false
@@ -78,6 +79,13 @@ final class AppState: ObservableObject {
         draft.pinFloatingTasks = enabled
         saveSettings(draft)
         if errorMessage == nil { FloatingPanelManager.shared.setPinned(enabled) }
+    }
+
+    func setShowDockIcon(_ enabled: Bool) {
+        var draft = settings
+        draft.showDockIcon = enabled
+        saveSettings(draft)
+        if errorMessage == nil { NSApp.setActivationPolicy(enabled ? .regular : .accessory) }
     }
 
     func completeOnboarding() {
@@ -281,7 +289,8 @@ final class AppState: ObservableObject {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
+        let settings = try? SettingsStore().load()
+        NSApp.setActivationPolicy(settings?.showDockIcon == true ? .regular : .accessory)
     }
 }
 

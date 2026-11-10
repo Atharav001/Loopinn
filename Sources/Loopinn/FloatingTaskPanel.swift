@@ -5,15 +5,16 @@ import SwiftUI
 @MainActor
 final class FloatingPanelManager {
     static let shared = FloatingPanelManager()
-    private var taskPanel: NSPanel?
+    private var panels: [String: NSPanel] = [:]
+    private let tasksID = "tasks"
 
     func setPinned(_ pinned: Bool) {
-        taskPanel?.level = pinned ? .floating : .normal
+        panels[tasksID]?.level = pinned ? .floating : .normal
     }
 
     func showTasks(state: AppState) {
-        if let taskPanel {
-            taskPanel.makeKeyAndOrderFront(nil)
+        if let panel = panels[tasksID] {
+            panel.makeKeyAndOrderFront(nil)
             return
         }
         let panel = NSPanel(
@@ -24,7 +25,7 @@ final class FloatingPanelManager {
         )
         panel.title = "Loopinn Tasks"
         panel.level = state.settings.pinFloatingTasks == false ? .normal : .floating
-        panel.collectionBehavior = [.moveToActiveSpace]
+        panel.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
         panel.isMovableByWindowBackground = true
         panel.isReleasedWhenClosed = false
         panel.minSize = NSSize(width: 300, height: 300)
@@ -37,7 +38,7 @@ final class FloatingPanelManager {
             panel.setFrame(frame, display: false)
         }
         panel.contentView = NSHostingView(rootView: FloatingTasksView(state: state))
-        taskPanel = panel
+        panels[tasksID] = panel
         panel.makeKeyAndOrderFront(nil)
     }
 }

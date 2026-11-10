@@ -18,6 +18,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var compactLayout: Bool?
     public var showTodayPlan: Bool?
     public var pinFloatingTasks: Bool?
+    public var showDockIcon: Bool?
 
     public init(theme: ThemeMode = .system, accent: AccentChoice = .blue) {
         version = 1
@@ -27,6 +28,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         compactLayout = false
         showTodayPlan = true
         pinFloatingTasks = true
+        showDockIcon = false
     }
 }
 
