@@ -15,22 +15,24 @@ final class AppState: ObservableObject {
     private var database: WorkspaceDatabase?
     private var attachmentStore: AttachmentStore?
     private var previousWorkspace: Workspace?
+    private let dataDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("Loopinn", isDirectory: true)
+    var canEditSettings: Bool { settingsWritable }
 
     init() {
         do {
-            settings = try settingsStore.load()
+            let loadedSettings = try settingsStore.load()
+            settings = loadedSettings
         } catch {
             settings = AppSettings()
             settingsWritable = false
             errorMessage = "Saved settings could not be opened. Appearance editing is disabled: \(error.localizedDescription)"
         }
-        let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Loopinn", isDirectory: true)
         do {
-            let database = try WorkspaceDatabase(directory: directory)
+            let database = try WorkspaceDatabase(directory: dataDirectory)
             workspace = try database.load()
             self.database = database
-            let attachmentStore = try AttachmentStore(directory: directory)
+            let attachmentStore = try AttachmentStore(directory: dataDirectory)
             self.attachmentStore = attachmentStore
             try? attachmentStore.prune(keeping: workspace.tasks.flatMap { $0.attachments ?? [] })
         } catch {
@@ -54,12 +56,114 @@ final class AppState: ObservableObject {
     }
 
     func resetAppearance() {
-        saveSettings(AppSettings())
+        var draft = settings
+        draft.theme = .system
+        draft.accent = .blue
+        draft.compactLayout = false
+        saveSettings(draft)
+    }
+
+    func setCompactLayout(_ enabled: Bool) {
+        var draft = settings
+        draft.compactLayout = enabled
+        saveSettings(draft)
+    }
+
+    func setShowTodayPlan(_ enabled: Bool) {
+        var draft = settings
+        draft.showTodayPlan = enabled
+        saveSettings(draft)
+    }
+
+    func setPinFloatingTasks(_ enabled: Bool) {
+        var draft = settings
+        draft.pinFloatingTasks = enabled
+        saveSettings(draft)
+        if errorMessage == nil { FloatingPanelManager.shared.setPinned(enabled) }
+    }
+
+    func setShowDockIcon(_ enabled: Bool) {
+        var draft = settings
+        draft.showDockIcon = enabled
+        saveSettings(draft)
+        if errorMessage == nil { NSApp.setActivationPolicy(enabled ? .regular : .accessory) }
+    }
+
+    func completeOnboarding() {
+        var draft = settings
+        draft.hasCompletedOnboarding = true
+        saveSettings(draft)
+    }
+
+    func reopenOnboarding() {
+        var draft = settings
+        draft.hasCompletedOnboarding = false
+        saveSettings(draft)
+    }
+
+    func exportBackup(to destination: URL) {
+        guard database != nil else { errorMessage = "The local database is unavailable."; return }
+        do {
+            try WorkspaceBackup.create(workspace: workspace, settings: settings,
+                                       attachmentsDirectory: dataDirectory.appendingPathComponent("attachments"),
+                                       at: destination)
+            errorMessage = nil
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func restoreBackup(from source: URL) {
+        guard let database, settingsWritable else { errorMessage = "Saved data is unavailable to restore."; return }
+        let accessed = source.startAccessingSecurityScopedResource()
+        defer { if accessed { source.stopAccessingSecurityScopedResource() } }
+        do {
+            let snapshot = try WorkspaceBackup.inspect(at: source)
+            let safetyDirectory = dataDirectory.appendingPathComponent("backups", isDirectory: true)
+            try FileManager.default.createDirectory(at: safetyDirectory, withIntermediateDirectories: true)
+            let safetyURL = safetyDirectory.appendingPathComponent("before-restore-\(UUID().uuidString).loopinnbackup", isDirectory: true)
+            try WorkspaceBackup.create(workspace: workspace, settings: settings,
+                                       attachmentsDirectory: dataDirectory.appendingPathComponent("attachments"),
+                                       at: safetyURL)
+            try WorkspaceBackup.installAttachments(from: source, workspace: snapshot.workspace,
+                                                   into: dataDirectory.appendingPathComponent("attachments"))
+            try database.save(snapshot.workspace)
+            do { try settingsStore.save(snapshot.settings) }
+            catch {
+                try? database.save(workspace)
+                throw error
+            }
+            previousWorkspace = workspace
+            canUndo = true
+            workspace = snapshot.workspace
+            settings = snapshot.settings
+            errorMessage = nil
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func eraseLocalData() {
+        guard let database, let attachmentStore, settingsWritable else {
+            errorMessage = "Saved data is unavailable to erase."
+            return
+        }
+        do {
+            let empty = Workspace()
+            var freshSettings = AppSettings()
+            freshSettings.hasCompletedOnboarding = true
+            try database.save(empty)
+            workspace = empty
+            previousWorkspace = nil
+            canUndo = false
+            try attachmentStore.prune(keeping: [])
+            let backups = dataDirectory.appendingPathComponent("backups", isDirectory: true)
+            if FileManager.default.fileExists(atPath: backups.path) { try FileManager.default.removeItem(at: backups) }
+            try settingsStore.save(freshSettings)
+            settings = freshSettings
+            errorMessage = nil
+        } catch { errorMessage = error.localizedDescription }
     }
 
     private func saveSettings(_ draft: AppSettings) {
         guard settingsWritable else {
-            errorMessage = "Appearance settings are unavailable to edit."
+            errorMessage = "Settings are unavailable to edit."
             return
         }
         do {
@@ -186,7 +290,8 @@ final class AppState: ObservableObject {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
+        let settings = try? SettingsStore().load()
+        NSApp.setActivationPolicy(settings?.showDockIcon == true ? .regular : .accessory)
     }
 }
 
@@ -204,5 +309,6 @@ struct LoopinnApp: App {
                 .frame(minWidth: 900, minHeight: 600)
         }
         .defaultLaunchBehavior(.suppressed)
+        .commands { DashboardCommands(state: state) }
     }
 }

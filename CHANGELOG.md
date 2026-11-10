@@ -2,6 +2,14 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 10 November 2026 — P00 source inventory and issue intake (in review)
+- Added an explicit no-reuse matrix for the available source and an issue template for feature acceptance. The archived reference projects have no source trees in this checkout; Android has no target to build.
+
+## 10 November 2026 — P01 app shell, panels and local data controls (in review)
+- Added a native Today surface with summary cards, a single floating task panel with pin/position settings, a command palette, ⌘K/⌘N and direct navigation shortcuts, and a skippable welcome flow.
+- Added persistent compact layout, Today plan visibility, panel pinning and Dock icon preferences. Added local backup export/restore containing attachments and settings, validation before restore, a safety backup, and confirmed local erase.
+- Local Swift build, unsigned app package and 13/13 checks pass. The packaged app launched and stayed running on macOS. Interactive UI, accessibility, multi-display panel behavior and import/export through macOS dialogs remain pending. Rollback: revert this branch; existing workspace schema is unchanged.
+
 ## 10 November 2026 — P01-FR43 appearance settings (in review)
 - Added typed, versioned theme and accent settings with immediate dashboard/menu application and reset controls.
 - Settings persist across store instances; corrupt data is surfaced instead of silently overwritten. Local Swift build and 8/8 checks pass; unsigned app bundle builds.

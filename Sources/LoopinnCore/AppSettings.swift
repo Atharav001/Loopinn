@@ -14,11 +14,21 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var version: Int
     public var theme: ThemeMode
     public var accent: AccentChoice
+    public var hasCompletedOnboarding: Bool?
+    public var compactLayout: Bool?
+    public var showTodayPlan: Bool?
+    public var pinFloatingTasks: Bool?
+    public var showDockIcon: Bool?
 
     public init(theme: ThemeMode = .system, accent: AccentChoice = .blue) {
         version = 1
         self.theme = theme
         self.accent = accent
+        hasCompletedOnboarding = false
+        compactLayout = false
+        showTodayPlan = true
+        pinFloatingTasks = true
+        showDockIcon = false
     }
 }
 

@@ -23,4 +23,17 @@ final class SettingsStoreTests: XCTestCase {
         defaults.set(Data("bad settings".utf8), forKey: "loopinn.settings.v1")
         XCTAssertThrowsError(try SettingsStore(defaults: defaults).load())
     }
+
+    func testOlderAppearanceSettingsLoadWithSafeNewDefaults() throws {
+        let suite = "loopinn-settings-test-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let old = #"{"version":1,"theme":"dark","accent":"teal"}"#
+        defaults.set(Data(old.utf8), forKey: "loopinn.settings.v1")
+        let settings = try SettingsStore(defaults: defaults).load()
+        XCTAssertEqual(settings.theme, .dark)
+        XCTAssertEqual(settings.accent, .teal)
+        XCTAssertNil(settings.showDockIcon)
+        XCTAssertNil(settings.pinFloatingTasks)
+    }
 }

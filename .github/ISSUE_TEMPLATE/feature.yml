@@ -1,0 +1,33 @@
+name: Feature implementation
+description: Track one Loopinn feature through implementation and acceptance.
+title: "[FR-XX] "
+labels: [feature]
+body:
+  - type: input
+    id: requirement
+    attributes:
+      label: Requirement and phase
+      placeholder: "FR-XX, P0X"
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: User behavior and UI states
+      description: Include empty, loading, success, error, permission and offline states where relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Data contract and migration
+      description: Include rollback and backup behavior if persistent data changes.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance evidence
+      description: List tests, macOS runtime checks, screenshots and CI gates.
+    validations:
+      required: true

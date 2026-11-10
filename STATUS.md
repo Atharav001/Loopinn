@@ -1,17 +1,17 @@
 # Build status dashboard
 
-**Last verified update:** 10 November 2026, after PR #3 merge  
+**Last verified update:** 10 November 2026, P01 shell branch  
 **Repository:** [Atharav001/Loopinn](https://github.com/Atharav001/Loopinn), public  
-**Baseline SHA:** `2aa1509` on `main`; audit branch `feat/aud-01-baseline`  
-**CI status:** PR #3 had two passing macOS build jobs before merge  
-**Latest packaged build:** Local unsigned `dist/Loopinn.app` built after a clean package build; Info.plist lint passed  
-**Current ticket:** P01-FR43 appearance settings integrated with FR-41 menu-bar command center  
-**Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent for selective-reuse audit; Android target and signed release setup do not exist.
+**Baseline SHA:** `3170cc6` on `main`; current branch `feat/p01-shell-experience`  
+**CI status:** PR #5 and #6 passed macOS checks before merge; current branch CI pending  
+**Latest packaged build:** Local unsigned `dist/Loopinn.app` built, Info.plist lint passed and app launched as a live macOS process  
+**Current ticket:** P01-FR42/46/47/51 shell implementation; local build, package and 13/13 checks pass; PR #7 open  
+**Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent; no code from them is being reused. Android target and signed release setup do not exist.
 
 ## Completion counters
 - Selected scope: **51 features**.
 - Verified DONE: **0/51** under the full acceptance definition (0.0%).
-- Verified IN REVIEW: **6** (FR-01, FR-03, FR-05, FR-29, FR-41, FR-43); these have partial implementation and missing runtime/edge-case evidence.
+- Verified IN REVIEW: **10** (FR-01, FR-03, FR-05, FR-29, FR-41, FR-42, FR-43, FR-46, FR-47, FR-51); these have partial implementation and missing runtime/edge-case evidence.
 - Verified IN PROGRESS: **1** (FR-02); other feature IDs remain UNVERIFIED/TODO.
 - Verified blocked feature IDs: **0**; the source-reuse audit is limited by missing original repositories.
 - Notch: **optional final P08**, must not be treated as core-complete.
@@ -24,8 +24,8 @@ Do **not** equate lines of code, commits, passing unit tests or phase starts wit
 ## Phase board
 | Phase | Scope | Status | Completed / Total FRs | Exit gate | Latest PR |
 |---|---|---|---|---|---|
-| P00 | Baseline, repo audit & decisions | IN PROGRESS | 0 / 0 | Clean macOS baseline verified; source-reuse audit limited | Audit PR pending |
-| P01 | App shell, design system, settings & CI | IN PROGRESS | 0 / 6 | Menu bar partial; UI smoke/settings pending | — |
+| P00 | Baseline, repo audit & decisions | IN REVIEW | 0 / 0 | Current source inventory, no-reuse decision, macOS baseline and ADRs recorded; missing source trees cannot be audited | PR #4; PR #7 adds issue template |
+| P01 | App shell, design system, settings & CI | IN REVIEW | 0 / 6 | Six feature slices compile; UI smoke, panel behavior, global actions and privacy review pending | PR #5, #6, #7 |
 | P02 | Tasks & internal scheduling | IN PROGRESS | 0 / 7 | Tasks and attachments partial | PR #3 merged |
 | P03 | Calendar & external provider integrations | UNVERIFIED | ? / 5 | Not verified | — |
 | P04 | Timers, prompts & logging | UNVERIFIED | ? / 16 | Not verified | — |
@@ -35,8 +35,8 @@ Do **not** equate lines of code, commits, passing unit tests or phase starts wit
 | P08 | Optional notch integration — LAST | UNVERIFIED | ? / 4 | Not verified | — |
 
 ## Current sprint / next action
-- **Current:** P01-FR41 and P01-FR43 code integrated on the appearance branch. Menu routing and typed theme/accent settings compile; runtime UI evidence and broader P01 controls remain outstanding.
-- **Next engineering ticket:** Complete P01 floating panels, keyboard actions, onboarding and privacy controls.
+- **Current:** P01 menu bar, Today UI, appearance, floating tasks, command palette, onboarding and local backup controls are implemented locally. Runtime UI acceptance is pending.
+- **Next engineering ticket:** Extend panel registry to upcoming focus/log surfaces and add broader shortcuts; then perform P01 runtime and accessibility acceptance checks.
 - **Notch:** P08 remains absent; user previously directed a pause before implementing it.
 
 ## Agent update template (append after every merged ticket)
