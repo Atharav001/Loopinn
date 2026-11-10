@@ -418,6 +418,8 @@ private struct BlockEditor: View {
             Button("Delete Block", role: .destructive) {
                 if let block { state.deleteBlock(block); if state.errorMessage == nil { dismiss() } }
             }
+        } message: {
+            Text("Any event already published to Apple or Google Calendar remains there. Remove it in that calendar if needed.")
         }
     }
 

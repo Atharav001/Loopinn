@@ -90,6 +90,7 @@ enum DashboardPage: String, CaseIterable, Identifiable {
 
 struct DashboardView: View {
     @ObservedObject var state: AppState
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var taskTitle = ""
     @State private var selectedTask: LoopTask?
     @State private var taskToEdit: LoopTask?
@@ -238,7 +239,7 @@ struct DashboardView: View {
                             Spacer()
                             Button("Dismiss", systemImage: "xmark") { state.dismissedRecommendationID = task.id }
                                 .labelStyle(.iconOnly)
-                            Button("Complete") { state.toggleTask(task) }.buttonStyle(.borderedProminent)
+                            Button("Complete") { toggle(task) }.buttonStyle(.borderedProminent)
                         }
                     } else {
                         Text("Add a task to begin your day.").foregroundStyle(.secondary)
@@ -308,7 +309,7 @@ struct DashboardView: View {
             } else {
                 List(visibleTasks) { task in
                     HStack {
-                        Button { state.toggleTask(task) } label: {
+                        Button { toggle(task) } label: {
                             Image(systemName: task.completedAt == nil ? "circle" : "checkmark.circle.fill")
                         }
                         .buttonStyle(.plain)
@@ -444,7 +445,7 @@ struct DashboardView: View {
                 Button("Open Floating Pomodoro") { FloatingPanelManager.shared.showPomodoro(state: state) }
             }
             Section("About this build") {
-                Text("Tasks and planning are stored locally. Cloud sync and calendar integrations are still in development.")
+                Text("Tasks and planning are stored locally. Apple and Google calendars connect only when you choose; cloud task sync is still in development.")
                     .foregroundStyle(.secondary)
                 Button("Reopen Welcome") { state.reopenOnboarding() }
             }
@@ -483,6 +484,11 @@ struct DashboardView: View {
     private func addTask() {
         state.addTask(taskTitle, to: selectedListID ?? state.workspace.lists[0].id)
         if state.errorMessage == nil { taskTitle = "" }
+    }
+
+    private func toggle(_ task: LoopTask) {
+        if reduceMotion { state.toggleTask(task) }
+        else { withAnimation(.easeInOut(duration: 0.18)) { state.toggleTask(task) } }
     }
 
     private var visibleTasks: [LoopTask] {
