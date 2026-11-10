@@ -5,6 +5,7 @@ import SwiftUI
 @MainActor
 final class AppState: ObservableObject {
     @Published private(set) var workspace: Workspace
+    @Published var selectedPage: DashboardPage = .today
     @Published var errorMessage: String?
     @Published private(set) var canUndo = false
     private let service = WorkspaceService()
@@ -109,6 +110,10 @@ final class AppState: ObservableObject {
 
     func toggleTask(_ task: LoopTask) {
         mutate { try service.setCompleted(task.completedAt == nil, taskID: task.id, in: &$0) }
+    }
+
+    var nextTask: LoopTask? {
+        workspace.tasks.first(where: { $0.completedAt == nil })
     }
 
     func schedule(_ task: LoopTask, start: Date?, end: Date?) {

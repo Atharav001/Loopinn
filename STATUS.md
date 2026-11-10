@@ -5,7 +5,7 @@
 **Baseline SHA:** `2aa1509` on `main`; audit branch `feat/aud-01-baseline`  
 **CI status:** PR #3 had two passing macOS build jobs before merge  
 **Latest packaged build:** Local unsigned `dist/Loopinn.app` built after a clean package build; Info.plist lint passed  
-**Current ticket:** AUD-01/AUD-02 baseline audit and tracker reconciliation  
+**Current ticket:** P01-FR41 menu-bar command center, IN REVIEW on feature branch  
 **Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent for selective-reuse audit; Android target and signed release setup do not exist.
 
 ## Completion counters
@@ -35,8 +35,8 @@ Do **not** equate lines of code, commits, passing unit tests or phase starts wit
 | P08 | Optional notch integration — LAST | UNVERIFIED | ? / 4 | Not verified | — |
 
 ## Current sprint / next action
-- **Current:** AUD-01/AUD-02 — baseline inventory, clean macOS build, tracker reconciliation and ADRs; documented in `docs/BASELINE_AUDIT.md`.
-- **Next engineering ticket:** P01-FR41 — complete menu-bar command center and capture runtime UI evidence. Then P01 settings/design system and remaining P02 task workflows.
+- **Current:** P01-FR41 — quick capture, next-task completion, local status and direct Today/Tasks/Planner routing implemented. Six unit checks and release bundle build pass; runtime UI inspection timed out and remains outstanding.
+- **Next engineering ticket:** P01-FR43 — typed settings and theme controls, after P01-FR41 review. Then remaining P01 shell work and P02 task workflows.
 - **Notch:** P08 remains absent; user previously directed a pause before implementing it.
 
 ## Agent update template (append after every merged ticket)
