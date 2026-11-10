@@ -27,7 +27,33 @@ final class AppState: ObservableObject {
     }
 
     func addTask(_ title: String) {
-        mutate { try service.addTask(to: &$0, title: title, listID: $0.lists[0].id) }
+        guard let listID = workspace.lists.first?.id else { errorMessage = "No task list is available."; return }
+        addTask(title, to: listID)
+    }
+
+    func addTask(_ title: String, to listID: UUID) {
+        mutate { try service.addTask(to: &$0, title: title, listID: listID) }
+    }
+
+    func addList(_ name: String) {
+        mutate { try service.addList(named: name, to: &$0) }
+    }
+
+    func renameList(_ list: TaskList, to name: String) {
+        mutate { try service.renameList(list.id, to: name, in: &$0) }
+    }
+
+    func deleteList(_ list: TaskList) {
+        guard let destination = workspace.lists.first(where: { $0.id != list.id }) else { errorMessage = "Keep at least one list."; return }
+        mutate { try service.deleteList(list.id, movingTasksTo: destination.id, in: &$0) }
+    }
+
+    func updateTask(_ task: LoopTask, title: String, notes: String, dueAt: Date?, priority: Int?, listID: UUID, isStarred: Bool) {
+        mutate { try service.updateTask(task.id, title: title, notes: notes, dueAt: dueAt, priority: priority, listID: listID, isStarred: isStarred, in: &$0) }
+    }
+
+    func deleteTask(_ task: LoopTask) {
+        mutate { try service.deleteTask(task.id, in: &$0) }
     }
 
     func toggleTask(_ task: LoopTask) {

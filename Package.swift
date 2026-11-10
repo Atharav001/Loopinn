@@ -10,6 +10,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "LoopinnCore"),
-        .executableTarget(name: "Loopinn", dependencies: ["LoopinnCore"])
+        .executableTarget(name: "Loopinn", dependencies: ["LoopinnCore"]),
+        .testTarget(name: "LoopinnCoreTests", dependencies: ["LoopinnCore"])
     ]
 )

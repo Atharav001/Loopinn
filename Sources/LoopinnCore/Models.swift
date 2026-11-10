@@ -17,6 +17,8 @@ public struct LoopTask: Codable, Identifiable, Equatable, Sendable {
     public var listID: UUID
     public var title: String
     public var notes: String
+    public var priority: Int?
+    public var isStarred: Bool?
     public var dueAt: Date?
     public var startAt: Date?
     public var endAt: Date?
@@ -28,6 +30,8 @@ public struct LoopTask: Codable, Identifiable, Equatable, Sendable {
         self.listID = listID
         self.title = title
         self.notes = notes
+        self.priority = nil
+        self.isStarred = false
         self.dueAt = dueAt
         self.startAt = startAt
         self.endAt = endAt
@@ -69,6 +73,8 @@ public enum WorkspaceError: LocalizedError, Sendable {
     case missingTask
     case incompleteInterval
     case invalidInterval
+    case emptyListName
+    case lastList
 
     public var errorDescription: String? {
         switch self {
@@ -77,6 +83,8 @@ public enum WorkspaceError: LocalizedError, Sendable {
         case .missingTask: "The task no longer exists."
         case .incompleteInterval: "Set both a start and end time to schedule a task."
         case .invalidInterval: "The end time must be after the start time."
+        case .emptyListName: "Enter a list name."
+        case .lastList: "Keep at least one list."
         }
     }
 }
