@@ -7,7 +7,7 @@
 - Added day/week/month/year calendar views, weekly drag create/move/resize, overlap warnings, Apple EventKit read and confirmed publish, Google Desktop OAuth PKCE with Keychain tokens and Calendar API read/publish, source filters, regional holiday calendar display/deduplication, and bounded calendar refresh ranges. Google live connection requires a user-provided Desktop client ID.
 - Added a persisted Pomodoro cycle with a glass always-on-top timer panel. Both extra panels animate into view while honoring Reduce Motion. The notch remains absent.
 - Local build, unsigned app package and 26/26 core checks pass, including the v1→v2 migration backup, capture parser and recommendation ranking checks. Provider permission, OAuth, full UI, multi-display, holiday-region, and packaged runtime acceptance remain pending. Rollback: revert branch and restore the pre-v2 SQLite backup if needed.
-- PR #8 macOS CI found a stricter Swift concurrency check around EventKit's async permission API. Switched to its completion callback wrapped in a continuation; local build and 26/26 checks pass, and that CI rerun passed. A follow-up guards an early Google OAuth callback before its waiter is installed.
+- PR #8 macOS CI found a stricter Swift concurrency check around EventKit's async permission API. Switched to its completion callback wrapped in a continuation and guarded an early Google OAuth callback. The latest CI build passed on `8240010`.
 
 ## 10 November 2026 — P00 source inventory and issue intake (in review)
 - Added an explicit no-reuse matrix for the available source and an issue template for feature acceptance. The archived reference projects have no source trees in this checkout; Android has no target to build.

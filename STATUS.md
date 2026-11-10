@@ -1,9 +1,9 @@
 # Build status dashboard
 
-**Last verified update:** 10 November 2026, P01 shell branch  
+**Last verified update:** 10 November 2026, P02/P03 PR #8  
 **Repository:** [Atharav001/Loopinn](https://github.com/Atharav001/Loopinn), public  
-**Baseline SHA:** `3170cc6` on `main`; current branch `feat/p01-shell-experience`  
-**CI status:** PR #5 and #6 passed macOS checks before merge; current branch CI pending  
+**Baseline SHA:** `3170cc6` on `main`; current branch `codex/p02-p03-macos` at `8240010`, stacked on P01 PR #7  
+**CI status:** PR #7 checks passed; PR #8 macOS build passed for `8240010`  
 **Latest packaged build:** P02/P03 local unsigned `dist/Loopinn.app` built and Info.plist lint passed; this revision has not had an interactive UI launch  
 **Current ticket:** P02/P03 macOS feature implementation plus floating Pomodoro on `codex/p02-p03-macos`; local build, unsigned package and 26/26 core checks passed  
 **Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent; no code from them is being reused. Android target and signed release setup do not exist.
@@ -26,9 +26,9 @@ Do **not** equate lines of code, commits, passing unit tests or phase starts wit
 |---|---|---|---|---|---|
 | P00 | Baseline, repo audit & decisions | IN REVIEW | 0 / 0 | Current source inventory, no-reuse decision, macOS baseline and ADRs recorded; missing source trees cannot be audited | PR #4; PR #7 adds issue template |
 | P01 | App shell, design system, settings & CI | IN REVIEW | 0 / 6 | Six feature slices compile; UI smoke, panel behavior, global actions and privacy review pending | PR #5, #6, #7 |
-| P02 | Tasks & internal scheduling | IN REVIEW | 0 / 7 | Task capture, recommendations, details, panels and independent blocks compile; UI acceptance pending | implementation branch pending |
-| P03 | Calendar & external provider integrations | IN REVIEW | 0 / 5 | Calendar views and adapters compile; live provider and UI acceptance pending | implementation branch pending |
-| P04 | Timers, prompts & logging | IN PROGRESS | 0 / 16 | Pomodoro and floating timer implemented; other P04 features remain | implementation branch pending |
+| P02 | Tasks & internal scheduling | IN REVIEW | 0 / 7 | Task capture, recommendations, details, panels and independent blocks compile; UI acceptance pending | PR #8 |
+| P03 | Calendar & external provider integrations | IN REVIEW | 0 / 5 | Calendar views and adapters compile; live provider and UI acceptance pending | PR #8 |
+| P04 | Timers, prompts & logging | IN PROGRESS | 0 / 16 | Pomodoro and floating timer implemented; other P04 features remain | PR #8 |
 | P05 | Analytics, widgets, media & utilities | UNVERIFIED | ? / 10 | Not verified | — |
 | P06 | Cloud & Android | UNVERIFIED | ? / 3 | Not verified | — |
 | P07 | Full core regression & pause checkpoint | UNVERIFIED | ? / 0 | Not verified | — |
