@@ -47,4 +47,25 @@ final class WorkspaceBackupTests: XCTestCase {
         let root = FileManager.default.temporaryDirectory
         XCTAssertThrowsError(try WorkspaceBackup.create(workspace: workspace, settings: AppSettings(), attachmentsDirectory: root, at: root.appendingPathComponent(UUID().uuidString)))
     }
+
+    func testRestoreRefusesConflictingExistingAttachment() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let source = root.appendingPathComponent("source", isDirectory: true)
+        try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+        let attachment = TaskAttachment(id: UUID(), originalName: "idea.txt", storedName: "idea.txt", byteCount: 5)
+        try Data("hello".utf8).write(to: source.appendingPathComponent("idea.txt"))
+        var workspace = Workspace()
+        var task = LoopTask(listID: workspace.lists[0].id, title: "Draft")
+        task.attachments = [attachment]
+        workspace.tasks.append(task)
+        let backup = root.appendingPathComponent("copy.loopinnbackup")
+        try WorkspaceBackup.create(workspace: workspace, settings: AppSettings(), attachmentsDirectory: source, at: backup)
+        let destination = root.appendingPathComponent("destination", isDirectory: true)
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+        try Data("other".utf8).write(to: destination.appendingPathComponent("idea.txt"))
+        XCTAssertThrowsError(try WorkspaceBackup.installAttachments(from: backup, workspace: workspace, into: destination))
+        XCTAssertEqual(try Data(contentsOf: destination.appendingPathComponent("idea.txt")), Data("other".utf8))
+    }
 }

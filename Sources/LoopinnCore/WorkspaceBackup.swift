@@ -6,6 +6,7 @@ public enum BackupError: LocalizedError {
     case unsafeAttachmentName
     case missingAttachment(String)
     case attachmentConflict(String)
+    case destinationExists
 
     public var errorDescription: String? {
         switch self {
@@ -14,6 +15,7 @@ public enum BackupError: LocalizedError {
         case .unsafeAttachmentName: "This backup contains an unsafe attachment name."
         case .missingAttachment(let name): "The backup is missing attachment \(name)."
         case .attachmentConflict(let name): "An existing attachment conflicts with backup file \(name)."
+        case .destinationExists: "A backup already exists at that location. Choose a new name."
         }
     }
 }
@@ -35,6 +37,7 @@ public enum WorkspaceBackup {
         try validate(workspace)
         let files = try attachmentNames(in: workspace)
         let manager = FileManager.default
+        guard !manager.fileExists(atPath: destination.path) else { throw BackupError.destinationExists }
         let staging = destination.deletingLastPathComponent().appendingPathComponent(".loopinn-backup-\(UUID().uuidString)", isDirectory: true)
         try manager.createDirectory(at: staging, withIntermediateDirectories: false)
         defer { try? manager.removeItem(at: staging) }

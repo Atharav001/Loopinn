@@ -9,12 +9,25 @@ struct MenuContent: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Loopinn").font(.headline)
-            HStack {
-                TextField("Quick task", text: $quickTitle)
-                    .onSubmit(add)
-                Button("Add", action: add)
+            HStack(spacing: 10) {
+                Image(systemName: "circle.hexagongrid.fill")
+                    .font(.title3)
+                    .foregroundStyle(state.settings.accent.color)
+                    .frame(width: 34, height: 34)
+                    .background(state.settings.accent.color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Loopinn").font(.headline)
+                    Text("A little more room to focus").font(.caption2).foregroundStyle(.secondary)
+                }
             }
+            HStack(spacing: 8) {
+                TextField("Capture a task…", text: $quickTitle)
+                    .textFieldStyle(.plain)
+                    .onSubmit(add)
+                Button("Add", action: add).buttonStyle(.borderedProminent)
+            }
+            .padding(10)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
             if let task = state.nextTask {
                 Text("Next: \(task.title)").font(.caption).lineLimit(2)
                 Button("Complete Next Task", systemImage: "checkmark.circle") {
@@ -32,7 +45,8 @@ struct MenuContent: View {
                 FloatingPanelManager.shared.showTasks(state: state)
             }
             Divider()
-            Text("Local data only").font(.caption).foregroundStyle(.secondary)
+            Label("Stored locally on this Mac", systemImage: "lock.shield")
+                .font(.caption).foregroundStyle(.secondary)
             if let error = state.errorMessage {
                 Text(error).font(.caption).foregroundStyle(.red).lineLimit(3)
             }
