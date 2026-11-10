@@ -10,7 +10,7 @@
 | FR-47 | P01 | Onboarding & tutorials | IN REVIEW | P01 shell branch | Skippable first-run welcome and reopen action compile; runtime first-run smoke pending. |
 | FR-51 | P01 | Privacy, backup & restore | IN REVIEW | PR #7 | Local backup/export with attachments, validated restore and confirmed erase; 4 backup tests pass. Runtime import/export and migration review pending. |
 | FR-01 | P02 | Multi-list task management | IN REVIEW | PR #1, `93a4e63` | CRUD, ordering and one-step undo tested; relaunch UI evidence pending. |
-| FR-02 | P02 | Quick task capture | IN REVIEW | P02/P03 branch | Text, multi-line paste and text drop compile; metadata parsing and UI smoke pending. |
+| FR-02 | P02 | Quick task capture | IN REVIEW | PR #8 | Text, multi-line paste/drop and supported metadata tokens compile; UI smoke pending. |
 | FR-03 | P02 | Task attachments | IN REVIEW | PR #3; P02/P03 branch | Managed files and web links supported, 100 MB limit; revoked-access and UI checks pending. |
 | FR-04 | P02 | Smart task recommendations | IN REVIEW | P02/P03 branch | Deterministic due/importance/effort ranking, reason and dismissal; UI acceptance pending. |
 | FR-05 | P02 | Task details & scheduling | IN REVIEW | PR #1; P02/P03 branch | Due-only and linked-block invariants, first step, estimate and appearance compile; UI smoke pending. |

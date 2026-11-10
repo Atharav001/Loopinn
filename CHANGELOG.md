@@ -3,10 +3,10 @@
 > Append entries only after actual implementation or verified baseline audit.
 
 ## 10 November 2026 — P02/P03 macOS feature build and floating focus (in review)
-- Added multi-line paste/drop task capture, explainable next-task ranking, first-step/estimate/appearance fields, link attachments, a filtered glass task panel, and independent planner blocks with a backed-up SQLite v2 migration.
+- Added multi-line paste/drop task capture with documented `!high`, `@tomorrow` and `#ListName` metadata, explainable next-task ranking, first-step/estimate/appearance fields, link attachments, a filtered glass task panel, and independent planner blocks with a backed-up SQLite v2 migration.
 - Added day/week/month/year calendar views, weekly drag create/move/resize, overlap warnings, Apple EventKit read and confirmed publish, Google Desktop OAuth PKCE with Keychain tokens and Calendar API read/publish, source filters, and bounded calendar refresh ranges. Google live connection requires a user-provided Desktop client ID.
 - Added a persisted Pomodoro cycle with a glass always-on-top timer panel. Both extra panels animate into view while honoring Reduce Motion. The notch remains absent.
-- Local build, unsigned app package and 23/23 core checks pass, including the v1→v2 migration backup check. Provider permission, OAuth, full UI, multi-display, holiday-region, and packaged runtime acceptance remain pending. Rollback: revert branch and restore the pre-v2 SQLite backup if needed.
+- Local build, unsigned app package and 25/25 core checks pass, including the v1→v2 migration backup and capture parser checks. Provider permission, OAuth, full UI, multi-display, holiday-region, and packaged runtime acceptance remain pending. Rollback: revert branch and restore the pre-v2 SQLite backup if needed.
 
 ## 10 November 2026 — P00 source inventory and issue intake (in review)
 - Added an explicit no-reuse matrix for the available source and an issue template for feature acceptance. The archived reference projects have no source trees in this checkout; Android has no target to build.

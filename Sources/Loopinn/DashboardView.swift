@@ -304,6 +304,8 @@ struct DashboardView: View {
                     }
                 }
             }
+            Text("Tip: use !high, @tomorrow or #ListName while capturing a task.")
+                .font(.caption).foregroundStyle(.secondary)
             if visibleTasks.isEmpty {
                 ContentUnavailableView("Start with one task", systemImage: "checklist", description: Text("Tasks save locally and are available offline."))
             } else {

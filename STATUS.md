@@ -5,7 +5,7 @@
 **Baseline SHA:** `3170cc6` on `main`; current branch `feat/p01-shell-experience`  
 **CI status:** PR #5 and #6 passed macOS checks before merge; current branch CI pending  
 **Latest packaged build:** P02/P03 local unsigned `dist/Loopinn.app` built and Info.plist lint passed; this revision has not had an interactive UI launch  
-**Current ticket:** P02/P03 macOS feature implementation plus floating Pomodoro on `codex/p02-p03-macos`; local build, package and 23/23 core checks passed  
+**Current ticket:** P02/P03 macOS feature implementation plus floating Pomodoro on `codex/p02-p03-macos`; local build, unsigned package and 25/25 core checks passed  
 **Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent; no code from them is being reused. Android target and signed release setup do not exist.
 
 ## Completion counters

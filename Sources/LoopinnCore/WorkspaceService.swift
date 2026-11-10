@@ -80,10 +80,7 @@ public struct WorkspaceService: Sendable {
     }
 
     public func addTask(to workspace: inout Workspace, title: String, listID: UUID) throws {
-        let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !cleanTitle.isEmpty else { throw WorkspaceError.emptyTitle }
-        guard workspace.lists.contains(where: { $0.id == listID }) else { throw WorkspaceError.missingList }
-        workspace.tasks.append(LoopTask(listID: listID, title: cleanTitle))
+        workspace.tasks.append(try TaskCaptureParser.parse(title, defaultListID: listID, lists: workspace.lists))
     }
 
     public func captureTasks(_ text: String, listID: UUID, in workspace: inout Workspace) throws {
@@ -91,8 +88,8 @@ public struct WorkspaceService: Sendable {
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
         guard !titles.isEmpty else { throw WorkspaceError.emptyTitle }
-        guard workspace.lists.contains(where: { $0.id == listID }) else { throw WorkspaceError.missingList }
-        for title in titles { workspace.tasks.append(LoopTask(listID: listID, title: title)) }
+        let parsed = try titles.map { try TaskCaptureParser.parse($0, defaultListID: listID, lists: workspace.lists) }
+        workspace.tasks += parsed
     }
 
     public func setCompleted(_ completed: Bool, taskID: UUID, in workspace: inout Workspace) throws {
