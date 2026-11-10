@@ -258,6 +258,7 @@ private final class LoopbackReceiver {
     private let listener: NWListener
     private var startContinuation: CheckedContinuation<UInt16, Error>?
     private var callbackContinuation: CheckedContinuation<URL, Error>?
+    private var pendingCallback: URL?
 
     init() throws {
         let parameters = NWParameters.tcp
@@ -266,7 +267,7 @@ private final class LoopbackReceiver {
     }
 
     func start() async throws -> UInt16 {
-        try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             startContinuation = continuation
             listener.stateUpdateHandler = { [weak self] state in
                 Task { @MainActor in
@@ -289,7 +290,11 @@ private final class LoopbackReceiver {
     }
 
     func waitForCallback() async throws -> URL {
-        try await withCheckedThrowingContinuation { continuation in
+        if let pendingCallback {
+            self.pendingCallback = nil
+            return pendingCallback
+        }
+        return try await withCheckedThrowingContinuation { continuation in
             callbackContinuation = continuation
             DispatchQueue.main.asyncAfter(deadline: .now() + 120) { [weak self] in
                 guard let self, let continuation = self.callbackContinuation else { return }
@@ -309,8 +314,12 @@ private final class LoopbackReceiver {
                       let url = URL(string: "http://127.0.0.1\(path)") else { return }
                 let reply = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\nLoopinn connected. You can close this tab."
                 connection.send(content: Data(reply.utf8), completion: .contentProcessed { _ in connection.cancel() })
-                self.callbackContinuation?.resume(returning: url)
-                self.callbackContinuation = nil
+                if let continuation = self.callbackContinuation {
+                    self.callbackContinuation = nil
+                    continuation.resume(returning: url)
+                } else {
+                    self.pendingCallback = url
+                }
                 self.listener.cancel()
             }
         }
