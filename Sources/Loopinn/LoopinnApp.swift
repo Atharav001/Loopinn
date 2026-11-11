@@ -11,6 +11,7 @@ final class AppState: ObservableObject {
     @Published private(set) var canUndo = false
     @Published var dismissedRecommendationID: UUID?
     @Published private(set) var pomodoro: PomodoroSession
+    @Published private(set) var utilityTimers: UtilityTimers
     @Published private(set) var appleEvents: [ExternalCalendarEvent] = []
     @Published private(set) var appleCalendars: [CalendarChoice] = []
     @Published private(set) var appleCalendarConnected = false
@@ -20,6 +21,7 @@ final class AppState: ObservableObject {
     private let service = WorkspaceService()
     private let settingsStore = SettingsStore()
     private let pomodoroStore = PomodoroStore()
+    private let utilityTimersStore = UtilityTimersStore()
     private let appleCalendar = AppleCalendarService()
     private let googleCalendar = GoogleCalendarService()
     private var appleLoadedRange: DateInterval?
@@ -39,6 +41,9 @@ final class AppState: ObservableObject {
         var restoredPomodoro = (try? pomodoroStore.load()) ?? PomodoroSession()
         restoredPomodoro.reconcile()
         pomodoro = restoredPomodoro
+        var restoredTimers = (try? utilityTimersStore.load()) ?? UtilityTimers()
+        if restoredTimers.countdown.reconcile() { try? utilityTimersStore.save(restoredTimers) }
+        utilityTimers = restoredTimers
         do {
             let loadedSettings = try settingsStore.load()
             settings = loadedSettings
@@ -61,7 +66,10 @@ final class AppState: ObservableObject {
             errorMessage = "Saved data could not be opened. Editing is disabled to protect it: \(error.localizedDescription)"
         }
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.reconcilePomodoro() }
+            Task { @MainActor in
+                self?.reconcilePomodoro()
+                self?.reconcileUtilityTimers()
+            }
         }
         appleCalendarConnected = appleCalendar.isAuthorized
         if appleCalendarConnected { refreshAppleCalendar() }
@@ -271,6 +279,30 @@ final class AppState: ObservableObject {
         catch { errorMessage = error.localizedDescription }
     }
 
+    private func reconcileUtilityTimers() {
+        if utilityTimers.countdown.reconcile() {
+            saveUtilityTimers()
+            NSSound.beep()
+        }
+        if utilityTimers.stopwatch.status == .running || utilityTimers.countdown.status == .running {
+            objectWillChange.send()
+        }
+    }
+
+    func startStopwatch() { utilityTimers.stopwatch.start(); saveUtilityTimers() }
+    func pauseStopwatch() { utilityTimers.stopwatch.pause(); saveUtilityTimers() }
+    func lapStopwatch() { utilityTimers.stopwatch.addLap(); saveUtilityTimers() }
+    func resetStopwatch() { utilityTimers.stopwatch.reset(); saveUtilityTimers() }
+    func startCountdown() { utilityTimers.countdown.start(); saveUtilityTimers() }
+    func pauseCountdown() { utilityTimers.countdown.pause(); saveUtilityTimers() }
+    func resetCountdown() { utilityTimers.countdown.reset(); saveUtilityTimers() }
+    func setCountdownMinutes(_ minutes: Int) { utilityTimers.countdown.setDuration(minutes: minutes); saveUtilityTimers() }
+
+    private func saveUtilityTimers() {
+        do { try utilityTimersStore.save(utilityTimers); errorMessage = nil }
+        catch { errorMessage = error.localizedDescription }
+    }
+
     func setTheme(_ theme: ThemeMode) {
         var draft = settings
         draft.theme = theme
@@ -391,6 +423,8 @@ final class AppState: ObservableObject {
             googleCalendars = []
             pomodoro.reset()
             try pomodoroStore.save(pomodoro)
+            utilityTimers = UtilityTimers()
+            try utilityTimersStore.save(utilityTimers)
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }
