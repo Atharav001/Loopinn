@@ -1,6 +1,7 @@
 import AppKit
 import LoopinnCore
 import SwiftUI
+import WidgetKit
 
 @MainActor
 final class AppState: ObservableObject {
@@ -14,6 +15,10 @@ final class AppState: ObservableObject {
     @Published private(set) var utilityTimers: UtilityTimers
     @Published private(set) var focusReminder: FocusReminder
     @Published var focusReminderBanner: String?
+    @Published var alertGlowUntil: Date?
+    @Published private(set) var activityLogbook = ActivityLogbook()
+    @Published var activityPrompt: DateInterval?
+    @Published private(set) var utilityShelf = UtilityShelf()
     @Published private(set) var appleEvents: [ExternalCalendarEvent] = []
     @Published private(set) var appleCalendars: [CalendarChoice] = []
     @Published private(set) var appleCalendarConnected = false
@@ -38,6 +43,8 @@ final class AppState: ObservableObject {
     private var previousWorkspace: Workspace?
     private let dataDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         .appendingPathComponent("Loopinn", isDirectory: true)
+    private var activityStore: ActivityLogStore { ActivityLogStore(directory: dataDirectory) }
+    private var utilityShelfStore: UtilityShelfStore { UtilityShelfStore(directory: dataDirectory) }
     var canEditSettings: Bool { settingsWritable }
 
     init() {
@@ -69,17 +76,29 @@ final class AppState: ObservableObject {
             attachmentStore = nil
             errorMessage = "Saved data could not be opened. Editing is disabled to protect it: \(error.localizedDescription)"
         }
+        do {
+            activityLogbook = try activityStore.load()
+            if activityLogbook.lastPromptedHour == nil {
+                activityLogbook.lastPromptedHour = Calendar.current.dateInterval(of: .hour, for: .now)?.start.addingTimeInterval(-3600)
+                try activityStore.save(activityLogbook)
+            }
+        } catch { errorMessage = "Activity logbook could not be opened: \(error.localizedDescription)" }
+        do { utilityShelf = try utilityShelfStore.load() }
+        catch { errorMessage = "Utility shelf could not be opened: \(error.localizedDescription)" }
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.reconcilePomodoro()
                 self?.reconcileUtilityTimers()
                 self?.reconcileFocusReminder()
+                self?.reconcileActivityPrompt()
             }
         }
         appleCalendarConnected = appleCalendar.isAuthorized
         if appleCalendarConnected { refreshAppleCalendar() }
         googleCalendarConnected = googleCalendar.isConnected && !(settings.googleClientID ?? "").isEmpty
         if googleCalendarConnected { refreshGoogleCalendar() }
+        publishWidgetSnapshot()
+        ActivityNotificationService.shared.requestPermission()
     }
 
     func connectAppleCalendar() {
@@ -260,12 +279,22 @@ final class AppState: ObservableObject {
     private func reconcilePomodoro() {
         let previous = pomodoro
         pomodoro.reconcile()
-        if pomodoro != previous { try? pomodoroStore.save(pomodoro) }
+        if pomodoro != previous {
+            do {
+                try pomodoroStore.save(pomodoro)
+                if pomodoro.phase != previous.phase || pomodoro.status == .completed { triggerFocusAlert() }
+            } catch { errorMessage = error.localizedDescription }
+        }
         objectWillChange.send()
     }
 
     func startPomodoro() {
         pomodoro.start()
+        savePomodoro()
+    }
+
+    func configurePomodoro(focus: Int, shortBreak: Int, longBreak: Int, every: Int, autoAdvance: Bool) {
+        pomodoro.configure(focus: focus, shortBreak: shortBreak, longBreak: longBreak, longBreakEvery: every, autoAdvance: autoAdvance)
         savePomodoro()
     }
 
@@ -292,7 +321,7 @@ final class AppState: ObservableObject {
     private func reconcileUtilityTimers() {
         if utilityTimers.countdown.reconcile() {
             saveUtilityTimers()
-            NSSound.beep()
+            triggerFocusAlert()
         }
         if utilityTimers.stopwatch.status == .running || utilityTimers.countdown.status == .running {
             objectWillChange.send()
@@ -318,9 +347,27 @@ final class AppState: ObservableObject {
         do {
             try focusReminderStore.save(focusReminder)
             focusReminderBanner = "Time for a short focus check-in."
-            NSSound.beep()
+            triggerFocusAlert()
             NSApp.requestUserAttention(.informationalRequest)
         } catch { errorMessage = error.localizedDescription }
+    }
+
+    private func triggerFocusAlert() {
+        alertGlowUntil = .now.addingTimeInterval(1.5)
+        if settings.playAlertSound != false { OmBell.shared.play() }
+    }
+
+    func setPlayAlertSound(_ enabled: Bool) {
+        var draft = settings
+        draft.playAlertSound = enabled
+        saveSettings(draft)
+    }
+
+    func setFocusEffects(enabled: Bool? = nil, intensity: Double? = nil) {
+        var draft = settings
+        if let enabled { draft.focusEffectsEnabled = enabled }
+        if let intensity { draft.focusEffectIntensity = min(1, max(0, intensity)) }
+        saveSettings(draft)
     }
 
     func setFocusReminderEnabled(_ enabled: Bool) {
@@ -345,6 +392,136 @@ final class AppState: ObservableObject {
     private func saveFocusReminder() {
         do { try focusReminderStore.save(focusReminder); errorMessage = nil }
         catch { errorMessage = error.localizedDescription }
+    }
+
+    private func reconcileActivityPrompt() {
+        var draft = activityLogbook
+        let interval = draft.nextPrompt()
+        guard draft != activityLogbook else { return }
+        do {
+            try activityStore.save(draft)
+            activityLogbook = draft
+            if let interval {
+                activityPrompt = interval
+                FloatingPanelManager.shared.showQuickLog(state: self)
+                NSApp.requestUserAttention(.informationalRequest)
+                ActivityNotificationService.shared.sendPrompt(for: interval)
+            }
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func setActivityQuietHours(startHour: Int?, endHour: Int?) {
+        var draft = activityLogbook
+        if let startHour, let endHour { draft.quietHours = ActivityQuietHours(startHour: startHour, endHour: endHour) }
+        else { draft.quietHours = nil }
+        do { try activityStore.save(draft); activityLogbook = draft }
+        catch { errorMessage = error.localizedDescription }
+    }
+
+    func saveActivity(title: String, start: Date, end: Date, category: String = "Uncategorized", id: UUID? = nil) {
+        do {
+            var draft = activityLogbook
+            let resolvedCategory = category == "Uncategorized" ? draft.category(for: title) : category
+            let entry = try ActivityEntry(id: id ?? UUID(), title: title, startAt: start, endAt: end, category: resolvedCategory)
+            if id == nil { try draft.add(entry) } else { try draft.update(entry) }
+            try activityStore.save(draft)
+            activityLogbook = draft
+            activityPrompt = nil
+            errorMessage = nil
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func deleteActivity(_ id: UUID) {
+        var draft = activityLogbook
+        draft.remove(id)
+        do { try activityStore.save(draft); activityLogbook = draft }
+        catch { errorMessage = error.localizedDescription }
+    }
+
+    func setActivityRule(phrase: String, category: String) {
+        var draft = activityLogbook
+        draft.setRule(phrase: phrase, category: category)
+        do { try activityStore.save(draft); activityLogbook = draft }
+        catch { errorMessage = error.localizedDescription }
+    }
+
+    func removeActivityRule(_ phrase: String) {
+        var draft = activityLogbook
+        draft.removeRule(phrase)
+        do { try activityStore.save(draft); activityLogbook = draft }
+        catch { errorMessage = error.localizedDescription }
+    }
+
+    func skipActivityPrompt() { activityPrompt = nil }
+
+    func addShelfFile() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let bookmark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+            var draft = utilityShelf
+            draft.files.append(ShelfFile(name: url.lastPathComponent, bookmark: bookmark))
+            try utilityShelfStore.save(draft)
+            utilityShelf = draft
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func openShelfFile(_ file: ShelfFile) {
+        do {
+            var stale = false
+            let url = try URL(resolvingBookmarkData: file.bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &stale)
+            let granted = url.startAccessingSecurityScopedResource()
+            defer { if granted { url.stopAccessingSecurityScopedResource() } }
+            guard FileManager.default.fileExists(atPath: url.path) else { errorMessage = "This file is no longer available."; return }
+            NSWorkspace.shared.open(url)
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func removeShelfFile(_ id: UUID) {
+        var draft = utilityShelf
+        draft.files.removeAll { $0.id == id }
+        saveShelf(draft)
+    }
+
+    func captureClipboard() {
+        guard let value = NSPasteboard.general.string(forType: .string) else {
+            errorMessage = "The clipboard has no text to capture."
+            return
+        }
+        var draft = utilityShelf
+        draft.capture(value)
+        saveShelf(draft)
+    }
+
+    func toggleClipPin(_ id: UUID) {
+        var draft = utilityShelf
+        draft.togglePin(id)
+        saveShelf(draft)
+    }
+
+    func removeClip(_ id: UUID) {
+        var draft = utilityShelf
+        draft.removeClip(id)
+        saveShelf(draft)
+    }
+
+    private func saveShelf(_ draft: UtilityShelf) {
+        do { try utilityShelfStore.save(draft); utilityShelf = draft; errorMessage = nil }
+        catch { errorMessage = error.localizedDescription }
+    }
+
+    func exportActivities(asJSON: Bool) {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = asJSON ? "loopinn-activities.json" : "loopinn-activities.csv"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let data = try asJSON ? ActivityExport.json(activityLogbook.entries) : ActivityExport.csv(activityLogbook.entries)
+            try data.write(to: url, options: .atomic)
+            errorMessage = nil
+        } catch { errorMessage = error.localizedDescription }
     }
 
     func setTheme(_ theme: ThemeMode) {
@@ -410,7 +587,8 @@ final class AppState: ObservableObject {
         do {
             try WorkspaceBackup.create(workspace: workspace, settings: settings,
                                        attachmentsDirectory: dataDirectory.appendingPathComponent("attachments"),
-                                       at: destination)
+                                       at: destination, activityLogbook: activityLogbook,
+                                       utilityShelf: utilityShelf, pomodoro: pomodoro)
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }
@@ -426,19 +604,39 @@ final class AppState: ObservableObject {
             let safetyURL = safetyDirectory.appendingPathComponent("before-restore-\(UUID().uuidString).loopinnbackup", isDirectory: true)
             try WorkspaceBackup.create(workspace: workspace, settings: settings,
                                        attachmentsDirectory: dataDirectory.appendingPathComponent("attachments"),
-                                       at: safetyURL)
+                                       at: safetyURL, activityLogbook: activityLogbook,
+                                       utilityShelf: utilityShelf, pomodoro: pomodoro)
             try WorkspaceBackup.installAttachments(from: source, workspace: snapshot.workspace,
                                                    into: dataDirectory.appendingPathComponent("attachments"))
-            try database.save(snapshot.workspace)
-            do { try settingsStore.save(snapshot.settings) }
+            let oldWorkspace = workspace
+            let oldSettings = settings
+            let oldLogbook = activityLogbook
+            let oldShelf = utilityShelf
+            let oldPomodoro = pomodoro
+            do {
+                try database.save(snapshot.workspace)
+                try settingsStore.save(snapshot.settings)
+                if let logbook = snapshot.activityLogbook { try activityStore.save(logbook) }
+                if let shelf = snapshot.utilityShelf { try utilityShelfStore.save(shelf) }
+                if let timer = snapshot.pomodoro { try pomodoroStore.save(timer) }
+            }
             catch {
-                try? database.save(workspace)
+                try? database.save(oldWorkspace)
+                try? settingsStore.save(oldSettings)
+                try? activityStore.save(oldLogbook)
+                try? utilityShelfStore.save(oldShelf)
+                try? pomodoroStore.save(oldPomodoro)
                 throw error
             }
             previousWorkspace = workspace
             canUndo = true
             workspace = snapshot.workspace
+            publishWidgetSnapshot()
             settings = snapshot.settings
+            if let logbook = snapshot.activityLogbook { activityLogbook = logbook }
+            if let shelf = snapshot.utilityShelf { utilityShelf = shelf }
+            if let timer = snapshot.pomodoro { pomodoro = timer }
+            activityPrompt = nil
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }
@@ -454,6 +652,7 @@ final class AppState: ObservableObject {
             freshSettings.hasCompletedOnboarding = true
             try database.save(empty)
             workspace = empty
+            publishWidgetSnapshot()
             previousWorkspace = nil
             canUndo = false
             try attachmentStore.prune(keeping: [])
@@ -472,6 +671,11 @@ final class AppState: ObservableObject {
             focusReminder = FocusReminder()
             try focusReminderStore.save(focusReminder)
             focusReminderBanner = nil
+            activityLogbook = ActivityLogbook()
+            try activityStore.save(activityLogbook)
+            activityPrompt = nil
+            utilityShelf = UtilityShelf()
+            try utilityShelfStore.save(utilityShelf)
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }
@@ -576,6 +780,7 @@ final class AppState: ObservableObject {
         do {
             try database.save(previousWorkspace)
             workspace = previousWorkspace
+            publishWidgetSnapshot()
             self.previousWorkspace = nil
             canUndo = false
             errorMessage = nil
@@ -587,6 +792,15 @@ final class AppState: ObservableObject {
 
     func toggleTask(_ task: LoopTask) {
         mutate { try service.setCompleted(task.completedAt == nil, taskID: task.id, in: &$0) }
+    }
+
+    func handleWidgetURL(_ url: URL) {
+        guard url.scheme == "loopinn" else { return }
+        if url.host == "complete-task", let id = UUID(uuidString: url.lastPathComponent),
+           let task = workspace.tasks.first(where: { $0.id == id && $0.completedAt == nil }) {
+            mutate { try service.setCompleted(true, taskID: task.id, in: &$0) }
+        }
+        selectedPage = .tasks
     }
 
     var nextTask: LoopTask? {
@@ -624,6 +838,7 @@ final class AppState: ObservableObject {
             previousWorkspace = workspace
             canUndo = true
             workspace = draft
+            publishWidgetSnapshot()
             errorMessage = nil
             if let attachmentStore {
                 let current = draft.tasks.flatMap { $0.attachments ?? [] }
@@ -633,6 +848,11 @@ final class AppState: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func publishWidgetSnapshot() {
+        try? WidgetSnapshotStore.save(WidgetSnapshot(workspace: workspace))
+        WidgetCenter.shared.reloadTimelines(ofKind: "LoopinnTasksWidget")
     }
 }
 
@@ -655,6 +875,7 @@ struct LoopinnApp: App {
         Window("Loopinn", id: "dashboard") {
             DashboardView(state: state)
                 .frame(minWidth: 900, minHeight: 600)
+                .onOpenURL { state.handleWidgetURL($0) }
         }
         .defaultLaunchBehavior(.suppressed)
         .commands { DashboardCommands(state: state) }

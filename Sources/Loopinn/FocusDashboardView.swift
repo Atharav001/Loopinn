@@ -69,6 +69,7 @@ struct FocusDashboardView: View {
                         Text("\(state.pomodoro.completedCycles)").font(.title2.weight(.semibold))
                     }
                 }
+                pomodoroSettingsCard
                 deepWorkCard
                 focusReminderCard
                 utilityTimersCard
@@ -89,6 +90,62 @@ struct FocusDashboardView: View {
     private var linkedTaskName: String? {
         guard state.pomodoro.mode == .deepWork, let id = state.pomodoro.linkedTaskID else { return nil }
         return state.workspace.tasks.first(where: { $0.id == id })?.title ?? "Linked task no longer available"
+    }
+
+    private var pomodoroSettingsCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Pomodoro rhythm").font(.headline)
+            Text("Adjust the work and break pattern before starting a session.")
+                .font(.subheadline).foregroundStyle(.secondary)
+            Stepper("Focus: \(state.pomodoro.focusMinutes) min", value: Binding(
+                get: { state.pomodoro.focusMinutes },
+                set: { configurePomodoro(focus: $0) }
+            ), in: 1...180)
+            Stepper("Short break: \(state.pomodoro.breakMinutes) min", value: Binding(
+                get: { state.pomodoro.breakMinutes },
+                set: { configurePomodoro(shortBreak: $0) }
+            ), in: 1...60)
+            Stepper("Long break: \(state.pomodoro.longBreakMinutes) min", value: Binding(
+                get: { state.pomodoro.longBreakMinutes },
+                set: { configurePomodoro(longBreak: $0) }
+            ), in: 1...120)
+            Stepper("Long break every \(state.pomodoro.cyclesBeforeLongBreak) cycles", value: Binding(
+                get: { state.pomodoro.cyclesBeforeLongBreak },
+                set: { configurePomodoro(every: $0) }
+            ), in: 2...12)
+            Toggle("Move to the next phase automatically", isOn: Binding(
+                get: { state.pomodoro.autoAdvance },
+                set: { configurePomodoro(autoAdvance: $0) }
+            ))
+            Toggle("Play the Om bell on timer alerts", isOn: Binding(
+                get: { state.settings.playAlertSound != false },
+                set: { state.setPlayAlertSound($0) }
+            ))
+            Toggle("Dimming, ripple and edge glow", isOn: Binding(
+                get: { state.settings.focusEffectsEnabled != false },
+                set: { state.setFocusEffects(enabled: $0) }
+            ))
+            HStack {
+                Text("Effect intensity")
+                Slider(value: Binding(
+                    get: { state.settings.focusEffectIntensity ?? 0.5 },
+                    set: { state.setFocusEffects(intensity: $0) }
+                ), in: 0...1)
+                .frame(width: 180)
+            }
+        }
+        .disabled(state.pomodoro.status == .running || state.pomodoro.status == .paused)
+        .padding(24)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+    }
+
+    private func configurePomodoro(focus: Int? = nil, shortBreak: Int? = nil, longBreak: Int? = nil, every: Int? = nil, autoAdvance: Bool? = nil) {
+        state.configurePomodoro(focus: focus ?? state.pomodoro.focusMinutes,
+                                shortBreak: shortBreak ?? state.pomodoro.breakMinutes,
+                                longBreak: longBreak ?? state.pomodoro.longBreakMinutes,
+                                every: every ?? state.pomodoro.cyclesBeforeLongBreak,
+                                autoAdvance: autoAdvance ?? state.pomodoro.autoAdvance)
     }
 
     private var deepWorkCard: some View {
@@ -282,6 +339,28 @@ struct FloatingPomodoroView: View {
         .padding(24)
         .frame(minWidth: 300, minHeight: 210)
         .background(.ultraThinMaterial)
+        .background(state.settings.focusEffectsEnabled != false && state.pomodoro.status == .running ? Color.black.opacity(0.12 * (state.settings.focusEffectIntensity ?? 0.5)) : .clear)
+        .overlay {
+            TimelineView(.periodic(from: .now, by: 0.25)) { timeline in
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(state.settings.accent.color.opacity(state.settings.focusEffectsEnabled != false && (state.alertGlowUntil ?? .distantPast) > timeline.date ? 0.3 + 0.6 * (state.settings.focusEffectIntensity ?? 0.5) : 0), lineWidth: 5)
+                    .shadow(color: state.settings.accent.color.opacity(state.settings.focusEffectsEnabled != false && (state.alertGlowUntil ?? .distantPast) > timeline.date ? 0.7 : 0), radius: 18)
+                    .allowsHitTesting(false)
+            }
+        }
+        .overlay {
+            if state.settings.focusEffectsEnabled != false && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+                TimelineView(.periodic(from: .now, by: 0.05)) { timeline in
+                    let remaining = (state.alertGlowUntil ?? .distantPast).timeIntervalSince(timeline.date)
+                    if remaining > 0 && remaining <= 1.5 {
+                        Circle()
+                            .stroke(state.settings.accent.color.opacity(max(0, remaining / 1.5) * (state.settings.focusEffectIntensity ?? 0.5)), lineWidth: 4)
+                            .frame(width: 40 + 180 * (1 - remaining / 1.5), height: 40 + 180 * (1 - remaining / 1.5))
+                            .allowsHitTesting(false)
+                    }
+                }
+            }
+        }
         .preferredColorScheme(state.settings.theme.colorScheme)
         .tint(state.settings.accent.color)
     }

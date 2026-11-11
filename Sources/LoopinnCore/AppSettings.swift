@@ -23,6 +23,9 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var hiddenAppleCalendarIDs: [String]?
     public var googleClientID: String?
     public var hiddenGoogleCalendarIDs: [String]?
+    public var playAlertSound: Bool?
+    public var focusEffectsEnabled: Bool?
+    public var focusEffectIntensity: Double?
 
     public init(theme: ThemeMode = .system, accent: AccentChoice = .blue) {
         version = 1
@@ -37,6 +40,9 @@ public struct AppSettings: Codable, Equatable, Sendable {
         hiddenAppleCalendarIDs = []
         googleClientID = nil
         hiddenGoogleCalendarIDs = []
+        playAlertSound = true
+        focusEffectsEnabled = true
+        focusEffectIntensity = 0.5
     }
 }
 

@@ -2,6 +2,37 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — local app launch check
+- Rebuilt the unsigned Xcode app with its embedded task widget, launched `dist/Loopinn.app` on macOS, and observed the Loopinn process running. PR #12 macOS CI passed for `236123a`; interactive window and signed widget acceptance remain pending.
+
+## 11 November 2026 — activity backup and hourly notification (in review)
+- Added persisted focus effect controls for dimming, ripple and edge glow intensity. Floating focus respects Reduce Motion; completion remains visible without animation.
+- Added a persisted Om-bell sound toggle in Focus. Timer and Ripple edge alerts remain visible when sound is off.
+- Extended backup snapshots to include activity logs, file shelf data and focus history while retaining legacy backup readability. Restore writes these stores with rollback to the pre-restore state on failure, and creates a safety backup first.
+- Added a local macOS hourly activity notification alongside the always-on-top quick-log window; permission denial still leaves the window available. The unsigned app with widget builds and 50/50 core checks pass; live notification and restore UI acceptance remain pending.
+
+## 11 November 2026 — P05 widgets, media and utilities (in review)
+- Added an Xcode project and packaged WidgetKit task extension using an App Group snapshot and task/add deep links. The app still opens as a menu bar accessory by default.
+- Added explicit file shelf and clipboard capture, Music/Spotify controls with truthful unavailable states, playback animation honoring Reduce Motion and Low Power Mode, battery/system settings controls, and a consent-gated camera mirror.
+- Added completed focus-session records and duration-based insights, plus configurable short/long Pomodoro breaks and optional manual phase advance. Unsigned Xcode app and embedded extension build; 49/49 core checks pass. Signed widget installation and runtime permissions remain unverified.
+
+## 11 November 2026 — permission-gated voice draft (in review)
+- Added microphone and speech recognition permission requests, live transcription, and explicit stop. Recognized words fill the editable activity form and never save without user action. The packaged app declares both required usage descriptions.
+- Local Swift checks pass; live permission and transcription acceptance pending.
+
+## 11 November 2026 — reviewable time entry (in review)
+- Added parsing of explicit AM/PM, noon and midnight activity ranges into the manual log form for review. Ambiguous and overnight text is refused with a manual fallback.
+- Local Swift checks pass; packaged and runtime acceptance pending.
+
+## 11 November 2026 — shared alerts and activity rules (in review)
+- Shared the generated Om bell and edge glow with focus timer transitions and reminders. Added overnight quiet hours to hourly logging and a user-editable phrase dictionary that leaves unknown activity Uncategorized.
+- Local Swift checks pass; runtime sound, overlay and timezone acceptance remain pending.
+
+## 11 November 2026 — hourly logbook and activity insights (in review)
+- Added a durable local logbook with hourly prompts, an always-on-top glass quick-log panel, Enter/skip actions, manual create/edit/delete, duplicate interval validation, and a separate day logbook view.
+- Added a planned-versus-logged timeline, clipped tracked-time summary, category chart, and CSV/JSON activity export. No planned block is silently counted as actual activity.
+- Local Swift build, unsigned app package and 41/41 core checks pass. Runtime prompts, notification permission, UI and large export acceptance remain pending.
+
 ## 11 November 2026 — repeating focus reminders (in review)
 - Added a persisted focus reminder interval with enable/disable and ten-minute snooze. After sleep or relaunch, missed intervals collapse into one alert and schedule the next interval from delivery; the app never floods alerts.
 - Added Focus screen controls and a dismissible check-in banner. Local Swift build, unsigned app package and 37/37 core checks pass; runtime alert behavior remains pending.

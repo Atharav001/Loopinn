@@ -8,6 +8,8 @@ final class FloatingPanelManager {
     private var panels: [String: NSPanel] = [:]
     private let tasksID = "tasks"
     private let pomodoroID = "pomodoro"
+    private let rippleID = "ripple"
+    private let quickLogID = "quick-log"
 
     func setPinned(_ pinned: Bool) {
         panels[tasksID]?.level = .floating
@@ -19,6 +21,14 @@ final class FloatingPanelManager {
 
     func showPomodoro(state: AppState) {
         show(id: pomodoroID, title: "Loopinn Focus", size: NSSize(width: 340, height: 280), content: AnyView(FloatingPomodoroView(state: state)))
+    }
+
+    func showRipple(state: AppState) {
+        show(id: rippleID, title: "Ripple Focus", size: NSSize(width: 360, height: 300), content: AnyView(RippleFocusView(state: state)))
+    }
+
+    func showQuickLog(state: AppState) {
+        show(id: quickLogID, title: "Log the last hour", size: NSSize(width: 390, height: 290), content: AnyView(QuickLogView(state: state)))
     }
 
     private func show(id: String, title: String, size: NSSize, content: AnyView) {

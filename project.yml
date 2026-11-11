@@ -1,0 +1,66 @@
+name: Loopinn
+options:
+  bundleIdPrefix: com.atharav
+settings:
+  base:
+    MACOSX_DEPLOYMENT_TARGET: 15.0
+    SWIFT_VERSION: 6.0
+    CODE_SIGN_STYLE: Automatic
+targets:
+  LoopinnCore:
+    type: framework
+    platform: macOS
+    sources: [Sources/LoopinnCore]
+    info:
+      path: Config/LoopinnCore-Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.atharav.loopinn.core
+    dependencies:
+      - sdk: libsqlite3.tbd
+  Loopinn:
+    type: application
+    platform: macOS
+    sources: [Sources/Loopinn]
+    info:
+      path: Config/Loopinn-Info.plist
+      properties:
+        LSUIElement: true
+        NSCalendarsFullAccessUsageDescription: Loopinn reads selected calendars after you connect Apple Calendar, and publishes only events you explicitly approve.
+        NSCalendarsWriteOnlyAccessUsageDescription: Loopinn publishes a planned block only after you confirm that event.
+        NSMicrophoneUsageDescription: Loopinn records only while you dictate an activity.
+        NSSpeechRecognitionUsageDescription: Loopinn transcribes your dictated activity for your review before saving.
+        NSAppleEventsUsageDescription: Loopinn controls the music player you select after macOS grants access.
+        NSCameraUsageDescription: Loopinn shows the camera only while you open the mirror.
+        CFBundleURLTypes:
+          - CFBundleURLSchemes: [loopinn]
+    entitlements:
+      path: Config/Loopinn.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.atharav.loopinn]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.atharav.loopinn
+    dependencies:
+      - target: LoopinnCore
+      - target: LoopinnTasksWidget
+        embed: true
+  LoopinnTasksWidget:
+    type: app-extension
+    platform: macOS
+    sources: [Sources/LoopinnTasksWidget]
+    info:
+      path: Config/LoopinnTasksWidget-Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Config/LoopinnTasksWidget.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.atharav.loopinn]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.atharav.loopinn.tasks-widget
+    dependencies:
+      - target: LoopinnCore
+        embed: true
