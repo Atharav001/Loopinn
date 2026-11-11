@@ -2,6 +2,11 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — command center visibility and empty workspace repair
+- Fixed the menu bar command list collapsing to zero height. The list has a visible scroll area, and Open Application and Settings stay directly accessible below it.
+- Added menu links for all implemented sections and timer modes, a Start Here launchpad in Today, and clear actions in empty Today and Analytics views.
+- Made the floating Log Activity panel usable without an hourly prompt by allowing an editable time range.
+
 ## 11 November 2026 — Aura and Loopin-macOS source adaptation (in review)
 - Adapted Aura's menu bar command center layout and quick task entry to Loopinn's single app state. It exposes the floating Pomodoro, Focus, Ripple Focus, tasks, calendar, logbook, timesheet, quick log, settings and application windows.
 - Adapted Loopin-macOS's interactive mini month year calendar and planned/logged timesheet rails to Loopinn's existing calendar blocks and activity records. Added direct month-day creation, a logbook month picker, and Loopin-style quick suggestions to the hourly logging panel.

@@ -37,7 +37,16 @@ struct AnalyticsView: View {
                 Text("Focus time uses completed timer sessions and is separate from activity logs. Boundary splits are proportional when a session spans a period.")
                     .font(.caption).foregroundStyle(.secondary)
                 if categories.isEmpty {
-                    ContentUnavailableView("No activity in this period", systemImage: "chart.bar")
+                    VStack(alignment: .leading, spacing: 10) {
+                        Label("No activity in this period", systemImage: "chart.bar").font(.headline)
+                        Text("Record work in Logbook to see tracked time and categories here.")
+                            .foregroundStyle(.secondary)
+                        Button("Open Logbook", systemImage: "square.and.pencil") { state.selectedPage = .logbook }
+                            .buttonStyle(.borderedProminent)
+                    }
+                    .padding(22)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
                 } else {
                     Text("By category").font(.title3.bold())
                     Chart(categories, id: \.name) { category in

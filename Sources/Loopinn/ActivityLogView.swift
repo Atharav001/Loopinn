@@ -5,6 +5,8 @@ struct QuickLogView: View {
     @ObservedObject var state: AppState
     @State private var title = ""
     @State private var category = "Uncategorized"
+    @State private var manualStart = Date().addingTimeInterval(-3600)
+    @State private var manualEnd = Date()
     @FocusState private var focused: Bool
     private let suggestions = ["Coding", "Deep Work", "Meeting", "Planning", "Research", "Break"]
 
@@ -14,8 +16,14 @@ struct QuickLogView: View {
             if let interval = state.activityPrompt {
                 Text("\(interval.start.formatted(date: .omitted, time: .shortened)) – \(interval.end.formatted(date: .omitted, time: .shortened))")
                     .foregroundStyle(.secondary)
-                TextField("Describe the last hour", text: $title)
-                    .focused($focused).onSubmit(save)
+            } else {
+                HStack {
+                    DatePicker("From", selection: $manualStart, displayedComponents: [.date, .hourAndMinute])
+                    DatePicker("To", selection: $manualEnd, displayedComponents: [.date, .hourAndMinute])
+                }
+            }
+            TextField("What did you work on?", text: $title)
+                .focused($focused).onSubmit(save)
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 6) {
                         ForEach(suggestions, id: \.self) { suggestion in
@@ -29,14 +37,13 @@ struct QuickLogView: View {
                     }
                 }
                 HStack {
-                    Button("Skip") { state.skipActivityPrompt() }
+                    if state.activityPrompt != nil {
+                        Button("Skip") { state.skipActivityPrompt() }
+                    }
                     Spacer()
                     Button("Log activity", action: save).buttonStyle(.borderedProminent)
                         .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
-            } else {
-                ContentUnavailableView("No hour to log", systemImage: "checkmark.circle")
-            }
         }
         .padding(24)
         .frame(minWidth: 350, minHeight: 230)
@@ -45,7 +52,11 @@ struct QuickLogView: View {
     }
 
     private func save() {
-        guard let interval = state.activityPrompt else { return }
+        if state.activityPrompt == nil && manualEnd <= manualStart {
+            state.errorMessage = "The end time must be after the start time."
+            return
+        }
+        let interval = state.activityPrompt ?? DateInterval(start: manualStart, end: manualEnd)
         state.saveActivity(title: title, start: interval.start, end: interval.end, category: category)
         if state.errorMessage == nil { title = "" }
     }

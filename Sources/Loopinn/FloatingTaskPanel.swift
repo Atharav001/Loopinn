@@ -28,7 +28,7 @@ final class FloatingPanelManager {
     }
 
     func showQuickLog(state: AppState) {
-        show(id: quickLogID, title: "Log the last hour", size: NSSize(width: 390, height: 290), content: AnyView(QuickLogView(state: state)))
+        show(id: quickLogID, title: "Log activity", size: NSSize(width: 440, height: 340), content: AnyView(QuickLogView(state: state)))
     }
 
     private func show(id: String, title: String, size: NSSize, content: AnyView) {

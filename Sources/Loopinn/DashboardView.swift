@@ -236,6 +236,15 @@ struct DashboardView: View {
     private var todayContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: LoopinnDesign.contentSpacing) {
+                SectionHeading("Start here", subtitle: "Open a workspace or create something now")
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 180), spacing: 12), count: 3), spacing: 12) {
+                    launchCard("Tasks", subtitle: "Capture and organize", icon: "checklist") { state.selectedPage = .tasks; taskInputFocused = true }
+                    launchCard("Calendar", subtitle: "Plan a day or week", icon: "calendar") { state.selectedPage = .calendar }
+                    launchCard("Focus", subtitle: "Start a timer", icon: "timer") { state.selectedPage = .focus }
+                    launchCard("Logbook", subtitle: "Record your time", icon: "text.book.closed") { state.selectedPage = .logbook }
+                    launchCard("Timesheet", subtitle: "Compare plan and reality", icon: "timeline.selection") { state.selectedPage = .timeline }
+                    launchCard("Utilities", subtitle: "Files, clipboard and media", icon: "square.grid.2x2") { state.selectedPage = .utilities }
+                }
                 HStack(spacing: 16) {
                     LoopinnCard {
                         Label("Open tasks", systemImage: "checklist").foregroundStyle(.secondary)
@@ -263,14 +272,23 @@ struct DashboardView: View {
                             Button("Complete") { toggle(task) }.buttonStyle(.borderedProminent)
                         }
                     } else {
-                        Text("Add a task to begin your day.").foregroundStyle(.secondary)
+                        HStack {
+                            Text("Add a task to begin your day.").foregroundStyle(.secondary)
+                            Spacer()
+                            Button("Add Task", systemImage: "plus") { state.selectedPage = .tasks; taskInputFocused = true }
+                                .buttonStyle(.borderedProminent)
+                        }
                     }
                 }
                 if state.settings.showTodayPlan != false {
                     SectionHeading("Your plan", subtitle: "Scheduled work stays separate from actual activity")
                     LoopinnCard {
                         if state.workspace.blocks.isEmpty {
-                            Text("No blocks scheduled yet.").foregroundStyle(.secondary)
+                            HStack {
+                                Text("No blocks scheduled yet.").foregroundStyle(.secondary)
+                                Spacer()
+                                Button("Open Calendar") { state.selectedPage = .calendar }
+                            }
                         } else {
                             ForEach(state.workspace.blocks.sorted(by: { $0.startAt < $1.startAt }).prefix(3)) { block in
                                 HStack {
@@ -286,6 +304,24 @@ struct DashboardView: View {
             }
             .frame(maxWidth: 900)
         }
+    }
+
+    private func launchCard(_ title: String, subtitle: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon).font(.title3).frame(width: 28).foregroundStyle(state.settings.accent.color)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title).font(.headline)
+                    Text(subtitle).font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "arrow.up.right").font(.caption2).foregroundStyle(.tertiary)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        }
+        .buttonStyle(.plain)
     }
 
     private var taskContent: some View {
