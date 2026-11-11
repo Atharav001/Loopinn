@@ -11,8 +11,12 @@ final class ActivityNotificationService {
     }
 
     func sendPrompt(for interval: DateInterval) async {
-        let settings = await center.notificationSettings()
-        guard settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else { return }
+        let allowed = await withCheckedContinuation { continuation in
+            center.getNotificationSettings { settings in
+                continuation.resume(returning: settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional)
+            }
+        }
+        guard allowed else { return }
         let content = UNMutableNotificationContent()
         content.title = "What did you do in the last hour?"
         let start = interval.start.formatted(date: .omitted, time: .shortened)
