@@ -70,6 +70,7 @@ struct FocusDashboardView: View {
                     }
                 }
                 deepWorkCard
+                focusReminderCard
                 utilityTimersCard
             }
             .frame(maxWidth: 1000)
@@ -108,6 +109,42 @@ struct FocusDashboardView: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(state.pomodoro.status == .running || state.pomodoro.status == .paused)
+        }
+        .padding(28)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
+    }
+
+    private var focusReminderCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Label("Focus reminders", systemImage: "bell.badge").font(.title2.weight(.semibold))
+            Text("Get one gentle check-in at each interval. Missed reminders never pile up.")
+                .foregroundStyle(.secondary)
+            Toggle("Repeat reminders", isOn: Binding(
+                get: { state.focusReminder.isEnabled },
+                set: { state.setFocusReminderEnabled($0) }
+            ))
+            if state.focusReminder.isEnabled {
+                Stepper("Every \(state.focusReminder.intervalMinutes) minutes", value: Binding(
+                    get: { state.focusReminder.intervalMinutes },
+                    set: { state.setFocusReminderInterval($0) }
+                ), in: 5...180, step: 5)
+                if let next = state.focusReminder.nextFireAt {
+                    Text("Next check-in \(next, style: .relative)")
+                        .font(.subheadline).foregroundStyle(.secondary)
+                }
+                Button("Snooze 10 minutes", systemImage: "moon.zzz") { state.snoozeFocusReminder() }
+            }
+            if let banner = state.focusReminderBanner {
+                HStack {
+                    Label(banner, systemImage: "bell.fill")
+                    Spacer()
+                    Button("Snooze") { state.snoozeFocusReminder() }
+                    Button("Dismiss") { state.dismissFocusReminder() }
+                }
+                .padding(12)
+                .background(state.settings.accent.color.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+            }
         }
         .padding(28)
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -12,6 +12,8 @@ final class AppState: ObservableObject {
     @Published var dismissedRecommendationID: UUID?
     @Published private(set) var pomodoro: PomodoroSession
     @Published private(set) var utilityTimers: UtilityTimers
+    @Published private(set) var focusReminder: FocusReminder
+    @Published var focusReminderBanner: String?
     @Published private(set) var appleEvents: [ExternalCalendarEvent] = []
     @Published private(set) var appleCalendars: [CalendarChoice] = []
     @Published private(set) var appleCalendarConnected = false
@@ -22,6 +24,7 @@ final class AppState: ObservableObject {
     private let settingsStore = SettingsStore()
     private let pomodoroStore = PomodoroStore()
     private let utilityTimersStore = UtilityTimersStore()
+    private let focusReminderStore = FocusReminderStore()
     private let appleCalendar = AppleCalendarService()
     private let googleCalendar = GoogleCalendarService()
     private var appleLoadedRange: DateInterval?
@@ -44,6 +47,7 @@ final class AppState: ObservableObject {
         var restoredTimers = (try? utilityTimersStore.load()) ?? UtilityTimers()
         if restoredTimers.countdown.reconcile() { try? utilityTimersStore.save(restoredTimers) }
         utilityTimers = restoredTimers
+        focusReminder = (try? focusReminderStore.load()) ?? FocusReminder()
         do {
             let loadedSettings = try settingsStore.load()
             settings = loadedSettings
@@ -69,6 +73,7 @@ final class AppState: ObservableObject {
             Task { @MainActor in
                 self?.reconcilePomodoro()
                 self?.reconcileUtilityTimers()
+                self?.reconcileFocusReminder()
             }
         }
         appleCalendarConnected = appleCalendar.isAuthorized
@@ -308,6 +313,40 @@ final class AppState: ObservableObject {
         catch { errorMessage = error.localizedDescription }
     }
 
+    private func reconcileFocusReminder() {
+        guard focusReminder.reconcile() else { return }
+        do {
+            try focusReminderStore.save(focusReminder)
+            focusReminderBanner = "Time for a short focus check-in."
+            NSSound.beep()
+            NSApp.requestUserAttention(.informationalRequest)
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func setFocusReminderEnabled(_ enabled: Bool) {
+        focusReminder.setEnabled(enabled)
+        if !enabled { focusReminderBanner = nil }
+        saveFocusReminder()
+    }
+
+    func setFocusReminderInterval(_ minutes: Int) {
+        focusReminder.setInterval(minutes: minutes)
+        saveFocusReminder()
+    }
+
+    func snoozeFocusReminder() {
+        focusReminder.snooze()
+        focusReminderBanner = nil
+        saveFocusReminder()
+    }
+
+    func dismissFocusReminder() { focusReminderBanner = nil }
+
+    private func saveFocusReminder() {
+        do { try focusReminderStore.save(focusReminder); errorMessage = nil }
+        catch { errorMessage = error.localizedDescription }
+    }
+
     func setTheme(_ theme: ThemeMode) {
         var draft = settings
         draft.theme = theme
@@ -430,6 +469,9 @@ final class AppState: ObservableObject {
             try pomodoroStore.save(pomodoro)
             utilityTimers = UtilityTimers()
             try utilityTimersStore.save(utilityTimers)
+            focusReminder = FocusReminder()
+            try focusReminderStore.save(focusReminder)
+            focusReminderBanner = nil
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }
