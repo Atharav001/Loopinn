@@ -37,16 +37,16 @@
 | FR-21 | P04 | Smart classification | IN REVIEW | PR #12 branch | Longest matching user rule categorizes logs; unknown remains Uncategorized; correction acceptance pending. |
 | FR-22 | P04 | Custom classification dictionary | IN REVIEW | PR #12 branch | Rule add/remove persists with the logbook; edit/import acceptance pending. |
 | FR-23 | P04 | Quiet hours & skip handling | IN REVIEW | PR #12 branch | Overnight quiet hours and skipped hourly prompts compile; timezone and runtime acceptance pending. |
-| FR-07 | P05 | Desktop task widgets | UNVERIFIED | — | — |
+| FR-07 | P05 | Desktop task widgets | IN REVIEW | PR #12 branch | WidgetKit extension, App Group snapshot, task completion and add-task deep links compile and package; signed installation and action acceptance pending. |
 | FR-30 | P05 | Productivity dashboard | IN REVIEW | PR #12 branch | Tracked time and entry totals use saved activity logs; full dashboard acceptance pending. |
 | FR-31 | P05 | Category charts | IN REVIEW | PR #12 branch | Category bars use clipped log durations; overlap policy and UI acceptance pending. |
-| FR-32 | P05 | Focus performance insights | UNVERIFIED | — | — |
+| FR-32 | P05 | Focus performance insights | IN REVIEW | PR #12 branch | Completed focus records include active duration and feed period insights; boundary attribution and runtime acceptance pending. |
 | FR-33 | P05 | Historical reports | IN REVIEW | PR #12 branch | Day/week/month/year activity period selection compiles; report details and UI acceptance pending. |
 | FR-34 | P05 | Data export | IN REVIEW | PR #12 branch | CSV and JSON activity export compile; large-data and round-trip acceptance pending. |
-| FR-37 | P05 | Music controls | UNVERIFIED | — | — |
-| FR-38 | P05 | Music visualizer | UNVERIFIED | — | — |
-| FR-44 | P05 | File shelf & clipboard | UNVERIFIED | — | — |
-| FR-45 | P05 | System controls & webcam | UNVERIFIED | — | — |
+| FR-37 | P05 | Music controls | IN REVIEW | PR #12 branch | Player-specific Music/Spotify controls show real unavailable or permission state; live player acceptance pending. |
+| FR-38 | P05 | Music visualizer | IN REVIEW | PR #12 branch | Optional playback animation stops while paused and honors Reduce Motion/Low Power Mode; live media acceptance pending. |
+| FR-44 | P05 | File shelf & clipboard | IN REVIEW | PR #12 branch | Opt-in bookmarked file shelf and manual bounded clipboard capture, pin and cleanup compile; runtime permission acceptance pending. |
+| FR-45 | P05 | System controls & webcam | IN REVIEW | PR #12 branch | Battery status, system settings routes and consent-gated camera mirror compile; hardware/permission acceptance pending. |
 | FR-48 | P06 | Cloud account & synchronization | UNVERIFIED | — | — |
 | FR-49 | P06 | Android companion | UNVERIFIED | — | — |
 | FR-50 | P06 | Cross-device task/timer sharing | UNVERIFIED | — | — |

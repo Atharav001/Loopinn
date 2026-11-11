@@ -1,6 +1,7 @@
 import AppKit
 import LoopinnCore
 import SwiftUI
+import WidgetKit
 
 @MainActor
 final class AppState: ObservableObject {
@@ -17,6 +18,7 @@ final class AppState: ObservableObject {
     @Published var alertGlowUntil: Date?
     @Published private(set) var activityLogbook = ActivityLogbook()
     @Published var activityPrompt: DateInterval?
+    @Published private(set) var utilityShelf = UtilityShelf()
     @Published private(set) var appleEvents: [ExternalCalendarEvent] = []
     @Published private(set) var appleCalendars: [CalendarChoice] = []
     @Published private(set) var appleCalendarConnected = false
@@ -42,6 +44,7 @@ final class AppState: ObservableObject {
     private let dataDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         .appendingPathComponent("Loopinn", isDirectory: true)
     private var activityStore: ActivityLogStore { ActivityLogStore(directory: dataDirectory) }
+    private var utilityShelfStore: UtilityShelfStore { UtilityShelfStore(directory: dataDirectory) }
     var canEditSettings: Bool { settingsWritable }
 
     init() {
@@ -80,6 +83,8 @@ final class AppState: ObservableObject {
                 try activityStore.save(activityLogbook)
             }
         } catch { errorMessage = "Activity logbook could not be opened: \(error.localizedDescription)" }
+        do { utilityShelf = try utilityShelfStore.load() }
+        catch { errorMessage = "Utility shelf could not be opened: \(error.localizedDescription)" }
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.reconcilePomodoro()
@@ -92,6 +97,7 @@ final class AppState: ObservableObject {
         if appleCalendarConnected { refreshAppleCalendar() }
         googleCalendarConnected = googleCalendar.isConnected && !(settings.googleClientID ?? "").isEmpty
         if googleCalendarConnected { refreshGoogleCalendar() }
+        publishWidgetSnapshot()
     }
 
     func connectAppleCalendar() {
@@ -286,6 +292,11 @@ final class AppState: ObservableObject {
         savePomodoro()
     }
 
+    func configurePomodoro(focus: Int, shortBreak: Int, longBreak: Int, every: Int, autoAdvance: Bool) {
+        pomodoro.configure(focus: focus, shortBreak: shortBreak, longBreak: longBreak, longBreakEvery: every, autoAdvance: autoAdvance)
+        savePomodoro()
+    }
+
     func startDeepWork(minutes: Int, taskID: UUID?) {
         pomodoro.startDeepWork(minutes: minutes, taskID: taskID)
         savePomodoro()
@@ -428,6 +439,65 @@ final class AppState: ObservableObject {
 
     func skipActivityPrompt() { activityPrompt = nil }
 
+    func addShelfFile() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let bookmark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+            var draft = utilityShelf
+            draft.files.append(ShelfFile(name: url.lastPathComponent, bookmark: bookmark))
+            try utilityShelfStore.save(draft)
+            utilityShelf = draft
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func openShelfFile(_ file: ShelfFile) {
+        do {
+            var stale = false
+            let url = try URL(resolvingBookmarkData: file.bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &stale)
+            let granted = url.startAccessingSecurityScopedResource()
+            defer { if granted { url.stopAccessingSecurityScopedResource() } }
+            guard FileManager.default.fileExists(atPath: url.path) else { errorMessage = "This file is no longer available."; return }
+            NSWorkspace.shared.open(url)
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func removeShelfFile(_ id: UUID) {
+        var draft = utilityShelf
+        draft.files.removeAll { $0.id == id }
+        saveShelf(draft)
+    }
+
+    func captureClipboard() {
+        guard let value = NSPasteboard.general.string(forType: .string) else {
+            errorMessage = "The clipboard has no text to capture."
+            return
+        }
+        var draft = utilityShelf
+        draft.capture(value)
+        saveShelf(draft)
+    }
+
+    func toggleClipPin(_ id: UUID) {
+        var draft = utilityShelf
+        draft.togglePin(id)
+        saveShelf(draft)
+    }
+
+    func removeClip(_ id: UUID) {
+        var draft = utilityShelf
+        draft.removeClip(id)
+        saveShelf(draft)
+    }
+
+    private func saveShelf(_ draft: UtilityShelf) {
+        do { try utilityShelfStore.save(draft); utilityShelf = draft; errorMessage = nil }
+        catch { errorMessage = error.localizedDescription }
+    }
+
     func exportActivities(asJSON: Bool) {
         let panel = NSSavePanel()
         panel.nameFieldStringValue = asJSON ? "loopinn-activities.json" : "loopinn-activities.csv"
@@ -530,6 +600,7 @@ final class AppState: ObservableObject {
             previousWorkspace = workspace
             canUndo = true
             workspace = snapshot.workspace
+            publishWidgetSnapshot()
             settings = snapshot.settings
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
@@ -546,6 +617,7 @@ final class AppState: ObservableObject {
             freshSettings.hasCompletedOnboarding = true
             try database.save(empty)
             workspace = empty
+            publishWidgetSnapshot()
             previousWorkspace = nil
             canUndo = false
             try attachmentStore.prune(keeping: [])
@@ -567,6 +639,8 @@ final class AppState: ObservableObject {
             activityLogbook = ActivityLogbook()
             try activityStore.save(activityLogbook)
             activityPrompt = nil
+            utilityShelf = UtilityShelf()
+            try utilityShelfStore.save(utilityShelf)
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }
@@ -671,6 +745,7 @@ final class AppState: ObservableObject {
         do {
             try database.save(previousWorkspace)
             workspace = previousWorkspace
+            publishWidgetSnapshot()
             self.previousWorkspace = nil
             canUndo = false
             errorMessage = nil
@@ -682,6 +757,15 @@ final class AppState: ObservableObject {
 
     func toggleTask(_ task: LoopTask) {
         mutate { try service.setCompleted(task.completedAt == nil, taskID: task.id, in: &$0) }
+    }
+
+    func handleWidgetURL(_ url: URL) {
+        guard url.scheme == "loopinn" else { return }
+        if url.host == "complete-task", let id = UUID(uuidString: url.lastPathComponent),
+           let task = workspace.tasks.first(where: { $0.id == id && $0.completedAt == nil }) {
+            mutate { try service.setCompleted(true, taskID: task.id, in: &$0) }
+        }
+        selectedPage = .tasks
     }
 
     var nextTask: LoopTask? {
@@ -719,6 +803,7 @@ final class AppState: ObservableObject {
             previousWorkspace = workspace
             canUndo = true
             workspace = draft
+            publishWidgetSnapshot()
             errorMessage = nil
             if let attachmentStore {
                 let current = draft.tasks.flatMap { $0.attachments ?? [] }
@@ -728,6 +813,11 @@ final class AppState: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func publishWidgetSnapshot() {
+        try? WidgetSnapshotStore.save(WidgetSnapshot(workspace: workspace))
+        WidgetCenter.shared.reloadTimelines(ofKind: "LoopinnTasksWidget")
     }
 }
 
@@ -750,6 +840,7 @@ struct LoopinnApp: App {
         Window("Loopinn", id: "dashboard") {
             DashboardView(state: state)
                 .frame(minWidth: 900, minHeight: 600)
+                .onOpenURL { state.handleWidgetURL($0) }
         }
         .defaultLaunchBehavior(.suppressed)
         .commands { DashboardCommands(state: state) }

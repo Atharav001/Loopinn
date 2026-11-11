@@ -2,6 +2,11 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — P05 widgets, media and utilities (in review)
+- Added an Xcode project and packaged WidgetKit task extension using an App Group snapshot and task/add deep links. The app still opens as a menu bar accessory by default.
+- Added explicit file shelf and clipboard capture, Music/Spotify controls with truthful unavailable states, playback animation honoring Reduce Motion and Low Power Mode, battery/system settings controls, and a consent-gated camera mirror.
+- Added completed focus-session records and duration-based insights, plus configurable short/long Pomodoro breaks and optional manual phase advance. Unsigned Xcode app and embedded extension build; 49/49 core checks pass. Signed widget installation and runtime permissions remain unverified.
+
 ## 11 November 2026 — permission-gated voice draft (in review)
 - Added microphone and speech recognition permission requests, live transcription, and explicit stop. Recognized words fill the editable activity form and never save without user action. The packaged app declares both required usage descriptions.
 - Local Swift checks pass; live permission and transcription acceptance pending.

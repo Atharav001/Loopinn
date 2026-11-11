@@ -43,6 +43,7 @@ struct MenuContent: View {
             Button("Open Calendar", systemImage: "calendar.circle") { show(.calendar) }
             Button("Open Logbook", systemImage: "text.book.closed") { show(.logbook) }
             Button("Open Timeline", systemImage: "square.split.2x1") { show(.timeline) }
+            Button("Open Utilities", systemImage: "square.grid.2x2") { show(.utilities) }
             Button("Log Last Hour", systemImage: "square.and.pencil") { FloatingPanelManager.shared.showQuickLog(state: state) }
             Button("Open Focus", systemImage: "moon.stars") { show(.focus) }
             Button("Open Application Window", systemImage: "macwindow") { show(.today) }
@@ -64,6 +65,11 @@ struct MenuContent: View {
         .frame(width: 280)
         .preferredColorScheme(state.settings.theme.colorScheme)
         .tint(state.settings.accent.color)
+        .onOpenURL { url in
+            state.handleWidgetURL(url)
+            openWindow(id: "dashboard")
+            NSApp.activate(ignoringOtherApps: true)
+        }
     }
 
     private func add() {
@@ -79,7 +85,7 @@ struct MenuContent: View {
 }
 
 enum DashboardPage: String, CaseIterable, Identifiable {
-    case today = "Today", tasks = "Tasks", planner = "Planner", calendar = "Calendar", timeline = "Timeline", logbook = "Logbook", focus = "Focus", analytics = "Analytics", settings = "Settings"
+    case today = "Today", tasks = "Tasks", planner = "Planner", calendar = "Calendar", timeline = "Timeline", logbook = "Logbook", focus = "Focus", analytics = "Analytics", utilities = "Utilities", settings = "Settings"
     var id: Self { self }
     var icon: String {
         switch self {
@@ -91,6 +97,7 @@ enum DashboardPage: String, CaseIterable, Identifiable {
         case .logbook: "text.book.closed"
         case .focus: "timer"
         case .analytics: "chart.bar"
+        case .utilities: "square.grid.2x2"
         case .settings: "gearshape"
         }
     }
@@ -161,6 +168,8 @@ struct DashboardView: View {
                     FocusDashboardView(state: state)
                 case .analytics:
                     AnalyticsView(state: state)
+                case .utilities:
+                    UtilitiesView(state: state)
                 case .settings:
                     settingsContent
                 }

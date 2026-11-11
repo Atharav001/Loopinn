@@ -69,6 +69,7 @@ struct FocusDashboardView: View {
                         Text("\(state.pomodoro.completedCycles)").font(.title2.weight(.semibold))
                     }
                 }
+                pomodoroSettingsCard
                 deepWorkCard
                 focusReminderCard
                 utilityTimersCard
@@ -89,6 +90,46 @@ struct FocusDashboardView: View {
     private var linkedTaskName: String? {
         guard state.pomodoro.mode == .deepWork, let id = state.pomodoro.linkedTaskID else { return nil }
         return state.workspace.tasks.first(where: { $0.id == id })?.title ?? "Linked task no longer available"
+    }
+
+    private var pomodoroSettingsCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Pomodoro rhythm").font(.headline)
+            Text("Adjust the work and break pattern before starting a session.")
+                .font(.subheadline).foregroundStyle(.secondary)
+            Stepper("Focus: \(state.pomodoro.focusMinutes) min", value: Binding(
+                get: { state.pomodoro.focusMinutes },
+                set: { configurePomodoro(focus: $0) }
+            ), in: 1...180)
+            Stepper("Short break: \(state.pomodoro.breakMinutes) min", value: Binding(
+                get: { state.pomodoro.breakMinutes },
+                set: { configurePomodoro(shortBreak: $0) }
+            ), in: 1...60)
+            Stepper("Long break: \(state.pomodoro.longBreakMinutes) min", value: Binding(
+                get: { state.pomodoro.longBreakMinutes },
+                set: { configurePomodoro(longBreak: $0) }
+            ), in: 1...120)
+            Stepper("Long break every \(state.pomodoro.cyclesBeforeLongBreak) cycles", value: Binding(
+                get: { state.pomodoro.cyclesBeforeLongBreak },
+                set: { configurePomodoro(every: $0) }
+            ), in: 2...12)
+            Toggle("Move to the next phase automatically", isOn: Binding(
+                get: { state.pomodoro.autoAdvance },
+                set: { configurePomodoro(autoAdvance: $0) }
+            ))
+        }
+        .disabled(state.pomodoro.status == .running || state.pomodoro.status == .paused)
+        .padding(24)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+    }
+
+    private func configurePomodoro(focus: Int? = nil, shortBreak: Int? = nil, longBreak: Int? = nil, every: Int? = nil, autoAdvance: Bool? = nil) {
+        state.configurePomodoro(focus: focus ?? state.pomodoro.focusMinutes,
+                                shortBreak: shortBreak ?? state.pomodoro.breakMinutes,
+                                longBreak: longBreak ?? state.pomodoro.longBreakMinutes,
+                                every: every ?? state.pomodoro.cyclesBeforeLongBreak,
+                                autoAdvance: autoAdvance ?? state.pomodoro.autoAdvance)
     }
 
     private var deepWorkCard: some View {

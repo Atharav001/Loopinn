@@ -9,6 +9,7 @@ struct AnalyticsView: View {
 
     private var interval: DateInterval { CalendarLayout.interval(containing: selectedDate, scope: scope) }
     private var summary: ActivitySummary { ActivitySummary(entries: state.activityLogbook.entries, during: interval) }
+    private var focus: FocusInsights { FocusInsights(records: state.pomodoro.focusHistory, during: interval) }
     private var categories: [(name: String, seconds: TimeInterval)] {
         summary.categorySeconds.map { ($0.key, $0.value) }.sorted { $0.seconds > $1.seconds }
     }
@@ -28,10 +29,13 @@ struct AnalyticsView: View {
                 HStack(spacing: 12) {
                     metric("Tracked", value: String(format: "%.1f h", summary.trackedSeconds / 3600), icon: "clock")
                     metric("Entries", value: "\(summary.entryCount)", icon: "text.book.closed")
-                    metric("Focus cycles", value: "\(state.pomodoro.completedCycles)", icon: "timer")
+                    metric("Focused", value: String(format: "%.1f h", focus.focusedSeconds / 3600), icon: "timer")
+                    metric("Sessions", value: "\(focus.completedSessions)", icon: "checkmark.circle")
                 }
                 Text("Tracked time comes only from activity entries. Planned calendar blocks are kept separate.")
                     .font(.subheadline).foregroundStyle(.secondary)
+                Text("Focus time uses completed timer sessions and is separate from activity logs. Boundary splits are proportional when a session spans a period.")
+                    .font(.caption).foregroundStyle(.secondary)
                 if categories.isEmpty {
                     ContentUnavailableView("No activity in this period", systemImage: "chart.bar")
                 } else {

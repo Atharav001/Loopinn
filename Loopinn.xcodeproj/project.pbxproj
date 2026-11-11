@@ -1,0 +1,746 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		036A88F4D447E2FE33475A8A /* RippleFocusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75833C3524CE133119C9194B /* RippleFocusView.swift */; };
+		1A999894E68695879BF748B7 /* ActivityAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1C388B8195E7C0AC22740B /* ActivityAnalytics.swift */; };
+		25DD5E5245482B101A3D6261 /* LoopinnTasksWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ABF2FEC9171F35791C31FB33 /* LoopinnTasksWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3365F52AF82C77FD7E6C2F61 /* ActivityExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1611832E479CB06FEA1474B2 /* ActivityExport.swift */; };
+		35E977F345B782C8C0E60E23 /* DashboardCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D43A2E211E79F56B330F734 /* DashboardCommands.swift */; };
+		4896499B8F316105C2AA5811 /* UtilitiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD8618113E39F01FA1C4F73B /* UtilitiesView.swift */; };
+		4A0BE8379C85AF417F4BDD2C /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46F32FAEC4FF9574292F66A /* DesignSystem.swift */; };
+		526342761CD5F183641BB8AB /* WorkspaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584922B33B616309F16880F1 /* WorkspaceService.swift */; };
+		539A602D46F35173DAEBDD8F /* OmBell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD8A3994E55EF7000529D49C /* OmBell.swift */; };
+		54EB7FE9313EFF1DF741342F /* LoopinnCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BB949D09A0E21C8960341A64 /* LoopinnCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		60FA5BC3F7D76FBE7D09D2DA /* PomodoroSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C26DD3D6DECC041888F9936 /* PomodoroSession.swift */; };
+		628BB23C8BD7B3866A6583B4 /* CalendarLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C285EB50B315E0694B2ECA40 /* CalendarLayout.swift */; };
+		6302A40A78229CEE20DBFD40 /* LoopinnCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB949D09A0E21C8960341A64 /* LoopinnCore.framework */; };
+		6E039902393EC1947CCEC530 /* LoopinnTasksWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9231E11D51073CA7B1DFC8C5 /* LoopinnTasksWidget.swift */; };
+		70B7D3BF380BE03CEE569880 /* LoopinnApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 322429F5292D1FC25FB07527 /* LoopinnApp.swift */; };
+		70E891961FD2836DAF045BF9 /* FocusReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44C2E4E7E9BB3ADC137DE39 /* FocusReminder.swift */; };
+		710D51A4FBD66CE520DF9AC2 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD12321D0A4D71FB610EFC9 /* Models.swift */; };
+		719743ADC8295A69AF08C8F9 /* LoopinnCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BB949D09A0E21C8960341A64 /* LoopinnCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		752A7694654E8A1880D51D86 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576499B041A59833C10DCF94 /* OnboardingView.swift */; };
+		7C1F7F3950E7E3C06FC9A434 /* AttachmentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B92B867A92B7E8B29C87121 /* AttachmentStore.swift */; };
+		7E3EF04FE8C37570806DC08E /* ActivityTimeParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BDA0DB7B799C4B45DCA3F1 /* ActivityTimeParser.swift */; };
+		811FD792F46906B2FECFECC7 /* FloatingTaskPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A91B5E22930D0D1973E5A5 /* FloatingTaskPanel.swift */; };
+		8B68C9674DE4A06E4F85E123 /* TaskRecommendations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1379DA06128D930AE0FE83 /* TaskRecommendations.swift */; };
+		8BEA150825B6CFDB53AFFC5B /* LoopinnCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB949D09A0E21C8960341A64 /* LoopinnCore.framework */; };
+		929615905472059C8D361BF0 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9829EF055F594F723B473C61 /* libsqlite3.tbd */; };
+		98655EE1AFFEBB39BD405F75 /* VoiceLogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0EF2BEB2C778E54C812CC31 /* VoiceLogService.swift */; };
+		9F0E820130AADCEE5E5E21EF /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDB11144489FB9F857A4CDB7 /* DashboardView.swift */; };
+		A74CDA72797AA398F85F9B77 /* MediaControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A079F75E5EA70D601DE9906 /* MediaControlsView.swift */; };
+		A79D1B197D81069952ADF0AE /* ActivityLogbook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0184E034FBA8275ABAF814CB /* ActivityLogbook.swift */; };
+		AFEAF4E5E015CD7ACD4DE2E1 /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00337C4BD4DE9BA3F752589 /* AnalyticsView.swift */; };
+		B16A73410BA2F1BF1018CDE4 /* WorkspaceDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA88803C23F112BD2A9A0FF /* WorkspaceDatabase.swift */; };
+		B2B56DBF56814C548B294490 /* CommandPaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF88CEDBE89D875765EAAF9A /* CommandPaletteView.swift */; };
+		B65C547F742CBAB6E0BDC9A9 /* SystemUtilitiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F4D2BAFF48F8BB622F3A18 /* SystemUtilitiesView.swift */; };
+		BC6DD764D1AD2C6D34DDA7F8 /* WorkspaceBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22738DF849B251B67B2DDE4F /* WorkspaceBackup.swift */; };
+		C10E8E9F6E6960C577412860 /* ActivityTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1389DDB3C64E64913420AF4D /* ActivityTimelineView.swift */; };
+		C23CE7191F80C90C70210E61 /* GoogleCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68B38CA020D1EC4A8A62AB3F /* GoogleCalendarService.swift */; };
+		C382265B9A8CE14790978E9B /* TaskCaptureParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4642AB4F0FF5783B14517EBC /* TaskCaptureParser.swift */; };
+		C869B9095017B3819D1455CC /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87A4FC8D87C1BD84028997B6 /* WidgetSnapshot.swift */; };
+		CAA9D7222C2E14DE7BBFF91B /* FocusInsights.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCB139069661DE38AC853EB3 /* FocusInsights.swift */; };
+		D04B004D55E13A04BF40847E /* AppleCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442EBD439EDF09E56F63030C /* AppleCalendarService.swift */; };
+		DDE198C28ACA1B9D7B0ACE1F /* UtilityTimers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74F5147627AF2F5FF52A0EF7 /* UtilityTimers.swift */; };
+		E3F0E468FC87FD66FCD27531 /* FocusDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03A5D6CBB9E126500C9E1BE /* FocusDashboardView.swift */; };
+		ECCF3838245E0914AD92FBED /* CalendarDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8ADAD1BBFA58CA060D28CD3 /* CalendarDashboardView.swift */; };
+		F0F248CA6EC863E1EF3A9366 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C81FDDFA02E3E82EDB53D /* AppSettings.swift */; };
+		F685B9A0018C32754FC65C07 /* ActivityLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 735B1DD6C098C80655923848 /* ActivityLogView.swift */; };
+		FCE425998B593348B5DE50EB /* UtilityShelf.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25C15DFEBA533C7E7E5A2FB /* UtilityShelf.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		12157217FD0826FC39A7FEB9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0245F89C3044FB025ED7DCF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C772106279DCE6046C904B71;
+			remoteInfo = LoopinnTasksWidget;
+		};
+		1EA3FBCF59B644A0288F6F66 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0245F89C3044FB025ED7DCF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F09FA0E6087C0E66CBE7E105;
+			remoteInfo = LoopinnCore;
+		};
+		FF0DC26FAA34869BCD15075F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0245F89C3044FB025ED7DCF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F09FA0E6087C0E66CBE7E105;
+			remoteInfo = LoopinnCore;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		906C493955594886EEAAFCB1 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				719743ADC8295A69AF08C8F9 /* LoopinnCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ADC3FD3B05839081BE812A84 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				54EB7FE9313EFF1DF741342F /* LoopinnCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FC1B1C7CD82E48EA8C4B4133 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				25DD5E5245482B101A3D6261 /* LoopinnTasksWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0184E034FBA8275ABAF814CB /* ActivityLogbook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogbook.swift; sourceTree = "<group>"; };
+		1389DDB3C64E64913420AF4D /* ActivityTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityTimelineView.swift; sourceTree = "<group>"; };
+		1611832E479CB06FEA1474B2 /* ActivityExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityExport.swift; sourceTree = "<group>"; };
+		1A079F75E5EA70D601DE9906 /* MediaControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaControlsView.swift; sourceTree = "<group>"; };
+		22738DF849B251B67B2DDE4F /* WorkspaceBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceBackup.swift; sourceTree = "<group>"; };
+		2D43A2E211E79F56B330F734 /* DashboardCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardCommands.swift; sourceTree = "<group>"; };
+		322429F5292D1FC25FB07527 /* LoopinnApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopinnApp.swift; sourceTree = "<group>"; };
+		32A91B5E22930D0D1973E5A5 /* FloatingTaskPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingTaskPanel.swift; sourceTree = "<group>"; };
+		3B92B867A92B7E8B29C87121 /* AttachmentStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentStore.swift; sourceTree = "<group>"; };
+		442EBD439EDF09E56F63030C /* AppleCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCalendarService.swift; sourceTree = "<group>"; };
+		4642AB4F0FF5783B14517EBC /* TaskCaptureParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCaptureParser.swift; sourceTree = "<group>"; };
+		51BDA0DB7B799C4B45DCA3F1 /* ActivityTimeParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityTimeParser.swift; sourceTree = "<group>"; };
+		53186A4641482D13B7F29A87 /* Loopinn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Loopinn.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		576499B041A59833C10DCF94 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		584922B33B616309F16880F1 /* WorkspaceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceService.swift; sourceTree = "<group>"; };
+		68B38CA020D1EC4A8A62AB3F /* GoogleCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleCalendarService.swift; sourceTree = "<group>"; };
+		6E1379DA06128D930AE0FE83 /* TaskRecommendations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRecommendations.swift; sourceTree = "<group>"; };
+		735B1DD6C098C80655923848 /* ActivityLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogView.swift; sourceTree = "<group>"; };
+		74F5147627AF2F5FF52A0EF7 /* UtilityTimers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityTimers.swift; sourceTree = "<group>"; };
+		75833C3524CE133119C9194B /* RippleFocusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RippleFocusView.swift; sourceTree = "<group>"; };
+		7E1C388B8195E7C0AC22740B /* ActivityAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityAnalytics.swift; sourceTree = "<group>"; };
+		87A4FC8D87C1BD84028997B6 /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshot.swift; sourceTree = "<group>"; };
+		9231E11D51073CA7B1DFC8C5 /* LoopinnTasksWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopinnTasksWidget.swift; sourceTree = "<group>"; };
+		9829EF055F594F723B473C61 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		9C26DD3D6DECC041888F9936 /* PomodoroSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroSession.swift; sourceTree = "<group>"; };
+		9DA88803C23F112BD2A9A0FF /* WorkspaceDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceDatabase.swift; sourceTree = "<group>"; };
+		9FD12321D0A4D71FB610EFC9 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A7F4D2BAFF48F8BB622F3A18 /* SystemUtilitiesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemUtilitiesView.swift; sourceTree = "<group>"; };
+		ABF2FEC9171F35791C31FB33 /* LoopinnTasksWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LoopinnTasksWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AD8618113E39F01FA1C4F73B /* UtilitiesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilitiesView.swift; sourceTree = "<group>"; };
+		B0EF2BEB2C778E54C812CC31 /* VoiceLogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceLogService.swift; sourceTree = "<group>"; };
+		B25C15DFEBA533C7E7E5A2FB /* UtilityShelf.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityShelf.swift; sourceTree = "<group>"; };
+		BB949D09A0E21C8960341A64 /* LoopinnCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = LoopinnCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BD8A3994E55EF7000529D49C /* OmBell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OmBell.swift; sourceTree = "<group>"; };
+		C285EB50B315E0694B2ECA40 /* CalendarLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarLayout.swift; sourceTree = "<group>"; };
+		C44C2E4E7E9BB3ADC137DE39 /* FocusReminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusReminder.swift; sourceTree = "<group>"; };
+		C8ADAD1BBFA58CA060D28CD3 /* CalendarDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarDashboardView.swift; sourceTree = "<group>"; };
+		D03A5D6CBB9E126500C9E1BE /* FocusDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusDashboardView.swift; sourceTree = "<group>"; };
+		D46F32FAEC4FF9574292F66A /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		DCB139069661DE38AC853EB3 /* FocusInsights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusInsights.swift; sourceTree = "<group>"; };
+		DD9C81FDDFA02E3E82EDB53D /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		E00337C4BD4DE9BA3F752589 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
+		EDB11144489FB9F857A4CDB7 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		FF88CEDBE89D875765EAAF9A /* CommandPaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandPaletteView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		86049BAC8750CC7FA4EA2A5D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8BEA150825B6CFDB53AFFC5B /* LoopinnCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AD8098F0990B4D41E375EAFB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6302A40A78229CEE20DBFD40 /* LoopinnCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EFC81A477CF5DD839B003592 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				929615905472059C8D361BF0 /* libsqlite3.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		27868FC6A911A8C4081A353A /* LoopinnTasksWidget */ = {
+			isa = PBXGroup;
+			children = (
+				9231E11D51073CA7B1DFC8C5 /* LoopinnTasksWidget.swift */,
+			);
+			name = LoopinnTasksWidget;
+			path = Sources/LoopinnTasksWidget;
+			sourceTree = "<group>";
+		};
+		2E6FD03CD335EEFF7E92D562 /* Loopinn */ = {
+			isa = PBXGroup;
+			children = (
+				735B1DD6C098C80655923848 /* ActivityLogView.swift */,
+				1389DDB3C64E64913420AF4D /* ActivityTimelineView.swift */,
+				E00337C4BD4DE9BA3F752589 /* AnalyticsView.swift */,
+				442EBD439EDF09E56F63030C /* AppleCalendarService.swift */,
+				C8ADAD1BBFA58CA060D28CD3 /* CalendarDashboardView.swift */,
+				FF88CEDBE89D875765EAAF9A /* CommandPaletteView.swift */,
+				2D43A2E211E79F56B330F734 /* DashboardCommands.swift */,
+				EDB11144489FB9F857A4CDB7 /* DashboardView.swift */,
+				D46F32FAEC4FF9574292F66A /* DesignSystem.swift */,
+				32A91B5E22930D0D1973E5A5 /* FloatingTaskPanel.swift */,
+				D03A5D6CBB9E126500C9E1BE /* FocusDashboardView.swift */,
+				68B38CA020D1EC4A8A62AB3F /* GoogleCalendarService.swift */,
+				322429F5292D1FC25FB07527 /* LoopinnApp.swift */,
+				1A079F75E5EA70D601DE9906 /* MediaControlsView.swift */,
+				BD8A3994E55EF7000529D49C /* OmBell.swift */,
+				576499B041A59833C10DCF94 /* OnboardingView.swift */,
+				75833C3524CE133119C9194B /* RippleFocusView.swift */,
+				A7F4D2BAFF48F8BB622F3A18 /* SystemUtilitiesView.swift */,
+				AD8618113E39F01FA1C4F73B /* UtilitiesView.swift */,
+				B0EF2BEB2C778E54C812CC31 /* VoiceLogService.swift */,
+			);
+			name = Loopinn;
+			path = Sources/Loopinn;
+			sourceTree = "<group>";
+		};
+		815EFE5B05399E677ADD81E2 = {
+			isa = PBXGroup;
+			children = (
+				2E6FD03CD335EEFF7E92D562 /* Loopinn */,
+				A14D7F19E1141BA35FD1342C /* LoopinnCore */,
+				27868FC6A911A8C4081A353A /* LoopinnTasksWidget */,
+				D747A84C1603F449310609D2 /* Frameworks */,
+				81AC1F554ACF583C2BDDD80F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		81AC1F554ACF583C2BDDD80F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				53186A4641482D13B7F29A87 /* Loopinn.app */,
+				BB949D09A0E21C8960341A64 /* LoopinnCore.framework */,
+				ABF2FEC9171F35791C31FB33 /* LoopinnTasksWidget.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A14D7F19E1141BA35FD1342C /* LoopinnCore */ = {
+			isa = PBXGroup;
+			children = (
+				7E1C388B8195E7C0AC22740B /* ActivityAnalytics.swift */,
+				1611832E479CB06FEA1474B2 /* ActivityExport.swift */,
+				0184E034FBA8275ABAF814CB /* ActivityLogbook.swift */,
+				51BDA0DB7B799C4B45DCA3F1 /* ActivityTimeParser.swift */,
+				DD9C81FDDFA02E3E82EDB53D /* AppSettings.swift */,
+				3B92B867A92B7E8B29C87121 /* AttachmentStore.swift */,
+				C285EB50B315E0694B2ECA40 /* CalendarLayout.swift */,
+				DCB139069661DE38AC853EB3 /* FocusInsights.swift */,
+				C44C2E4E7E9BB3ADC137DE39 /* FocusReminder.swift */,
+				9FD12321D0A4D71FB610EFC9 /* Models.swift */,
+				9C26DD3D6DECC041888F9936 /* PomodoroSession.swift */,
+				4642AB4F0FF5783B14517EBC /* TaskCaptureParser.swift */,
+				6E1379DA06128D930AE0FE83 /* TaskRecommendations.swift */,
+				B25C15DFEBA533C7E7E5A2FB /* UtilityShelf.swift */,
+				74F5147627AF2F5FF52A0EF7 /* UtilityTimers.swift */,
+				87A4FC8D87C1BD84028997B6 /* WidgetSnapshot.swift */,
+				22738DF849B251B67B2DDE4F /* WorkspaceBackup.swift */,
+				9DA88803C23F112BD2A9A0FF /* WorkspaceDatabase.swift */,
+				584922B33B616309F16880F1 /* WorkspaceService.swift */,
+			);
+			name = LoopinnCore;
+			path = Sources/LoopinnCore;
+			sourceTree = "<group>";
+		};
+		D747A84C1603F449310609D2 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9829EF055F594F723B473C61 /* libsqlite3.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		70EDF34DFECB66B2169EEF88 /* Loopinn */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E3F82B1A6A8E66896DFA4CA9 /* Build configuration list for PBXNativeTarget "Loopinn" */;
+			buildPhases = (
+				770410B447A30A265C4D8C81 /* Sources */,
+				AD8098F0990B4D41E375EAFB /* Frameworks */,
+				FC1B1C7CD82E48EA8C4B4133 /* Embed Foundation Extensions */,
+				906C493955594886EEAAFCB1 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2D4993DDEDC727B9751F8063 /* PBXTargetDependency */,
+				ED06C6FD96977A407CAD9F1F /* PBXTargetDependency */,
+			);
+			name = Loopinn;
+			packageProductDependencies = (
+			);
+			productName = Loopinn;
+			productReference = 53186A4641482D13B7F29A87 /* Loopinn.app */;
+			productType = "com.apple.product-type.application";
+		};
+		C772106279DCE6046C904B71 /* LoopinnTasksWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ADB9E2E6DA6B7C4ED1B70FA1 /* Build configuration list for PBXNativeTarget "LoopinnTasksWidget" */;
+			buildPhases = (
+				0116FA3EA5EC3F37E49F4544 /* Sources */,
+				86049BAC8750CC7FA4EA2A5D /* Frameworks */,
+				ADC3FD3B05839081BE812A84 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				52320945FC10B1FC291A6B0B /* PBXTargetDependency */,
+			);
+			name = LoopinnTasksWidget;
+			packageProductDependencies = (
+			);
+			productName = LoopinnTasksWidget;
+			productReference = ABF2FEC9171F35791C31FB33 /* LoopinnTasksWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		F09FA0E6087C0E66CBE7E105 /* LoopinnCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C7DB9AF2A5564164BC2F6173 /* Build configuration list for PBXNativeTarget "LoopinnCore" */;
+			buildPhases = (
+				59BAFF8FD50B2513EB1F5D24 /* Sources */,
+				EFC81A477CF5DD839B003592 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LoopinnCore;
+			packageProductDependencies = (
+			);
+			productName = LoopinnCore;
+			productReference = BB949D09A0E21C8960341A64 /* LoopinnCore.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0245F89C3044FB025ED7DCF6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					70EDF34DFECB66B2169EEF88 = {
+						ProvisioningStyle = Automatic;
+					};
+					C772106279DCE6046C904B71 = {
+						ProvisioningStyle = Automatic;
+					};
+					F09FA0E6087C0E66CBE7E105 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = D9C5F21FF2755D2632B39354 /* Build configuration list for PBXProject "Loopinn" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 815EFE5B05399E677ADD81E2;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 81AC1F554ACF583C2BDDD80F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F09FA0E6087C0E66CBE7E105 /* LoopinnCore */,
+				70EDF34DFECB66B2169EEF88 /* Loopinn */,
+				C772106279DCE6046C904B71 /* LoopinnTasksWidget */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0116FA3EA5EC3F37E49F4544 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6E039902393EC1947CCEC530 /* LoopinnTasksWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		59BAFF8FD50B2513EB1F5D24 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A999894E68695879BF748B7 /* ActivityAnalytics.swift in Sources */,
+				3365F52AF82C77FD7E6C2F61 /* ActivityExport.swift in Sources */,
+				A79D1B197D81069952ADF0AE /* ActivityLogbook.swift in Sources */,
+				7E3EF04FE8C37570806DC08E /* ActivityTimeParser.swift in Sources */,
+				F0F248CA6EC863E1EF3A9366 /* AppSettings.swift in Sources */,
+				7C1F7F3950E7E3C06FC9A434 /* AttachmentStore.swift in Sources */,
+				628BB23C8BD7B3866A6583B4 /* CalendarLayout.swift in Sources */,
+				CAA9D7222C2E14DE7BBFF91B /* FocusInsights.swift in Sources */,
+				70E891961FD2836DAF045BF9 /* FocusReminder.swift in Sources */,
+				710D51A4FBD66CE520DF9AC2 /* Models.swift in Sources */,
+				60FA5BC3F7D76FBE7D09D2DA /* PomodoroSession.swift in Sources */,
+				C382265B9A8CE14790978E9B /* TaskCaptureParser.swift in Sources */,
+				8B68C9674DE4A06E4F85E123 /* TaskRecommendations.swift in Sources */,
+				FCE425998B593348B5DE50EB /* UtilityShelf.swift in Sources */,
+				DDE198C28ACA1B9D7B0ACE1F /* UtilityTimers.swift in Sources */,
+				C869B9095017B3819D1455CC /* WidgetSnapshot.swift in Sources */,
+				BC6DD764D1AD2C6D34DDA7F8 /* WorkspaceBackup.swift in Sources */,
+				B16A73410BA2F1BF1018CDE4 /* WorkspaceDatabase.swift in Sources */,
+				526342761CD5F183641BB8AB /* WorkspaceService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		770410B447A30A265C4D8C81 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F685B9A0018C32754FC65C07 /* ActivityLogView.swift in Sources */,
+				C10E8E9F6E6960C577412860 /* ActivityTimelineView.swift in Sources */,
+				AFEAF4E5E015CD7ACD4DE2E1 /* AnalyticsView.swift in Sources */,
+				D04B004D55E13A04BF40847E /* AppleCalendarService.swift in Sources */,
+				ECCF3838245E0914AD92FBED /* CalendarDashboardView.swift in Sources */,
+				B2B56DBF56814C548B294490 /* CommandPaletteView.swift in Sources */,
+				35E977F345B782C8C0E60E23 /* DashboardCommands.swift in Sources */,
+				9F0E820130AADCEE5E5E21EF /* DashboardView.swift in Sources */,
+				4A0BE8379C85AF417F4BDD2C /* DesignSystem.swift in Sources */,
+				811FD792F46906B2FECFECC7 /* FloatingTaskPanel.swift in Sources */,
+				E3F0E468FC87FD66FCD27531 /* FocusDashboardView.swift in Sources */,
+				C23CE7191F80C90C70210E61 /* GoogleCalendarService.swift in Sources */,
+				70B7D3BF380BE03CEE569880 /* LoopinnApp.swift in Sources */,
+				A74CDA72797AA398F85F9B77 /* MediaControlsView.swift in Sources */,
+				539A602D46F35173DAEBDD8F /* OmBell.swift in Sources */,
+				752A7694654E8A1880D51D86 /* OnboardingView.swift in Sources */,
+				036A88F4D447E2FE33475A8A /* RippleFocusView.swift in Sources */,
+				B65C547F742CBAB6E0BDC9A9 /* SystemUtilitiesView.swift in Sources */,
+				4896499B8F316105C2AA5811 /* UtilitiesView.swift in Sources */,
+				98655EE1AFFEBB39BD405F75 /* VoiceLogService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2D4993DDEDC727B9751F8063 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F09FA0E6087C0E66CBE7E105 /* LoopinnCore */;
+			targetProxy = FF0DC26FAA34869BCD15075F /* PBXContainerItemProxy */;
+		};
+		52320945FC10B1FC291A6B0B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F09FA0E6087C0E66CBE7E105 /* LoopinnCore */;
+			targetProxy = 1EA3FBCF59B644A0288F6F66 /* PBXContainerItemProxy */;
+		};
+		ED06C6FD96977A407CAD9F1F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C772106279DCE6046C904B71 /* LoopinnTasksWidget */;
+			targetProxy = 12157217FD0826FC39A7FEB9 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1ACF840307ECE79786631560 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/LoopinnTasksWidget.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "Config/LoopinnTasksWidget-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.atharav.loopinn.tasks-widget";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		4C8EEBAF3A98F90FBA700A9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "Config/LoopinnCore-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.atharav.loopinn.core;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		76F52D82907A91AE8CBD49EE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		7F9762A359B5FAA126CDB463 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/Loopinn.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "Config/Loopinn-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.atharav.loopinn;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		809B5A71A46174D8497F8358 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "Config/LoopinnCore-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.atharav.loopinn.core;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		B008553BB7AB92661ED64179 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		C8B1A31094D8918A939837EA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/Loopinn.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "Config/Loopinn-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.atharav.loopinn;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		E55EF791ABE368EEBCDC2426 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/LoopinnTasksWidget.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "Config/LoopinnTasksWidget-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.atharav.loopinn.tasks-widget";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		ADB9E2E6DA6B7C4ED1B70FA1 /* Build configuration list for PBXNativeTarget "LoopinnTasksWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1ACF840307ECE79786631560 /* Debug */,
+				E55EF791ABE368EEBCDC2426 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C7DB9AF2A5564164BC2F6173 /* Build configuration list for PBXNativeTarget "LoopinnCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4C8EEBAF3A98F90FBA700A9A /* Debug */,
+				809B5A71A46174D8497F8358 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D9C5F21FF2755D2632B39354 /* Build configuration list for PBXProject "Loopinn" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B008553BB7AB92661ED64179 /* Debug */,
+				76F52D82907A91AE8CBD49EE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E3F82B1A6A8E66896DFA4CA9 /* Build configuration list for PBXNativeTarget "Loopinn" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C8B1A31094D8918A939837EA /* Debug */,
+				7F9762A359B5FAA126CDB463 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0245F89C3044FB025ED7DCF6 /* Project object */;
+}
