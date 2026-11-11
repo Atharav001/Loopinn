@@ -2,6 +2,10 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — Deep Work mode (in review)
+- Added a configurable long-focus session with an optional task link, displayed in the dashboard and floating timer. It uses the existing persisted Pomodoro timer state, completes without a break, and does not create an activity log.
+- Preserved decoding of older saved Pomodoro sessions. Local Swift build, unsigned app package and 34/34 core checks pass; runtime UI acceptance remains pending.
+
 ## 11 November 2026 — stopwatch and countdown (in review)
 - Added a saved stopwatch with pause/resume and ordered laps, plus a configurable countdown with a persisted deadline and one-time completion state. Both controls appear in the Focus screen, and countdown expiry sounds once during an active session.
 - Local Swift build, unsigned app package and 32/32 core checks pass. Clock-change handling, runtime sound behavior and interactive UI acceptance remain pending.

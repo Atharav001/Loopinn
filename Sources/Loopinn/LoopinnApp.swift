@@ -264,6 +264,11 @@ final class AppState: ObservableObject {
         savePomodoro()
     }
 
+    func startDeepWork(minutes: Int, taskID: UUID?) {
+        pomodoro.startDeepWork(minutes: minutes, taskID: taskID)
+        savePomodoro()
+    }
+
     func pausePomodoro() {
         pomodoro.pause()
         savePomodoro()

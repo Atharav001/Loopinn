@@ -23,7 +23,7 @@
 | FR-28 | P03 | Calendar filters & holidays | IN REVIEW | PR #8 | Persisted source filters, all-day labels and subscribed regional holiday calendar deduplication; live region acceptance pending. |
 | FR-08 | P04 | Pomodoro timer | IN REVIEW | PR #8 | Persisted deadline, pause/resume, focus/break recovery and cycle tests pass; runtime alert/UI acceptance pending. |
 | FR-09 | P04 | Stopwatch & countdown | IN REVIEW | P04 timer branch | Persisted stopwatch with ordered laps and countdown deadline with single completion transition compile; clock-change and runtime alert acceptance pending. |
-| FR-10 | P04 | Deep Work mode | UNVERIFIED | — | — |
+| FR-10 | P04 | Deep Work mode | IN REVIEW | P04 Deep Work branch | Configurable long-focus preset shares Pomodoro state, optional linked task is visible in dashboard and floating timer, and completion does not create an activity log; runtime UI acceptance pending. |
 | FR-11 | P04 | Repeating focus alarms | UNVERIFIED | — | — |
 | FR-12 | P04 | Focus overlays & effects | UNVERIFIED | — | — |
 | FR-13 | P04 | Timer alerts & sounds | UNVERIFIED | — | — |
