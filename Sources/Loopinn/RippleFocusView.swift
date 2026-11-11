@@ -43,8 +43,8 @@ struct RippleFocusView: View {
         .background {
             TimelineView(.periodic(from: .now, by: 0.25)) { timeline in
                 RoundedRectangle(cornerRadius: 20)
-                    .stroke(state.settings.accent.color.opacity(nextAlert.map { abs($0.timeIntervalSince(timeline.date)) < 1.5 } == true ? 0.9 : 0.12), lineWidth: 6)
-                    .shadow(color: state.settings.accent.color.opacity(nextAlert.map { abs($0.timeIntervalSince(timeline.date)) < 1.5 } == true ? 0.8 : 0), radius: 20)
+                    .stroke(state.settings.accent.color.opacity(state.settings.focusEffectsEnabled != false && nextAlert.map { abs($0.timeIntervalSince(timeline.date)) < 1.5 } == true ? 0.3 + 0.6 * (state.settings.focusEffectIntensity ?? 0.5) : 0.12), lineWidth: 6)
+                    .shadow(color: state.settings.accent.color.opacity(state.settings.focusEffectsEnabled != false && nextAlert.map { abs($0.timeIntervalSince(timeline.date)) < 1.5 } == true ? 0.8 : 0), radius: 20)
             }
         }
         .onReceive(Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()) { date in

@@ -363,6 +363,13 @@ final class AppState: ObservableObject {
         saveSettings(draft)
     }
 
+    func setFocusEffects(enabled: Bool? = nil, intensity: Double? = nil) {
+        var draft = settings
+        if let enabled { draft.focusEffectsEnabled = enabled }
+        if let intensity { draft.focusEffectIntensity = min(1, max(0, intensity)) }
+        saveSettings(draft)
+    }
+
     func setFocusReminderEnabled(_ enabled: Bool) {
         focusReminder.setEnabled(enabled)
         if !enabled { focusReminderBanner = nil }
