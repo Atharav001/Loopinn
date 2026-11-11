@@ -2,6 +2,10 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — persistent floating windows and richer controls
+- Fixed floating panels hiding when Loopinn loses focus by disabling panel hide-on-deactivate. Pinned panels also join all spaces; unpinned panels remain regular windows.
+- Added distinct colored icon tiles, accent borders, gradients and hover responses to the menu actions, task capture and floating-window headers. Motion respects the macOS Reduce Motion preference.
+
 ## 11 November 2026 — floating-window pin controls and Ripple double bell
 - Added a visible pin control in the title area of the Tasks, Pomodoro, Ripple Focus and Log Activity windows. Pinning changes each panel's window level, defaults on, and persists independently; the Tasks pin stays in sync with its existing setting.
 - Removed fixed content minimums so panels expand with resizing, with practical window minimums to keep their controls accessible.

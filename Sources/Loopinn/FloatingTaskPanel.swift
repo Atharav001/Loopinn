@@ -28,6 +28,7 @@ final class FloatingPanelManager: ObservableObject {
         pinned[id] = value
         UserDefaults.standard.set(value, forKey: "Loopinn.\(id).pinned")
         panels[id]?.level = value ? .floating : .normal
+        panels[id]?.collectionBehavior = value ? [.canJoinAllSpaces, .fullScreenAuxiliary] : [.moveToActiveSpace, .fullScreenAuxiliary]
     }
 
     func showTasks(state: AppState) {
@@ -49,6 +50,7 @@ final class FloatingPanelManager: ObservableObject {
     private func show(id: String, title: String, size: NSSize, state: AppState, content: AnyView) {
         if id == tasksID { setPinned(state.settings.pinFloatingTasks != false, for: tasksID) }
         if let panel = panels[id] {
+            panel.hidesOnDeactivate = false
             panel.level = isPinned(id) ? .floating : .normal
             NSApp.activate(ignoringOtherApps: true)
             panel.orderFrontRegardless()
@@ -62,8 +64,9 @@ final class FloatingPanelManager: ObservableObject {
             defer: false
         )
         panel.title = title
+        panel.hidesOnDeactivate = false
         panel.level = isPinned(id) ? .floating : .normal
-        panel.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
+        panel.collectionBehavior = isPinned(id) ? [.canJoinAllSpaces, .fullScreenAuxiliary] : [.moveToActiveSpace, .fullScreenAuxiliary]
         panel.isMovableByWindowBackground = true
         panel.isReleasedWhenClosed = false
         panel.isOpaque = false
@@ -100,15 +103,45 @@ final class FloatingPanelManager: ObservableObject {
 
 private struct FloatingPanelChrome: View {
     @ObservedObject private var manager = FloatingPanelManager.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var hoveringPin = false
     let id: String
     let title: String
     @ObservedObject var state: AppState
     let content: AnyView
 
+    private var accent: Color {
+        switch id {
+        case "pomodoro": .orange
+        case "ripple": .cyan
+        case "tasks": .green
+        default: .purple
+        }
+    }
+
+    private var icon: String {
+        switch id {
+        case "pomodoro": "timer"
+        case "ripple": "waveform.path"
+        case "tasks": "checklist"
+        default: "clock.badge.checkmark"
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
-                Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Image(systemName: icon)
+                    .font(.system(size: 15, weight: .semibold))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(accent)
+                    .frame(width: 32, height: 32)
+                    .background(accent.opacity(0.15), in: RoundedRectangle(cornerRadius: 9))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title).font(.subheadline.weight(.semibold)).lineLimit(1)
+                    Text(manager.isPinned(id) ? "Always on top" : "Regular window")
+                        .font(.system(size: 10)).foregroundStyle(.secondary)
+                }
                 Spacer()
                 Button {
                     if id == "tasks" { state.setPinFloatingTasks(!manager.isPinned(id)) }
@@ -116,19 +149,29 @@ private struct FloatingPanelChrome: View {
                 } label: {
                     Image(systemName: manager.isPinned(id) ? "pin.fill" : "pin")
                         .font(.system(size: 12, weight: .semibold))
-                        .frame(width: 28, height: 24)
-                        .foregroundStyle(manager.isPinned(id) ? state.settings.accent.color : .secondary)
+                        .frame(width: 32, height: 28)
+                        .foregroundStyle(manager.isPinned(id) ? accent : Color.secondary)
+                        .background(accent.opacity(hoveringPin ? 0.25 : 0.12), in: RoundedRectangle(cornerRadius: 8))
+                        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(accent.opacity(hoveringPin ? 0.45 : 0.15)))
+                        .scaleEffect(hoveringPin && !reduceMotion ? 1.08 : 1)
                 }
                 .buttonStyle(.plain)
+                .onHover { hovering in
+                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) { hoveringPin = hovering }
+                }
                 .help(manager.isPinned(id) ? "Unpin window from the top" : "Pin window above other apps")
                 .accessibilityLabel(manager.isPinned(id) ? "Unpin window" : "Pin window")
             }
-            .padding(.leading, 18).padding(.trailing, 12).padding(.top, 28).padding(.bottom, 6)
-            .background(.ultraThinMaterial)
+            .padding(.leading, 18).padding(.trailing, 12).padding(.top, 28).padding(.bottom, 9)
+            .background(LinearGradient(colors: [accent.opacity(0.18), Color(nsColor: .windowBackgroundColor).opacity(0.85)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing))
+            .overlay(alignment: .bottom) { Rectangle().fill(accent.opacity(0.25)).frame(height: 1) }
             content.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(accent.opacity(0.3), lineWidth: 1).allowsHitTesting(false))
     }
 }
 

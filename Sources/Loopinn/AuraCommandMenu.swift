@@ -11,7 +11,9 @@ struct AuraCommandMenu: View {
     @State private var quickTask = ""
     @State private var quickListID: UUID?
     @State private var justAdded = false
+    @State private var hoveringAdd = false
     @FocusState private var quickFocused: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var lists: [TaskList] { state.workspace.lists }
     private var targetListID: UUID { quickListID.flatMap { id in lists.first(where: { $0.id == id })?.id } ?? lists.first?.id ?? UUID() }
@@ -24,15 +26,19 @@ struct AuraCommandMenu: View {
             Divider().padding(.horizontal, 16)
             commandCenterSection
             Divider().padding(.horizontal, 16)
-            actionRow(id: "application", icon: "macwindow", title: "Open Application", subtitle: "Browse all Loopinn sections") { show(.today) }
+            actionRow(id: "application", icon: "rectangle.3.group.fill", title: "Open Application", subtitle: "Browse all Loopinn sections") { show(.today) }
                 .padding(.horizontal, 14).padding(.vertical, 6)
             Divider().padding(.horizontal, 16)
             footerSection
         }
         .frame(width: 320)
         .fixedSize(horizontal: true, vertical: true)
-        .background(Color(nsColor: .windowBackgroundColor).opacity(0.92))
+        .background {
+            LinearGradient(colors: [Color(nsColor: .windowBackgroundColor), state.settings.accent.color.opacity(0.09), Color(nsColor: .windowBackgroundColor)],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+        }
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(state.settings.accent.color.opacity(0.22), lineWidth: 1))
         .onAppear { quickListID = targetListID }
         .onChange(of: lists.map(\.id)) { _, _ in quickListID = targetListID }
         .preferredColorScheme(state.settings.theme.colorScheme)
@@ -47,10 +53,13 @@ struct AuraCommandMenu: View {
     private var headerSection: some View {
         HStack(spacing: 12) {
             Image(systemName: "circle.hexagongrid.fill")
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 17, weight: .semibold))
+                .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(.white)
-                .frame(width: 34, height: 34)
-                .background(state.settings.accent.color.opacity(0.85), in: RoundedRectangle(cornerRadius: 9))
+                .frame(width: 38, height: 38)
+                .background(LinearGradient(colors: [state.settings.accent.color, state.settings.accent.color.opacity(0.55)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                            in: RoundedRectangle(cornerRadius: 11))
+                .shadow(color: state.settings.accent.color.opacity(0.35), radius: 8, y: 3)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Loopinn").font(.system(size: 15, weight: .semibold))
                 Text("Command Center").font(.system(size: 11)).foregroundStyle(.secondary)
@@ -75,15 +84,28 @@ struct AuraCommandMenu: View {
             }
             HStack(spacing: 8) {
                 TextField("Type a task and press Enter…", text: $quickTask)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.plain)
                     .font(.system(size: 13, weight: .medium))
                     .focused($quickFocused)
                     .onSubmit(submitQuickTask)
+                    .padding(.horizontal, 11).padding(.vertical, 9)
+                    .background(Color.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 10))
+                    .overlay(RoundedRectangle(cornerRadius: 10)
+                        .strokeBorder(state.settings.accent.color.opacity(quickFocused ? 0.75 : 0.16), lineWidth: quickFocused ? 2 : 1))
                 Button(action: submitQuickTask) {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 24, weight: .semibold))
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(width: 35, height: 35)
+                        .background(LinearGradient(colors: [state.settings.accent.color, state.settings.accent.color.opacity(0.7)],
+                                                   startPoint: .topLeading, endPoint: .bottomTrailing), in: Circle())
+                        .shadow(color: state.settings.accent.color.opacity(hoveringAdd ? 0.5 : 0.2), radius: hoveringAdd ? 9 : 4)
+                        .scaleEffect(hoveringAdd && !reduceMotion ? 1.08 : 1)
                 }
                 .buttonStyle(.plain)
+                .onHover { hovering in
+                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) { hoveringAdd = hovering }
+                }
                 .accessibilityLabel("Add task")
             }
             if let error = state.errorMessage {
@@ -99,13 +121,13 @@ struct AuraCommandMenu: View {
             actionRow(id: "pomodoro", icon: "timer", title: "Pomodoro Timer", subtitle: "Floating focus and break timer") {
                 launch { FloatingPanelManager.shared.showPomodoro(state: state) }
             }
-            actionRow(id: "ripple", icon: "circle.dotted.circle", title: "Ripple Focus", subtitle: "Flexible interval alerts") {
+            actionRow(id: "ripple", icon: "waveform.path", title: "Ripple Focus", subtitle: "Flexible interval alerts") {
                 launch { FloatingPanelManager.shared.showRipple(state: state) }
             }
             actionRow(id: "tasks", icon: "checklist", title: "To-Do Lists", subtitle: "Floating task editor") {
                 launch { FloatingPanelManager.shared.showTasks(state: state) }
             }
-            actionRow(id: "log", icon: "square.and.pencil", title: "Log Activity", subtitle: "Quick floating entry") {
+            actionRow(id: "log", icon: "clock.badge.checkmark", title: "Log Activity", subtitle: "Quick floating entry") {
                 launch { FloatingPanelManager.shared.showQuickLog(state: state) }
             }
         }
@@ -128,23 +150,47 @@ struct AuraCommandMenu: View {
     }
 
     private func actionRow(id: String, icon: String, title: String, subtitle: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        let accent = rowColor(for: id)
+        let isHovered = hoveredButton == id
+        return Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: icon).font(.system(size: 13, weight: .semibold)).frame(width: 20)
+                Image(systemName: icon)
+                    .font(.system(size: 17, weight: .semibold))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(accent)
+                    .frame(width: 36, height: 36)
+                    .background(LinearGradient(colors: [accent.opacity(0.25), accent.opacity(0.09)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                                in: RoundedRectangle(cornerRadius: 10))
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(title).font(.system(size: 12, weight: .medium))
+                    Text(title).font(.system(size: 12, weight: .semibold))
                     Text(subtitle).font(.system(size: 10)).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Image(systemName: "chevron.right").font(.system(size: 9)).foregroundStyle(.tertiary)
+                Image(systemName: "arrow.up.right")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(isHovered ? accent : Color.secondary)
             }
             .padding(.horizontal, 12).padding(.vertical, 10)
             .contentShape(Rectangle())
             .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(hoveredButton == id ? Color.primary.opacity(0.10) : Color.primary.opacity(0.05)))
+                .fill(isHovered ? accent.opacity(0.14) : Color.primary.opacity(0.045)))
+            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(accent.opacity(isHovered ? 0.42 : 0.09), lineWidth: 1))
+            .scaleEffect(isHovered && !reduceMotion ? 1.015 : 1)
         }
         .buttonStyle(.plain)
-        .onHover { hoveredButton = $0 ? id : nil }
+        .onHover { hovering in
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.16)) { hoveredButton = hovering ? id : nil }
+        }
+    }
+
+    private func rowColor(for id: String) -> Color {
+        switch id {
+        case "pomodoro": .orange
+        case "ripple": .cyan
+        case "tasks": .green
+        case "log": .purple
+        default: state.settings.accent.color
+        }
     }
 
     private func submitQuickTask() {
