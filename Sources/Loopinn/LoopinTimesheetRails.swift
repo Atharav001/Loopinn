@@ -12,8 +12,11 @@ struct LoopinTimesheetRails: View {
     @State private var showFullDay = true
     private let calendar = Calendar.current
     private let hourWidth: CGFloat = 64
-    private let railHeight: CGFloat = 42
     private var hours: [Int] { showFullDay ? Array(0..<24) : Array(6..<23) }
+    private var visibleInterval: DateInterval {
+        let start = calendar.startOfDay(for: day).addingTimeInterval(Double(hours.first ?? 0) * 3600)
+        return DateInterval(start: start, duration: Double(hours.count) * 3600)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -53,6 +56,9 @@ struct LoopinTimesheetRails: View {
 
     private func rail(_ label: String, color: Color, entries: [RailEntry]) -> some View {
         let width = CGFloat(hours.count) * hourWidth
+        let placements = TimesheetRailLayout.place(entries.map { TimesheetRailEntry(id: $0.id, start: $0.start, end: $0.end) }, within: visibleInterval)
+        let laneCount = placements.map(\.laneCount).max() ?? 1
+        let railHeight = max(42, CGFloat(laneCount) * 25 + 8)
         return ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 8).fill(.quaternary.opacity(0.3))
             HStack(spacing: 0) {
@@ -63,12 +69,15 @@ struct LoopinTimesheetRails: View {
             }
             Text(label).font(.system(size: 9, weight: .bold)).foregroundStyle(color.opacity(0.7))
                 .padding(.leading, 8).padding(.top, 15)
-            ForEach(entries) { entry in
-                if let placement = position(entry) {
+            ForEach(placements, id: \.id) { placement in
+                if let entry = entries.first(where: { $0.id == placement.id }) {
+                    let x = CGFloat(placement.start.timeIntervalSince(visibleInterval.start) / 3600) * hourWidth
+                    let blockWidth = max(5, CGFloat(placement.end.timeIntervalSince(placement.start) / 3600) * hourWidth)
                     Text(entry.title).font(.caption2.weight(.medium)).lineLimit(1)
-                        .padding(.horizontal, 7).frame(width: placement.width, height: 28, alignment: .leading)
-                        .background(color.opacity(0.35), in: RoundedRectangle(cornerRadius: 6))
-                        .offset(x: placement.x, y: 7)
+                        .padding(.horizontal, 7).frame(width: blockWidth, height: 21, alignment: .leading)
+                        .background(color.opacity(label == "PLANNED" ? 0.3 : 0.65), in: RoundedRectangle(cornerRadius: 5))
+                        .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(color.opacity(0.8), style: StrokeStyle(lineWidth: 1, dash: label == "PLANNED" ? [4, 2] : [])))
+                        .offset(x: x, y: 5 + CGFloat(placement.lane) * 25)
                         .help("\(entry.title) · \(entry.start.formatted(date: .omitted, time: .shortened))–\(entry.end.formatted(date: .omitted, time: .shortened))")
                 }
             }
@@ -77,16 +86,6 @@ struct LoopinTimesheetRails: View {
             }
         }
         .frame(width: width, height: railHeight)
-    }
-
-    private func position(_ entry: RailEntry) -> (x: CGFloat, width: CGFloat)? {
-        let origin = calendar.startOfDay(for: day).addingTimeInterval(Double(hours.first ?? 0) * 3600)
-        let visibleEnd = origin.addingTimeInterval(Double(hours.count) * 3600)
-        let start = max(entry.start, origin)
-        let end = min(entry.end, visibleEnd)
-        guard end > start else { return nil }
-        return (CGFloat(start.timeIntervalSince(origin) / 3600) * hourWidth,
-                max(4, CGFloat(end.timeIntervalSince(start) / 3600) * hourWidth))
     }
 
     private var positionOfNow: CGFloat? {

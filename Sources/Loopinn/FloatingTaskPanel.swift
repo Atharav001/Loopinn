@@ -59,7 +59,7 @@ final class FloatingPanelManager: ObservableObject {
         }
         let panel = NSPanel(
             contentRect: NSRect(origin: NSPoint(x: 120, y: 120), size: size),
-            styleMask: [.titled, .closable, .resizable, .fullSizeContentView, .utilityWindow],
+            styleMask: [.titled, .closable, .resizable, .utilityWindow],
             backing: .buffered,
             defer: false
         )
@@ -71,8 +71,8 @@ final class FloatingPanelManager: ObservableObject {
         panel.isReleasedWhenClosed = false
         panel.isOpaque = false
         panel.backgroundColor = .clear
-        panel.titlebarAppearsTransparent = true
-        panel.titleVisibility = .hidden
+        panel.titlebarAppearsTransparent = false
+        panel.titleVisibility = .visible
         panel.hasShadow = true
         panel.minSize = NSSize(width: id == quickLogID ? 390 : 280,
                                height: id == quickLogID || id == rippleID ? 300 : 250)
@@ -162,7 +162,7 @@ private struct FloatingPanelChrome: View {
                 .help(manager.isPinned(id) ? "Unpin window from the top" : "Pin window above other apps")
                 .accessibilityLabel(manager.isPinned(id) ? "Unpin window" : "Pin window")
             }
-            .padding(.leading, 18).padding(.trailing, 12).padding(.top, 28).padding(.bottom, 9)
+            .padding(.leading, 18).padding(.trailing, 12).padding(.top, 9).padding(.bottom, 9)
             .background(LinearGradient(colors: [accent.opacity(0.18), Color(nsColor: .windowBackgroundColor).opacity(0.85)],
                                        startPoint: .topLeading, endPoint: .bottomTrailing))
             .overlay(alignment: .bottom) { Rectangle().fill(accent.opacity(0.25)).frame(height: 1) }

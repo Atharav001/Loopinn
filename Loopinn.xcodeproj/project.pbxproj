@@ -28,6 +28,7 @@
 		719743ADC8295A69AF08C8F9 /* LoopinnCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BB949D09A0E21C8960341A64 /* LoopinnCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		752A7694654E8A1880D51D86 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576499B041A59833C10DCF94 /* OnboardingView.swift */; };
 		7C1F7F3950E7E3C06FC9A434 /* AttachmentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B92B867A92B7E8B29C87121 /* AttachmentStore.swift */; };
+		7C83D68184127A6B2A03EDCC /* TimesheetRailLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A01C7DFB09A2E7FDD9E4408 /* TimesheetRailLayout.swift */; };
 		7E3EF04FE8C37570806DC08E /* ActivityTimeParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BDA0DB7B799C4B45DCA3F1 /* ActivityTimeParser.swift */; };
 		811FD792F46906B2FECFECC7 /* FloatingTaskPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A91B5E22930D0D1973E5A5 /* FloatingTaskPanel.swift */; };
 		8B68C9674DE4A06E4F85E123 /* TaskRecommendations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1379DA06128D930AE0FE83 /* TaskRecommendations.swift */; };
@@ -52,6 +53,7 @@
 		D04B004D55E13A04BF40847E /* AppleCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442EBD439EDF09E56F63030C /* AppleCalendarService.swift */; };
 		D377A41FBCFB9E7CEF7188EB /* ActivityNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E54E6C4100A0405DEF2A983F /* ActivityNotificationService.swift */; };
 		DDE198C28ACA1B9D7B0ACE1F /* UtilityTimers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74F5147627AF2F5FF52A0EF7 /* UtilityTimers.swift */; };
+		E0B67D9B0F18875B1AB0DD06 /* LoopinMonthCalendarGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DE7D82749A9E66316491E0E /* LoopinMonthCalendarGrid.swift */; };
 		E3F0E468FC87FD66FCD27531 /* FocusDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03A5D6CBB9E126500C9E1BE /* FocusDashboardView.swift */; };
 		ECCF3838245E0914AD92FBED /* CalendarDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8ADAD1BBFA58CA060D28CD3 /* CalendarDashboardView.swift */; };
 		F0F248CA6EC863E1EF3A9366 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9C81FDDFA02E3E82EDB53D /* AppSettings.swift */; };
@@ -130,6 +132,7 @@
 		2D43A2E211E79F56B330F734 /* DashboardCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardCommands.swift; sourceTree = "<group>"; };
 		322429F5292D1FC25FB07527 /* LoopinnApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopinnApp.swift; sourceTree = "<group>"; };
 		32A91B5E22930D0D1973E5A5 /* FloatingTaskPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingTaskPanel.swift; sourceTree = "<group>"; };
+		3A01C7DFB09A2E7FDD9E4408 /* TimesheetRailLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimesheetRailLayout.swift; sourceTree = "<group>"; };
 		3B92B867A92B7E8B29C87121 /* AttachmentStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentStore.swift; sourceTree = "<group>"; };
 		442EBD439EDF09E56F63030C /* AppleCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCalendarService.swift; sourceTree = "<group>"; };
 		4642AB4F0FF5783B14517EBC /* TaskCaptureParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCaptureParser.swift; sourceTree = "<group>"; };
@@ -143,6 +146,7 @@
 		735B1DD6C098C80655923848 /* ActivityLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogView.swift; sourceTree = "<group>"; };
 		74F5147627AF2F5FF52A0EF7 /* UtilityTimers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityTimers.swift; sourceTree = "<group>"; };
 		75833C3524CE133119C9194B /* RippleFocusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RippleFocusView.swift; sourceTree = "<group>"; };
+		7DE7D82749A9E66316491E0E /* LoopinMonthCalendarGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopinMonthCalendarGrid.swift; sourceTree = "<group>"; };
 		7E1C388B8195E7C0AC22740B /* ActivityAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityAnalytics.swift; sourceTree = "<group>"; };
 		87A4FC8D87C1BD84028997B6 /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshot.swift; sourceTree = "<group>"; };
 		9231E11D51073CA7B1DFC8C5 /* LoopinnTasksWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopinnTasksWidget.swift; sourceTree = "<group>"; };
@@ -226,6 +230,7 @@
 				32A91B5E22930D0D1973E5A5 /* FloatingTaskPanel.swift */,
 				D03A5D6CBB9E126500C9E1BE /* FocusDashboardView.swift */,
 				68B38CA020D1EC4A8A62AB3F /* GoogleCalendarService.swift */,
+				7DE7D82749A9E66316491E0E /* LoopinMonthCalendarGrid.swift */,
 				322429F5292D1FC25FB07527 /* LoopinnApp.swift */,
 				CA010F6724F5028C2E22D8B2 /* LoopinTimesheetRails.swift */,
 				15DF28ADDC2CAF7ACD14620C /* LoopinYearCalendarGrid.swift */,
@@ -279,6 +284,7 @@
 				9C26DD3D6DECC041888F9936 /* PomodoroSession.swift */,
 				4642AB4F0FF5783B14517EBC /* TaskCaptureParser.swift */,
 				6E1379DA06128D930AE0FE83 /* TaskRecommendations.swift */,
+				3A01C7DFB09A2E7FDD9E4408 /* TimesheetRailLayout.swift */,
 				B25C15DFEBA533C7E7E5A2FB /* UtilityShelf.swift */,
 				74F5147627AF2F5FF52A0EF7 /* UtilityTimers.swift */,
 				87A4FC8D87C1BD84028997B6 /* WidgetSnapshot.swift */,
@@ -428,6 +434,7 @@
 				60FA5BC3F7D76FBE7D09D2DA /* PomodoroSession.swift in Sources */,
 				C382265B9A8CE14790978E9B /* TaskCaptureParser.swift in Sources */,
 				8B68C9674DE4A06E4F85E123 /* TaskRecommendations.swift in Sources */,
+				7C83D68184127A6B2A03EDCC /* TimesheetRailLayout.swift in Sources */,
 				FCE425998B593348B5DE50EB /* UtilityShelf.swift in Sources */,
 				DDE198C28ACA1B9D7B0ACE1F /* UtilityTimers.swift in Sources */,
 				C869B9095017B3819D1455CC /* WidgetSnapshot.swift in Sources */,
@@ -455,6 +462,7 @@
 				811FD792F46906B2FECFECC7 /* FloatingTaskPanel.swift in Sources */,
 				E3F0E468FC87FD66FCD27531 /* FocusDashboardView.swift in Sources */,
 				C23CE7191F80C90C70210E61 /* GoogleCalendarService.swift in Sources */,
+				E0B67D9B0F18875B1AB0DD06 /* LoopinMonthCalendarGrid.swift in Sources */,
 				FB9D892E243734EBE4DC69D7 /* LoopinTimesheetRails.swift in Sources */,
 				C3B7EED69CABF414EA2E4B34 /* LoopinYearCalendarGrid.swift in Sources */,
 				70B7D3BF380BE03CEE569880 /* LoopinnApp.swift in Sources */,

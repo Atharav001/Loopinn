@@ -4,33 +4,48 @@ import SwiftUI
 struct CalendarDashboardView: View {
     @ObservedObject var state: AppState
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var scope: CalendarScope = .week
+    @State private var scope: CalendarScope = .month
     @State private var selectedDate = Date()
     @State private var editingBlock: CalendarBlock?
+    @State private var selectedExternalEvent: ExternalCalendarEvent?
     @State private var showingNewBlock = false
     @State private var proposedStart = Date()
     @State private var proposedEnd = Date().addingTimeInterval(3600)
 
     private let calendar = Calendar.current
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 7), count: 7)
     private var externalEvents: [ExternalCalendarEvent] { state.visibleCalendarEvents }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
+                Button("New Event", systemImage: "plus") { prepareNew(on: selectedDate) }
+                    .buttonStyle(.borderedProminent)
                 Picker("View", selection: $scope) {
                     ForEach(CalendarScope.allCases) { option in Text(option.rawValue.capitalized).tag(option) }
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 340)
                 Spacer()
+                Menu {
+                    if state.appleCalendarConnected {
+                        Button("Refresh Apple Calendar", systemImage: "arrow.clockwise") { state.refreshAppleCalendar(around: selectedDate, force: true) }
+                    } else {
+                        Button("Connect Apple Calendar", systemImage: "calendar.badge.plus") { state.connectAppleCalendar() }
+                    }
+                    if state.googleCalendarConnected {
+                        Button("Refresh Google Calendar", systemImage: "arrow.clockwise") { state.refreshGoogleCalendar(around: selectedDate, force: true) }
+                    } else {
+                        Button("Set Up Google Calendar", systemImage: "gearshape") { state.selectedPage = .settings }
+                    }
+                    Button("Calendar Settings", systemImage: "slider.horizontal.3") { state.selectedPage = .settings }
+                } label: { Label("Calendars", systemImage: "calendar.badge.clock") }
                 Button("Previous", systemImage: "chevron.left") { shift(-1) }.labelStyle(.iconOnly)
                 Button("Today") { select(.now) }
                 Button("Next", systemImage: "chevron.right") { shift(1) }.labelStyle(.iconOnly)
-                Button("New Block", systemImage: "plus") { prepareNew(on: selectedDate) }
-                    .buttonStyle(.borderedProminent)
             }
-            Text(heading).font(.title2.weight(.semibold))
+            .padding(10)
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
+            Text(heading).font(.title2.weight(.semibold)).padding(.leading, 4)
             switch scope {
             case .day: dayContent
             case .week: weekContent
@@ -43,6 +58,17 @@ struct CalendarDashboardView: View {
         }
         .sheet(item: $editingBlock) { block in
             BlockEditor(state: state, block: block, start: block.startAt, end: block.endAt)
+        }
+        .sheet(item: $selectedExternalEvent) { event in
+            VStack(alignment: .leading, spacing: 14) {
+                Label(event.isHoliday ? "Holiday" : event.source, systemImage: "calendar.badge.clock")
+                    .font(.caption).foregroundStyle(.secondary)
+                Text(event.title).font(.title2.bold())
+                Text(event.isAllDay ? "All day" : "\(event.startAt.formatted(date: .abbreviated, time: .shortened)) – \(event.endAt.formatted(date: .abbreviated, time: .shortened))")
+                Text("This event is shown from your connected calendar. Edit it in its original calendar.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            .padding(24).frame(minWidth: 360)
         }
         .onAppear { if state.appleCalendarConnected { state.refreshAppleCalendar(around: selectedDate) } }
         .onAppear { if state.googleCalendarConnected { state.refreshGoogleCalendar(around: selectedDate) } }
@@ -64,25 +90,7 @@ struct CalendarDashboardView: View {
 
     private var dayContent: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                let blocks = CalendarLayout.blocks(on: selectedDate, from: state.workspace.blocks)
-                if blocks.isEmpty {
-                    ContentUnavailableView("A clear day", systemImage: "calendar", description: Text("Drag on Week or add a block to make a plan."))
-                }
-                ForEach(blocks) { block in blockRow(block) }
-                ForEach(events(on: selectedDate)) { event in
-                    HStack {
-                        Image(systemName: "calendar.badge.clock").foregroundStyle(.secondary)
-                        VStack(alignment: .leading) {
-                            Text(event.title).font(.headline)
-                            Text("\(event.isHoliday ? "Holiday" : event.source) · \(event.isAllDay ? "All day" : event.startAt.formatted(date: .omitted, time: .shortened))")
-                                .font(.caption).foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(15).frame(maxWidth: .infinity, alignment: .leading)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
-                }
-            }
+            dayColumn(selectedDate).frame(maxWidth: .infinity)
         }
     }
 
@@ -92,18 +100,7 @@ struct CalendarDashboardView: View {
             HStack(alignment: .top, spacing: 8) {
                 ForEach(0..<7, id: \.self) { offset in
                     let day = calendar.date(byAdding: .day, value: offset, to: start)!
-                    WeekDayColumn(day: day, blocks: CalendarLayout.blocks(on: day, from: state.workspace.blocks),
-                                  events: events(on: day),
-                                  title: title(for:), onBlock: { editingBlock = $0 },
-                                  onMove: { block, dayShift, minutes in
-                                      let shiftedStart = calendar.date(byAdding: .day, value: dayShift, to: block.startAt) ?? block.startAt
-                                      let shiftedEnd = calendar.date(byAdding: .day, value: dayShift, to: block.endAt) ?? block.endAt
-                                      state.updateBlock(block, title: title(for: block), start: shiftedStart.addingTimeInterval(Double(minutes * 60)), end: shiftedEnd.addingTimeInterval(Double(minutes * 60)))
-                                  },
-                                  onResize: { block, minutes in
-                                      state.updateBlock(block, title: title(for: block), start: block.startAt, end: block.endAt.addingTimeInterval(Double(minutes * 60)))
-                                  },
-                                  onCreate: { proposedStart = $0; proposedEnd = $1; showingNewBlock = true })
+                    dayColumn(day)
                         .frame(minWidth: 140)
                 }
             }
@@ -112,41 +109,13 @@ struct CalendarDashboardView: View {
     }
 
     private var monthContent: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: 7) {
-                ForEach(CalendarLayout.gridDays(for: selectedDate), id: \.self) { day in
-                    let blocks = CalendarLayout.blocks(on: day, from: state.workspace.blocks)
-                    let events = events(on: day)
-                    Button { select(day); scope = .day } label: {
-                        VStack(alignment: .leading, spacing: 7) {
-                            Text(day.formatted(.dateTime.day())).font(.subheadline.weight(calendar.isDateInToday(day) ? .bold : .medium))
-                            ForEach(blocks.prefix(2)) { block in
-                                Text(title(for: block)).font(.caption2).lineLimit(1)
-                                    .padding(.horizontal, 6).padding(.vertical, 3)
-                                    .background(state.settings.accent.color.opacity(0.15), in: Capsule())
-                            }
-                            if let event = events.first {
-                                Text(event.title).font(.caption2).lineLimit(1)
-                                    .padding(.horizontal, 6).padding(.vertical, 3)
-                                    .background(.secondary.opacity(0.12), in: Capsule())
-                            }
-                            if blocks.count + events.count > 3 { Text("+\(blocks.count + events.count - 3) more").font(.caption2).foregroundStyle(.secondary) }
-                            Spacer(minLength: 0)
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 95, alignment: .topLeading)
-                        .padding(9)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 13))
-                        .opacity(calendar.isDate(day, equalTo: selectedDate, toGranularity: .month) ? 1 : 0.55)
-                    }
-                    .buttonStyle(.plain)
-                    .contextMenu {
-                        Button("Add time block for this day", systemImage: "calendar.badge.plus") { prepareNew(on: day) }
-                        Button("Open day", systemImage: "calendar.day.timeline.left") { select(day); scope = .day }
-                    }
-                    .accessibilityLabel("\(day.formatted(date: .complete, time: .omitted)), \(blocks.count) blocks, \(events.count) external events")
-                }
-            }
-        }
+        LoopinMonthCalendarGrid(month: selectedDate, selectedDay: selectedDate,
+                                blocks: state.workspace.blocks, events: externalEvents,
+                                blockTitle: title(for:),
+                                onDay: { select($0); scope = .day },
+                                onAdd: prepareNew(on:),
+                                onBlock: { editingBlock = $0 },
+                                onEvent: { selectedExternalEvent = $0 })
     }
 
     private var yearContent: some View {
@@ -154,6 +123,22 @@ struct CalendarDashboardView: View {
                                blocks: state.workspace.blocks, events: externalEvents,
                                onMonth: { select($0); scope = .month },
                                onDay: { select($0); scope = .day })
+    }
+
+    private func dayColumn(_ day: Date) -> some View {
+        WeekDayColumn(day: day, blocks: CalendarLayout.blocks(on: day, from: state.workspace.blocks),
+                      events: events(on: day), title: title(for:),
+                      onBlock: { editingBlock = $0 },
+                      onEvent: { selectedExternalEvent = $0 },
+                      onMove: { block, dayShift, minutes in
+                          let shiftedStart = calendar.date(byAdding: .day, value: dayShift, to: block.startAt) ?? block.startAt
+                          let shiftedEnd = calendar.date(byAdding: .day, value: dayShift, to: block.endAt) ?? block.endAt
+                          state.updateBlock(block, title: title(for: block), start: shiftedStart.addingTimeInterval(Double(minutes * 60)), end: shiftedEnd.addingTimeInterval(Double(minutes * 60)))
+                      },
+                      onResize: { block, minutes in
+                          state.updateBlock(block, title: title(for: block), start: block.startAt, end: block.endAt.addingTimeInterval(Double(minutes * 60)))
+                      },
+                      onCreate: { proposedStart = $0; proposedEnd = $1; showingNewBlock = true })
     }
 
     private func blockRow(_ block: CalendarBlock) -> some View {
@@ -201,6 +186,7 @@ private struct WeekDayColumn: View {
     let events: [ExternalCalendarEvent]
     let title: (CalendarBlock) -> String
     let onBlock: (CalendarBlock) -> Void
+    let onEvent: (ExternalCalendarEvent) -> Void
     let onMove: (CalendarBlock, Int, Int) -> Void
     let onResize: (CalendarBlock, Int) -> Void
     let onCreate: (Date, Date) -> Void
@@ -215,12 +201,15 @@ private struct WeekDayColumn: View {
                 .frame(maxWidth: .infinity).padding(12)
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
             VStack(spacing: 3) {
-                ForEach(events.prefix(3)) { event in
-                    Text(event.title).font(.caption2).lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(4)
-                        .background(.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 6))
-                        .accessibilityLabel("\(event.source): \(event.title)")
+                ForEach(events.filter { $0.isAllDay || $0.isHoliday }.prefix(3)) { event in
+                    Button { onEvent(event) } label: {
+                        Text(event.title).font(.caption2).lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(4)
+                            .background(.pink.opacity(0.2), in: RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(event.source): \(event.title)")
                 }
             }
             .frame(height: 66, alignment: .top)
@@ -242,6 +231,22 @@ private struct WeekDayColumn: View {
                         .frame(height: max(12, abs(dragEnd - dragStart)))
                         .offset(y: min(dragStart, dragEnd))
                         .allowsHitTesting(false)
+                }
+                ForEach(events.filter { !$0.isAllDay && !$0.isHoliday }) { event in
+                    let dayStart = Calendar.current.startOfDay(for: day)
+                    let top = max(0, event.startAt.timeIntervalSince(dayStart) / 3600 * hourHeight)
+                    let bottom = min(24 * hourHeight, event.endAt.timeIntervalSince(dayStart) / 3600 * hourHeight)
+                    Button { onEvent(event) } label: {
+                        Text("\(event.startAt.formatted(date: .omitted, time: .shortened)) \(event.title)")
+                            .font(.caption2).lineLimit(2)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(5)
+                    .background((event.source.localizedCaseInsensitiveContains("Google") ? Color.orange : Color.green).opacity(0.3), in: RoundedRectangle(cornerRadius: 7))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: max(20, bottom - top))
+                    .offset(y: top)
                 }
                 ForEach(blocks) { block in
                     let dayStart = Calendar.current.startOfDay(for: day)

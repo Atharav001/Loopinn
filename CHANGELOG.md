@@ -2,6 +2,11 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — calendar grid, timesheet lanes and opaque title bars
+- Adapted the Loopin-macOS month grid into a week-by-week Loopinn calendar with weekday headers, timed and all-day event rows, source colors, overflow counts, quick day creation and read-only details for connected Apple/Google events. Day view now uses the hourly planning grid instead of a simple list.
+- Adapted Loopin's overlap-cluster algorithm for planned and logged timesheet rails. Entries are clipped to the visible range, separate lanes prevent overlaps from hiding one another, and focused tests cover overlapping and boundary-crossing intervals.
+- Restored standard opaque macOS title bars on floating panels so the traffic-light controls have a solid background. Apple Calendar remains available through EventKit; live Google connection still needs the user's OAuth Desktop client ID.
+
 ## 11 November 2026 — persistent floating windows and richer controls
 - Fixed floating panels hiding when Loopinn loses focus by disabling panel hide-on-deactivate. Pinned panels also join all spaces; unpinned panels remain regular windows.
 - Added distinct colored icon tiles, accent borders, gradients and hover responses to the menu actions, task capture and floating-window headers. Motion respects the macOS Reduce Motion preference.
