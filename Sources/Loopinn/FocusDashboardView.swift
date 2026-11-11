@@ -117,6 +117,10 @@ struct FocusDashboardView: View {
                 get: { state.pomodoro.autoAdvance },
                 set: { configurePomodoro(autoAdvance: $0) }
             ))
+            Toggle("Play the Om bell on timer alerts", isOn: Binding(
+                get: { state.settings.playAlertSound != false },
+                set: { state.setPlayAlertSound($0) }
+            ))
         }
         .disabled(state.pomodoro.status == .running || state.pomodoro.status == .paused)
         .padding(24)

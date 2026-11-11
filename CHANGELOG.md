@@ -3,6 +3,7 @@
 > Append entries only after actual implementation or verified baseline audit.
 
 ## 11 November 2026 — activity backup and hourly notification (in review)
+- Added a persisted Om-bell sound toggle in Focus. Timer and Ripple edge alerts remain visible when sound is off.
 - Extended backup snapshots to include activity logs, file shelf data and focus history while retaining legacy backup readability. Restore writes these stores with rollback to the pre-restore state on failure, and creates a safety backup first.
 - Added a local macOS hourly activity notification alongside the always-on-top quick-log window; permission denial still leaves the window available. The unsigned app with widget builds and 50/50 core checks pass; live notification and restore UI acceptance remain pending.
 

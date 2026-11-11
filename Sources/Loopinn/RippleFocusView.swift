@@ -49,7 +49,7 @@ struct RippleFocusView: View {
         }
         .onReceive(Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()) { date in
             if let nextAlert, date >= nextAlert {
-                OmBell.shared.play()
+                if state.settings.playAlertSound != false { OmBell.shared.play() }
                 self.nextAlert = date.addingTimeInterval(Double(interval))
             }
         }

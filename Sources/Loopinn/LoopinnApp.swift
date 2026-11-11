@@ -354,7 +354,13 @@ final class AppState: ObservableObject {
 
     private func triggerFocusAlert() {
         alertGlowUntil = .now.addingTimeInterval(1.5)
-        OmBell.shared.play()
+        if settings.playAlertSound != false { OmBell.shared.play() }
+    }
+
+    func setPlayAlertSound(_ enabled: Bool) {
+        var draft = settings
+        draft.playAlertSound = enabled
+        saveSettings(draft)
     }
 
     func setFocusReminderEnabled(_ enabled: Bool) {
