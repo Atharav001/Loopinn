@@ -331,7 +331,13 @@ struct DashboardView: View {
                         Button("Details") { taskToEdit = task }
                         Button("Schedule") { selectedTask = task }
                     }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .listRowBackground(Color.clear)
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
         .dropDestination(for: String.self) { items, _ in
@@ -547,7 +553,8 @@ private struct TaskDetailSheet: View {
     @State private var newLink = ""
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
             Text("Task details").font(.title2.bold())
             TextField("Title", text: $title)
             TextField("Notes", text: $notes, axis: .vertical).lineLimit(3...6)
@@ -602,8 +609,11 @@ private struct TaskDetailSheet: View {
                 }
                 .buttonStyle(.borderedProminent)
             }
+            }
+            .padding(24)
         }
-        .padding(24).frame(width: 460)
+        .frame(width: 500)
+        .frame(maxHeight: 650)
         .onAppear {
             title = task.title
             notes = task.notes
