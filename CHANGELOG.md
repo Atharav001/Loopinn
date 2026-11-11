@@ -2,6 +2,10 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — repeating focus reminders (in review)
+- Added a persisted focus reminder interval with enable/disable and ten-minute snooze. After sleep or relaunch, missed intervals collapse into one alert and schedule the next interval from delivery; the app never floods alerts.
+- Added Focus screen controls and a dismissible check-in banner. Local Swift build, unsigned app package and 37/37 core checks pass; runtime alert behavior remains pending.
+
 ## 11 November 2026 — Deep Work mode (in review)
 - Added a configurable long-focus session with an optional task link, displayed in the dashboard and floating timer. It uses the existing persisted Pomodoro timer state, completes without a break, and does not create an activity log.
 - Preserved decoding of older saved Pomodoro sessions. Local Swift build, unsigned app package and 34/34 core checks pass; runtime UI acceptance remains pending.

@@ -24,7 +24,7 @@
 | FR-08 | P04 | Pomodoro timer | IN REVIEW | PR #8 | Persisted deadline, pause/resume, focus/break recovery and cycle tests pass; runtime alert/UI acceptance pending. |
 | FR-09 | P04 | Stopwatch & countdown | IN REVIEW | P04 timer branch | Persisted stopwatch with ordered laps and countdown deadline with single completion transition compile; clock-change and runtime alert acceptance pending. |
 | FR-10 | P04 | Deep Work mode | IN REVIEW | P04 Deep Work branch | Configurable long-focus preset shares Pomodoro state, optional linked task is visible in dashboard and floating timer, and completion does not create an activity log; runtime UI acceptance pending. |
-| FR-11 | P04 | Repeating focus alarms | UNVERIFIED | — | — |
+| FR-11 | P04 | Repeating focus alarms | IN REVIEW | P04 alarm branch | Saved interval deadline, enable/disable, snooze and missed-interval collapse compile; runtime alert and permission behavior pending. |
 | FR-12 | P04 | Focus overlays & effects | UNVERIFIED | — | — |
 | FR-13 | P04 | Timer alerts & sounds | UNVERIFIED | — | — |
 | FR-14 | P04 | Floating focus widgets | IN REVIEW | PR #8 | Shared timer state in always-on-top glass panel; runtime handoff and display acceptance pending. |
