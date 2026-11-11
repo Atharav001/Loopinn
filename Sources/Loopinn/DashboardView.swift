@@ -41,11 +41,14 @@ struct MenuContent: View {
             Button("Open Tasks", systemImage: "checklist") { show(.tasks) }
             Button("Open Planner", systemImage: "calendar") { show(.planner) }
             Button("Open Calendar", systemImage: "calendar.circle") { show(.calendar) }
+            Button("Open Focus", systemImage: "moon.stars") { show(.focus) }
+            Button("Open Application Window", systemImage: "macwindow") { show(.today) }
             Button("Open Settings", systemImage: "gearshape") { show(.settings) }
             Button("Floating Tasks", systemImage: "square.on.square") {
                 FloatingPanelManager.shared.showTasks(state: state)
             }
             Button("Floating Pomodoro", systemImage: "timer") { FloatingPanelManager.shared.showPomodoro(state: state) }
+            Button("Ripple Focus", systemImage: "circle.dotted.circle") { FloatingPanelManager.shared.showRipple(state: state) }
             Divider()
             Label("Stored locally on this Mac", systemImage: "lock.shield")
                 .font(.caption).foregroundStyle(.secondary)
