@@ -11,6 +11,7 @@ struct AuraCommandMenu: View {
     @State private var quickTask = ""
     @State private var quickListID: UUID?
     @State private var justAdded = false
+    @FocusState private var quickFocused: Bool
 
     private var lists: [TaskList] { state.workspace.lists }
     private var targetListID: UUID { quickListID.flatMap { id in lists.first(where: { $0.id == id })?.id } ?? lists.first?.id ?? UUID() }
@@ -76,6 +77,7 @@ struct AuraCommandMenu: View {
                 TextField("Type a task and press Enter…", text: $quickTask)
                     .textFieldStyle(.roundedBorder)
                     .font(.system(size: 13, weight: .medium))
+                    .focused($quickFocused)
                     .onSubmit(submitQuickTask)
                 Button(action: submitQuickTask) {
                     Image(systemName: "arrow.up.circle.fill")
@@ -83,6 +85,9 @@ struct AuraCommandMenu: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Add task")
+            }
+            if let error = state.errorMessage {
+                Text(error).font(.caption2).foregroundStyle(.red).lineLimit(2)
             }
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
@@ -92,16 +97,16 @@ struct AuraCommandMenu: View {
         VStack(alignment: .leading, spacing: 6) {
             sectionLabel("QUICK ACTIONS")
             actionRow(id: "pomodoro", icon: "timer", title: "Pomodoro Timer", subtitle: "Floating focus and break timer") {
-                FloatingPanelManager.shared.showPomodoro(state: state)
+                launch { FloatingPanelManager.shared.showPomodoro(state: state) }
             }
             actionRow(id: "ripple", icon: "circle.dotted.circle", title: "Ripple Focus", subtitle: "Flexible interval alerts") {
-                FloatingPanelManager.shared.showRipple(state: state)
+                launch { FloatingPanelManager.shared.showRipple(state: state) }
             }
             actionRow(id: "tasks", icon: "checklist", title: "To-Do Lists", subtitle: "Floating task editor") {
-                FloatingPanelManager.shared.showTasks(state: state)
+                launch { FloatingPanelManager.shared.showTasks(state: state) }
             }
             actionRow(id: "log", icon: "square.and.pencil", title: "Log Activity", subtitle: "Quick floating entry") {
-                FloatingPanelManager.shared.showQuickLog(state: state)
+                launch { FloatingPanelManager.shared.showQuickLog(state: state) }
             }
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
@@ -144,7 +149,11 @@ struct AuraCommandMenu: View {
 
     private func submitQuickTask() {
         let trimmed = quickTask.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, lists.contains(where: { $0.id == targetListID }) else { return }
+        guard !trimmed.isEmpty else { quickFocused = true; return }
+        guard lists.contains(where: { $0.id == targetListID }) else {
+            state.errorMessage = "Create a task list in the application first."
+            return
+        }
         state.addTask(trimmed, to: targetListID)
         guard state.errorMessage == nil else { return }
         quickTask = ""
@@ -154,7 +163,21 @@ struct AuraCommandMenu: View {
 
     private func show(_ page: DashboardPage) {
         state.selectedPage = page
-        openWindow(id: "dashboard")
-        NSApp.activate(ignoringOtherApps: true)
+        launch {
+            openWindow(id: "dashboard")
+            NSApp.activate(ignoringOtherApps: true)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                NSApp.windows.first(where: { $0.title == "Loopinn" })?.makeKeyAndOrderFront(nil)
+                NSApp.activate(ignoringOtherApps: true)
+            }
+        }
+    }
+
+    private func launch(_ action: @escaping () -> Void) {
+        // Allow the menu-bar popover to relinquish focus before opening a panel.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            NSApp.activate(ignoringOtherApps: true)
+            action()
+        }
     }
 }

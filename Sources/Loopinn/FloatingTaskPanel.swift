@@ -33,6 +33,8 @@ final class FloatingPanelManager {
 
     private func show(id: String, title: String, size: NSSize, content: AnyView) {
         if let panel = panels[id] {
+            NSApp.activate(ignoringOtherApps: true)
+            panel.orderFrontRegardless()
             panel.makeKeyAndOrderFront(nil)
             return
         }
@@ -65,6 +67,8 @@ final class FloatingPanelManager {
         panels[id] = panel
         let animate = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         if animate { panel.alphaValue = 0 }
+        NSApp.activate(ignoringOtherApps: true)
+        panel.orderFrontRegardless()
         panel.makeKeyAndOrderFront(nil)
         if animate {
             NSAnimationContext.runAnimationGroup { context in
