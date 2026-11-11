@@ -4,7 +4,9 @@ import SwiftUI
 struct QuickLogView: View {
     @ObservedObject var state: AppState
     @State private var title = ""
+    @State private var category = "Uncategorized"
     @FocusState private var focused: Bool
+    private let suggestions = ["Coding", "Deep Work", "Meeting", "Planning", "Research", "Break"]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -14,6 +16,18 @@ struct QuickLogView: View {
                     .foregroundStyle(.secondary)
                 TextField("Describe the last hour", text: $title)
                     .focused($focused).onSubmit(save)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(suggestions, id: \.self) { suggestion in
+                            Button(suggestion) {
+                                if title.isEmpty { title = suggestion }
+                                category = suggestion == "Break" ? "Break" : "Work"
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+                    }
+                }
                 HStack {
                     Button("Skip") { state.skipActivityPrompt() }
                     Spacer()
@@ -32,7 +46,7 @@ struct QuickLogView: View {
 
     private func save() {
         guard let interval = state.activityPrompt else { return }
-        state.saveActivity(title: title, start: interval.start, end: interval.end)
+        state.saveActivity(title: title, start: interval.start, end: interval.end, category: category)
         if state.errorMessage == nil { title = "" }
     }
 }
@@ -67,6 +81,7 @@ struct ActivityLogView: View {
                     Button("Export JSON") { state.exportActivities(asJSON: true) }
                     DatePicker("Day", selection: $selectedDate, displayedComponents: .date).labelsHidden()
                 }
+                logbookMonth
                 HStack {
                     Toggle("Quiet hours", isOn: Binding(
                         get: { state.activityLogbook.quietHours != nil },
@@ -161,6 +176,41 @@ struct ActivityLogView: View {
     private func add() {
         state.saveActivity(title: title, start: start, end: end, category: category, id: editingID)
         if state.errorMessage == nil { title = ""; editingID = nil }
+    }
+
+    private var logbookMonth: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Button("Previous month", systemImage: "chevron.left") { shiftMonth(-1) }.labelStyle(.iconOnly)
+                Text(selectedDate.formatted(.dateTime.month(.wide).year())).font(.headline)
+                Button("Next month", systemImage: "chevron.right") { shiftMonth(1) }.labelStyle(.iconOnly)
+                Spacer()
+                Button("Today") { selectedDate = .now }
+            }
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 5), count: 7), spacing: 5) {
+                ForEach(CalendarLayout.gridDays(for: selectedDate), id: \.self) { day in
+                    let count = state.activityLogbook.entries.filter { Calendar.current.isDate($0.startAt, inSameDayAs: day) }.count
+                    Button { selectedDate = day } label: {
+                        VStack(spacing: 4) {
+                            Text(day.formatted(.dateTime.day())).font(.subheadline.weight(Calendar.current.isDate(day, inSameDayAs: selectedDate) ? .bold : .regular))
+                            Circle().fill(count > 0 ? Color.accentColor : .clear).frame(width: 4, height: 4)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 36)
+                        .background(Calendar.current.isDate(day, inSameDayAs: selectedDate) ? Color.accentColor.opacity(0.17) : .clear,
+                                    in: RoundedRectangle(cornerRadius: 8))
+                        .opacity(Calendar.current.isDate(day, equalTo: selectedDate, toGranularity: .month) ? 1 : 0.35)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(day.formatted(date: .complete, time: .omitted)), \(count) logged activities")
+                }
+            }
+        }
+        .padding(16)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func shiftMonth(_ amount: Int) {
+        selectedDate = Calendar.current.date(byAdding: .month, value: amount, to: selectedDate) ?? selectedDate
     }
 
     private func reviewTime() {

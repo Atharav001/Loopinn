@@ -870,8 +870,9 @@ struct LoopinnApp: App {
 
     var body: some Scene {
         MenuBarExtra("Loopinn", systemImage: "circle.hexagongrid.fill") {
-            MenuContent(state: state)
+            AuraCommandMenu(state: state)
         }
+        .menuBarExtraStyle(.window)
         Window("Loopinn", id: "dashboard") {
             DashboardView(state: state)
                 .frame(minWidth: 900, minHeight: 600)

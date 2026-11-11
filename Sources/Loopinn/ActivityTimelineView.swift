@@ -21,6 +21,9 @@ struct ActivityTimelineView: View {
                     DatePicker("Day", selection: $day, displayedComponents: .date).labelsHidden()
                 }
                 Text("A plan never becomes an activity log automatically.").foregroundStyle(.secondary)
+                LoopinTimesheetRails(day: day, planned: planned, logged: logged) { block in
+                    block.title ?? state.workspace.tasks.first(where: { $0.id == block.taskID })?.title ?? "Planned block"
+                }
                 HStack(alignment: .top, spacing: 14) {
                     rail("Planned", icon: "calendar", isEmpty: planned.isEmpty) {
                         ForEach(planned) { block in

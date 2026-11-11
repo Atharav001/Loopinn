@@ -2,6 +2,11 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — Aura and Loopin-macOS source adaptation (in review)
+- Adapted Aura's menu bar command center layout and quick task entry to Loopinn's single app state. It exposes the floating Pomodoro, Focus, Ripple Focus, tasks, calendar, logbook, timesheet, quick log, settings and application windows.
+- Adapted Loopin-macOS's interactive mini month year calendar and planned/logged timesheet rails to Loopinn's existing calendar blocks and activity records. Added direct month-day creation, a logbook month picker, and Loopin-style quick suggestions to the hourly logging panel.
+- Kept the existing local store so imported views do not create a second set of tasks or activity logs. No notch code was imported. The unsigned Xcode app build and 50/50 core checks pass; the rebuilt app was relaunched on this Mac. Interactive menu and window acceptance remains pending.
+
 ## 11 November 2026 — local app launch check
 - Rebuilt the unsigned Xcode app with its embedded task widget, launched `dist/Loopinn.app` on macOS, and observed the Loopinn process running. PR #12 macOS CI passed for `236123a`; interactive window and signed widget acceptance remain pending.
 

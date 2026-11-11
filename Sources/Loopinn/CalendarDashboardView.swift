@@ -139,6 +139,10 @@ struct CalendarDashboardView: View {
                         .opacity(calendar.isDate(day, equalTo: selectedDate, toGranularity: .month) ? 1 : 0.55)
                     }
                     .buttonStyle(.plain)
+                    .contextMenu {
+                        Button("Add time block for this day", systemImage: "calendar.badge.plus") { prepareNew(on: day) }
+                        Button("Open day", systemImage: "calendar.day.timeline.left") { select(day); scope = .day }
+                    }
                     .accessibilityLabel("\(day.formatted(date: .complete, time: .omitted)), \(blocks.count) blocks, \(events.count) external events")
                 }
             }
@@ -146,26 +150,10 @@ struct CalendarDashboardView: View {
     }
 
     private var yearContent: some View {
-        ScrollView {
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
-                ForEach(1...12, id: \.self) { month in
-                    let date = calendar.date(from: DateComponents(year: calendar.component(.year, from: selectedDate), month: month, day: 1))!
-                    let interval = CalendarLayout.interval(containing: date, scope: .month)
-                    let count = state.workspace.blocks.filter { $0.startAt < interval.end && $0.endAt > interval.start }.count
-                    let externalCount = externalEvents.filter { $0.startAt < interval.end && $0.endAt > interval.start }.count
-                    Button { select(date); scope = .month } label: {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text(date.formatted(.dateTime.month(.wide))).font(.headline)
-                            Text("\(count) blocks · \(externalCount) events").font(.subheadline).foregroundStyle(.secondary)
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 72, alignment: .leading)
-                        .padding(16)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-        }
+        LoopinYearCalendarGrid(year: calendar.component(.year, from: selectedDate),
+                               blocks: state.workspace.blocks, events: externalEvents,
+                               onMonth: { select($0); scope = .month },
+                               onDay: { select($0); scope = .day })
     }
 
     private func blockRow(_ block: CalendarBlock) -> some View {
