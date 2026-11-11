@@ -7,6 +7,7 @@
 **Latest packaged build:** unsigned `dist/Loopinn.app` rebuilt with imported Aura/Loopin views and embedded WidgetKit extension, then freshly launched on this Mac; process observed running. Signed installation and interactive UI acceptance pending
 **Current ticket:** P04/P05 macOS implementation on `codex/p04-p05-experience`; 50/50 core checks and unsigned Xcode app/extension build passed
 **Current UI repair:** `codex/import-aura-loopin` now fixes the collapsed command center and adds empty-workspace entry points; visual acceptance of the rebuilt menu remains pending.
+**Floating window update:** Tasks, Pomodoro, Ripple Focus and Log Activity have per-window pin controls and flexible sizing; Ripple Focus uses a separate double bell. Runtime interaction and sound acceptance remain pending.
 **Blockers:** Android target and signed release setup do not exist. Google live connection awaits a Desktop client ID. Aura and Loopin-macOS repositories are now available for source adaptation; the notch remains paused.
 
 ## Completion counters

@@ -3,36 +3,53 @@ import LoopinnCore
 import SwiftUI
 
 @MainActor
-final class FloatingPanelManager {
+final class FloatingPanelManager: ObservableObject {
     static let shared = FloatingPanelManager()
     private var panels: [String: NSPanel] = [:]
+    @Published private(set) var pinned: [String: Bool] = [:]
     private let tasksID = "tasks"
     private let pomodoroID = "pomodoro"
     private let rippleID = "ripple"
     private let quickLogID = "quick-log"
 
     func setPinned(_ pinned: Bool) {
-        panels[tasksID]?.level = .floating
+        setPinned(pinned, for: tasksID)
+    }
+
+    func isPinned(_ id: String) -> Bool {
+        pinned[id] ?? UserDefaults.standard.object(forKey: "Loopinn.\(id).pinned") as? Bool ?? true
+    }
+
+    func togglePinned(_ id: String) {
+        setPinned(!isPinned(id), for: id)
+    }
+
+    private func setPinned(_ value: Bool, for id: String) {
+        pinned[id] = value
+        UserDefaults.standard.set(value, forKey: "Loopinn.\(id).pinned")
+        panels[id]?.level = value ? .floating : .normal
     }
 
     func showTasks(state: AppState) {
-        show(id: tasksID, title: "Loopinn Tasks", size: NSSize(width: 360, height: 450), content: AnyView(FloatingTasksView(state: state)))
+        show(id: tasksID, title: "Loopinn Tasks", size: NSSize(width: 360, height: 450), state: state, content: AnyView(FloatingTasksView(state: state)))
     }
 
     func showPomodoro(state: AppState) {
-        show(id: pomodoroID, title: "Loopinn Focus", size: NSSize(width: 340, height: 280), content: AnyView(FloatingPomodoroView(state: state)))
+        show(id: pomodoroID, title: "Loopinn Focus", size: NSSize(width: 340, height: 280), state: state, content: AnyView(FloatingPomodoroView(state: state)))
     }
 
     func showRipple(state: AppState) {
-        show(id: rippleID, title: "Ripple Focus", size: NSSize(width: 360, height: 300), content: AnyView(RippleFocusView(state: state)))
+        show(id: rippleID, title: "Ripple Focus", size: NSSize(width: 360, height: 300), state: state, content: AnyView(RippleFocusView(state: state)))
     }
 
     func showQuickLog(state: AppState) {
-        show(id: quickLogID, title: "Log activity", size: NSSize(width: 440, height: 340), content: AnyView(QuickLogView(state: state)))
+        show(id: quickLogID, title: "Log activity", size: NSSize(width: 440, height: 340), state: state, content: AnyView(QuickLogView(state: state)))
     }
 
-    private func show(id: String, title: String, size: NSSize, content: AnyView) {
+    private func show(id: String, title: String, size: NSSize, state: AppState, content: AnyView) {
+        if id == tasksID { setPinned(state.settings.pinFloatingTasks != false, for: tasksID) }
         if let panel = panels[id] {
+            panel.level = isPinned(id) ? .floating : .normal
             NSApp.activate(ignoringOtherApps: true)
             panel.orderFrontRegardless()
             panel.makeKeyAndOrderFront(nil)
@@ -45,7 +62,7 @@ final class FloatingPanelManager {
             defer: false
         )
         panel.title = title
-        panel.level = .floating
+        panel.level = isPinned(id) ? .floating : .normal
         panel.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
         panel.isMovableByWindowBackground = true
         panel.isReleasedWhenClosed = false
@@ -54,7 +71,8 @@ final class FloatingPanelManager {
         panel.titlebarAppearsTransparent = true
         panel.titleVisibility = .hidden
         panel.hasShadow = true
-        panel.minSize = NSSize(width: 300, height: id == tasksID ? 300 : 220)
+        panel.minSize = NSSize(width: id == quickLogID ? 390 : 280,
+                               height: id == quickLogID || id == rippleID ? 300 : 250)
         panel.setFrameAutosaveName("Loopinn.\(id).Panel")
         if let screen = NSScreen.screens.first(where: { $0.visibleFrame.contains(NSPoint(x: panel.frame.midX, y: panel.frame.midY)) }) ?? NSScreen.main {
             var frame = panel.frame
@@ -63,7 +81,7 @@ final class FloatingPanelManager {
             frame.origin.y = min(max(frame.origin.y, visible.minY), visible.maxY - frame.height)
             panel.setFrame(frame, display: false)
         }
-        panel.contentView = NSHostingView(rootView: content)
+        panel.contentView = NSHostingView(rootView: FloatingPanelChrome(id: id, title: title, state: state, content: content))
         panels[id] = panel
         let animate = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         if animate { panel.alphaValue = 0 }
@@ -77,6 +95,40 @@ final class FloatingPanelManager {
                 panel.animator().alphaValue = 1
             }
         }
+    }
+}
+
+private struct FloatingPanelChrome: View {
+    @ObservedObject private var manager = FloatingPanelManager.shared
+    let id: String
+    let title: String
+    @ObservedObject var state: AppState
+    let content: AnyView
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 10) {
+                Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Spacer()
+                Button {
+                    if id == "tasks" { state.setPinFloatingTasks(!manager.isPinned(id)) }
+                    else { manager.togglePinned(id) }
+                } label: {
+                    Image(systemName: manager.isPinned(id) ? "pin.fill" : "pin")
+                        .font(.system(size: 12, weight: .semibold))
+                        .frame(width: 28, height: 24)
+                        .foregroundStyle(manager.isPinned(id) ? state.settings.accent.color : .secondary)
+                }
+                .buttonStyle(.plain)
+                .help(manager.isPinned(id) ? "Unpin window from the top" : "Pin window above other apps")
+                .accessibilityLabel(manager.isPinned(id) ? "Unpin window" : "Pin window")
+            }
+            .padding(.leading, 18).padding(.trailing, 12).padding(.top, 28).padding(.bottom, 6)
+            .background(.ultraThinMaterial)
+            content.frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.ultraThinMaterial)
     }
 }
 
@@ -133,7 +185,7 @@ private struct FloatingTasksView: View {
             }
         }
         .padding(18)
-        .frame(minWidth: 300, minHeight: 300)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.ultraThinMaterial)
         .preferredColorScheme(state.settings.theme.colorScheme)
         .tint(state.settings.accent.color)

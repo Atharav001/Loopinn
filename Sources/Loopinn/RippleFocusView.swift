@@ -28,6 +28,8 @@ struct RippleFocusView: View {
                     Text(seconds < 60 ? "\(seconds) seconds" : "\(seconds / 60) minute\(seconds == 60 ? "" : "s")").tag(seconds)
                 }
             }
+            Text("A sharp double bell sounds at each interval.")
+                .font(.caption).foregroundStyle(.secondary)
             .onChange(of: interval) { _, _ in if nextAlert != nil { nextAlert = .now.addingTimeInterval(Double(interval)) } }
             HStack {
                 Button(nextAlert == nil ? "Start" : "Stop") {
@@ -38,7 +40,7 @@ struct RippleFocusView: View {
             }
         }
         .padding(24)
-        .frame(minWidth: 310, minHeight: 270)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.ultraThinMaterial)
         .background {
             TimelineView(.periodic(from: .now, by: 0.25)) { timeline in
@@ -49,7 +51,7 @@ struct RippleFocusView: View {
         }
         .onReceive(Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()) { date in
             if let nextAlert, date >= nextAlert {
-                if state.settings.playAlertSound != false { OmBell.shared.play() }
+                if state.settings.playAlertSound != false { RippleBell.shared.play() }
                 self.nextAlert = date.addingTimeInterval(Double(interval))
             }
         }

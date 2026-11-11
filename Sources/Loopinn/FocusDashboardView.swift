@@ -117,7 +117,7 @@ struct FocusDashboardView: View {
                 get: { state.pomodoro.autoAdvance },
                 set: { configurePomodoro(autoAdvance: $0) }
             ))
-            Toggle("Play the Om bell on timer alerts", isOn: Binding(
+            Toggle("Play bell sounds for timer and Ripple alerts", isOn: Binding(
                 get: { state.settings.playAlertSound != false },
                 set: { state.setPlayAlertSound($0) }
             ))
@@ -337,7 +337,7 @@ struct FloatingPomodoroView: View {
             }
         }
         .padding(24)
-        .frame(minWidth: 300, minHeight: 210)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.ultraThinMaterial)
         .background(state.settings.focusEffectsEnabled != false && state.pomodoro.status == .running ? Color.black.opacity(0.12 * (state.settings.focusEffectIntensity ?? 0.5)) : .clear)
         .overlay {

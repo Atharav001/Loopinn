@@ -46,7 +46,7 @@ struct QuickLogView: View {
                 }
         }
         .padding(24)
-        .frame(minWidth: 350, minHeight: 230)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.ultraThinMaterial)
         .onAppear { focused = true }
     }

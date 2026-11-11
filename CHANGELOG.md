@@ -2,6 +2,11 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — floating-window pin controls and Ripple double bell
+- Added a visible pin control in the title area of the Tasks, Pomodoro, Ripple Focus and Log Activity windows. Pinning changes each panel's window level, defaults on, and persists independently; the Tasks pin stays in sync with its existing setting.
+- Removed fixed content minimums so panels expand with resizing, with practical window minimums to keep their controls accessible.
+- Gave Ripple Focus a distinct, louder sharp two-strike bell while retaining the existing sound toggle and the Om sound for other focus alerts.
+
 ## 11 November 2026 — menu action responsiveness
 - Deferred command execution until the menu-bar popover releases focus, then explicitly brought floating panels and the application window forward. Reopening an existing floating panel now raises it as well.
 - Quick task capture now focuses its field for an empty submission and shows storage errors in the menu instead of failing silently.

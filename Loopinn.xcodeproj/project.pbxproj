@@ -37,6 +37,7 @@
 		9F0E820130AADCEE5E5E21EF /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDB11144489FB9F857A4CDB7 /* DashboardView.swift */; };
 		A74CDA72797AA398F85F9B77 /* MediaControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A079F75E5EA70D601DE9906 /* MediaControlsView.swift */; };
 		A79D1B197D81069952ADF0AE /* ActivityLogbook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0184E034FBA8275ABAF814CB /* ActivityLogbook.swift */; };
+		A9696D3F7111A7568C7921D1 /* RippleBell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53ABC274A1494126B2B2FC3C /* RippleBell.swift */; };
 		AFEAF4E5E015CD7ACD4DE2E1 /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00337C4BD4DE9BA3F752589 /* AnalyticsView.swift */; };
 		B16A73410BA2F1BF1018CDE4 /* WorkspaceDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA88803C23F112BD2A9A0FF /* WorkspaceDatabase.swift */; };
 		B2B56DBF56814C548B294490 /* CommandPaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF88CEDBE89D875765EAAF9A /* CommandPaletteView.swift */; };
@@ -134,6 +135,7 @@
 		4642AB4F0FF5783B14517EBC /* TaskCaptureParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCaptureParser.swift; sourceTree = "<group>"; };
 		51BDA0DB7B799C4B45DCA3F1 /* ActivityTimeParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityTimeParser.swift; sourceTree = "<group>"; };
 		53186A4641482D13B7F29A87 /* Loopinn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Loopinn.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		53ABC274A1494126B2B2FC3C /* RippleBell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RippleBell.swift; sourceTree = "<group>"; };
 		576499B041A59833C10DCF94 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		584922B33B616309F16880F1 /* WorkspaceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceService.swift; sourceTree = "<group>"; };
 		68B38CA020D1EC4A8A62AB3F /* GoogleCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleCalendarService.swift; sourceTree = "<group>"; };
@@ -230,6 +232,7 @@
 				1A079F75E5EA70D601DE9906 /* MediaControlsView.swift */,
 				BD8A3994E55EF7000529D49C /* OmBell.swift */,
 				576499B041A59833C10DCF94 /* OnboardingView.swift */,
+				53ABC274A1494126B2B2FC3C /* RippleBell.swift */,
 				75833C3524CE133119C9194B /* RippleFocusView.swift */,
 				A7F4D2BAFF48F8BB622F3A18 /* SystemUtilitiesView.swift */,
 				AD8618113E39F01FA1C4F73B /* UtilitiesView.swift */,
@@ -458,6 +461,7 @@
 				A74CDA72797AA398F85F9B77 /* MediaControlsView.swift in Sources */,
 				539A602D46F35173DAEBDD8F /* OmBell.swift in Sources */,
 				752A7694654E8A1880D51D86 /* OnboardingView.swift in Sources */,
+				A9696D3F7111A7568C7921D1 /* RippleBell.swift in Sources */,
 				036A88F4D447E2FE33475A8A /* RippleFocusView.swift in Sources */,
 				B65C547F742CBAB6E0BDC9A9 /* SystemUtilitiesView.swift in Sources */,
 				4896499B8F316105C2AA5811 /* UtilitiesView.swift in Sources */,
