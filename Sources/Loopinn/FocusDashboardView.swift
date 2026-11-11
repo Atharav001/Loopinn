@@ -5,6 +5,8 @@ struct FocusDashboardView: View {
     @ObservedObject var state: AppState
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var utilityMode: UtilityMode = .stopwatch
+    @State private var deepWorkMinutes = 90
+    @State private var deepWorkTaskID: UUID?
 
     private enum UtilityMode: String, CaseIterable {
         case stopwatch = "Stopwatch"
@@ -24,20 +26,24 @@ struct FocusDashboardView: View {
                             .animation(reduceMotion ? nil : .easeInOut(duration: 0.35), value: progress)
                         VStack(spacing: 7) {
                             Text(timeText).font(.system(size: 48, weight: .medium, design: .rounded)).monospacedDigit()
-                            Text(state.pomodoro.phase == .focus ? "FOCUS" : "BREAK")
+                            Text(state.pomodoro.mode == .deepWork ? "DEEP WORK" : (state.pomodoro.phase == .focus ? "FOCUS" : "BREAK"))
                                 .font(.caption.weight(.semibold)).tracking(3).foregroundStyle(.secondary)
                         }
                     }
                     .frame(width: 260, height: 260)
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Cycle \(state.pomodoro.completedCycles + 1)").font(.title2.weight(.semibold))
-                        Text(state.pomodoro.status == .running ? "Your session is in motion." : "Start when you're ready.")
+                        Text(state.pomodoro.mode == .deepWork ? "Deep Work session" : "Cycle \(state.pomodoro.completedCycles + 1)")
+                            .font(.title2.weight(.semibold))
+                        Text(state.pomodoro.status == .completed ? "Session complete." : (state.pomodoro.status == .running ? "Your session is in motion." : "Start when you're ready."))
                             .foregroundStyle(.secondary)
+                        if let taskName = linkedTaskName {
+                            Label(taskName, systemImage: "checkmark.circle").font(.subheadline)
+                        }
                         HStack {
                             if state.pomodoro.status == .running {
                                 Button("Pause", systemImage: "pause.fill") { state.pausePomodoro() }
                                     .buttonStyle(.borderedProminent)
-                            } else {
+                            } else if state.pomodoro.status != .completed {
                                 Button(state.pomodoro.status == .paused ? "Resume" : "Start Focus", systemImage: "play.fill") { state.startPomodoro() }
                                     .buttonStyle(.borderedProminent)
                             }
@@ -63,6 +69,7 @@ struct FocusDashboardView: View {
                         Text("\(state.pomodoro.completedCycles)").font(.title2.weight(.semibold))
                     }
                 }
+                deepWorkCard
                 utilityTimersCard
             }
             .frame(maxWidth: 1000)
@@ -76,6 +83,35 @@ struct FocusDashboardView: View {
     private var timeText: String {
         let seconds = Int(ceil(state.pomodoro.remaining()))
         return String(format: "%02d:%02d", seconds / 60, seconds % 60)
+    }
+
+    private var linkedTaskName: String? {
+        guard state.pomodoro.mode == .deepWork, let id = state.pomodoro.linkedTaskID else { return nil }
+        return state.workspace.tasks.first(where: { $0.id == id })?.title ?? "Linked task no longer available"
+    }
+
+    private var deepWorkCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Label("Deep Work", systemImage: "moon.stars.fill").font(.title2.weight(.semibold))
+            Text("Set aside a longer session. A task link stays visible, and time is never logged automatically.")
+                .foregroundStyle(.secondary)
+            Stepper("Length: \(deepWorkMinutes) minutes", value: $deepWorkMinutes, in: 30...240, step: 15)
+            Picker("Focus on", selection: $deepWorkTaskID) {
+                Text("No task").tag(nil as UUID?)
+                ForEach(state.workspace.tasks.filter { $0.completedAt == nil }) { task in
+                    Text(task.title).tag(Optional(task.id))
+                }
+            }
+            .frame(maxWidth: 420)
+            Button("Start Deep Work", systemImage: "play.fill") {
+                state.startDeepWork(minutes: deepWorkMinutes, taskID: deepWorkTaskID)
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(state.pomodoro.status == .running || state.pomodoro.status == .paused)
+        }
+        .padding(28)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
     }
 
     private var utilityTimersCard: some View {
@@ -186,16 +222,21 @@ struct FloatingPomodoroView: View {
             HStack {
                 Label("Focus timer", systemImage: "timer").font(.headline)
                 Spacer()
-                Text("Cycle \(state.pomodoro.completedCycles + 1)").font(.caption).foregroundStyle(.secondary)
+                Text(state.pomodoro.mode == .deepWork ? "Deep Work" : "Cycle \(state.pomodoro.completedCycles + 1)")
+                    .font(.caption).foregroundStyle(.secondary)
             }
             Text(String(format: "%02d:%02d", Int(ceil(state.pomodoro.remaining())) / 60, Int(ceil(state.pomodoro.remaining())) % 60))
                 .font(.system(size: 52, weight: .medium, design: .rounded)).monospacedDigit()
-            Text(state.pomodoro.phase == .focus ? "FOCUS" : "BREAK")
+            Text(state.pomodoro.mode == .deepWork ? "DEEP WORK" : (state.pomodoro.phase == .focus ? "FOCUS" : "BREAK"))
                 .font(.caption.weight(.semibold)).tracking(3).foregroundStyle(.secondary)
+            if state.pomodoro.mode == .deepWork, let id = state.pomodoro.linkedTaskID {
+                Text(state.workspace.tasks.first(where: { $0.id == id })?.title ?? "Linked task no longer available")
+                    .font(.subheadline).lineLimit(2)
+            }
             HStack {
                 if state.pomodoro.status == .running {
                     Button("Pause", systemImage: "pause.fill") { state.pausePomodoro() }.buttonStyle(.borderedProminent)
-                } else {
+                } else if state.pomodoro.status != .completed {
                     Button(state.pomodoro.status == .paused ? "Resume" : "Start", systemImage: "play.fill") { state.startPomodoro() }.buttonStyle(.borderedProminent)
                 }
                 Button("Reset", systemImage: "arrow.counterclockwise") { state.resetPomodoro() }
