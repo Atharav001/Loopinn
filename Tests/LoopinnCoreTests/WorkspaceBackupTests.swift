@@ -68,4 +68,17 @@ final class WorkspaceBackupTests: XCTestCase {
         XCTAssertThrowsError(try WorkspaceBackup.installAttachments(from: backup, workspace: workspace, into: destination))
         XCTAssertEqual(try Data(contentsOf: destination.appendingPathComponent("idea.txt")), Data("other".utf8))
     }
+
+    func testLinkAttachmentNeedsNoManagedFile() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        var workspace = Workspace()
+        var task = LoopTask(listID: workspace.lists[0].id, title: "Read")
+        task.attachments = [TaskAttachment(id: UUID(), originalName: "example.com", storedName: "", byteCount: 0, linkURLString: "https://example.com")]
+        workspace.tasks.append(task)
+        let backup = root.appendingPathComponent("links.loopinnbackup")
+        try WorkspaceBackup.create(workspace: workspace, settings: AppSettings(), attachmentsDirectory: root, at: backup)
+        XCTAssertEqual(try WorkspaceBackup.inspect(at: backup).workspace.tasks[0].attachments?.first?.linkURLString, "https://example.com")
+    }
 }

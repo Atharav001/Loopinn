@@ -42,3 +42,15 @@ struct SectionHeading: View {
         }
     }
 }
+
+enum TaskAppearance {
+    static func color(for tag: String?) -> Color {
+        switch tag {
+        case "Blue": .blue
+        case "Teal": .teal
+        case "Orange": .orange
+        case "Purple": .purple
+        default: .clear
+        }
+    }
+}

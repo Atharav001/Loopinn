@@ -8,7 +8,7 @@ struct OnboardingView: View {
     private let pages: [(symbol: String, title: String, detail: String)] = [
         ("circle.hexagongrid.fill", "Welcome to Loopinn", "Plan your day from the menu bar. Open the dashboard only when you need more room."),
         ("checklist", "Capture what matters", "Tasks, lists and attachments stay on your Mac. Set both a start and end time to place a task in your local plan."),
-        ("hand.raised", "Your data stays yours", "This build stores data locally. Calendar publishing and cloud sync are not active, and no permission is requested during setup.")
+        ("hand.raised", "Your data stays yours", "Tasks and plans stay on this Mac. Connect a calendar only when you want to view its events, and confirm each event before publishing. Cloud sync is not active.")
     ]
 
     var body: some View {

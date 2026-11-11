@@ -19,6 +19,10 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var showTodayPlan: Bool?
     public var pinFloatingTasks: Bool?
     public var showDockIcon: Bool?
+    public var showAppleEvents: Bool?
+    public var hiddenAppleCalendarIDs: [String]?
+    public var googleClientID: String?
+    public var hiddenGoogleCalendarIDs: [String]?
 
     public init(theme: ThemeMode = .system, accent: AccentChoice = .blue) {
         version = 1
@@ -29,6 +33,10 @@ public struct AppSettings: Codable, Equatable, Sendable {
         showTodayPlan = true
         pinFloatingTasks = true
         showDockIcon = false
+        showAppleEvents = true
+        hiddenAppleCalendarIDs = []
+        googleClientID = nil
+        hiddenGoogleCalendarIDs = []
     }
 }
 

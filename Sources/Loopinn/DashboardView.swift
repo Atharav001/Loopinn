@@ -40,10 +40,12 @@ struct MenuContent: View {
             Button("Open Today", systemImage: "sun.max") { show(.today) }
             Button("Open Tasks", systemImage: "checklist") { show(.tasks) }
             Button("Open Planner", systemImage: "calendar") { show(.planner) }
+            Button("Open Calendar", systemImage: "calendar.circle") { show(.calendar) }
             Button("Open Settings", systemImage: "gearshape") { show(.settings) }
             Button("Floating Tasks", systemImage: "square.on.square") {
                 FloatingPanelManager.shared.showTasks(state: state)
             }
+            Button("Floating Pomodoro", systemImage: "timer") { FloatingPanelManager.shared.showPomodoro(state: state) }
             Divider()
             Label("Stored locally on this Mac", systemImage: "lock.shield")
                 .font(.caption).foregroundStyle(.secondary)
@@ -71,13 +73,14 @@ struct MenuContent: View {
 }
 
 enum DashboardPage: String, CaseIterable, Identifiable {
-    case today = "Today", tasks = "Tasks", planner = "Planner", focus = "Focus", analytics = "Analytics", settings = "Settings"
+    case today = "Today", tasks = "Tasks", planner = "Planner", calendar = "Calendar", focus = "Focus", analytics = "Analytics", settings = "Settings"
     var id: Self { self }
     var icon: String {
         switch self {
         case .today: "sun.max"
         case .tasks: "checklist"
         case .planner: "calendar"
+        case .calendar: "calendar.circle"
         case .focus: "timer"
         case .analytics: "chart.bar"
         case .settings: "gearshape"
@@ -87,6 +90,7 @@ enum DashboardPage: String, CaseIterable, Identifiable {
 
 struct DashboardView: View {
     @ObservedObject var state: AppState
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var taskTitle = ""
     @State private var selectedTask: LoopTask?
     @State private var taskToEdit: LoopTask?
@@ -138,9 +142,11 @@ struct DashboardView: View {
                 case .tasks:
                     taskContent
                 case .planner:
-                    plannerContent
+                    CalendarDashboardView(state: state)
+                case .calendar:
+                    CalendarDashboardView(state: state)
                 case .focus:
-                    ContentUnavailableView("Focus is next", systemImage: "timer", description: Text("Timer sessions will appear here."))
+                    FocusDashboardView(state: state)
                 case .analytics:
                     ContentUnavailableView("No activity yet", systemImage: "chart.bar", description: Text("Reports will use recorded activity, separate from planned time."))
                 case .settings:
@@ -227,11 +233,13 @@ struct DashboardView: View {
                         HStack {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(task.title).font(.title3.weight(.semibold))
-                                Text(task.dueAt.map { "Due \($0.formatted(date: .abbreviated, time: .omitted))" } ?? "Ready when you are")
+                                Text(state.nextTaskReason ?? "Ready when you are")
                                     .foregroundStyle(.secondary)
                             }
                             Spacer()
-                            Button("Complete") { state.toggleTask(task) }.buttonStyle(.borderedProminent)
+                            Button("Dismiss", systemImage: "xmark") { state.dismissedRecommendationID = task.id }
+                                .labelStyle(.iconOnly)
+                            Button("Complete") { toggle(task) }.buttonStyle(.borderedProminent)
                         }
                     } else {
                         Text("Add a task to begin your day.").foregroundStyle(.secondary)
@@ -290,16 +298,27 @@ struct DashboardView: View {
             HStack {
                 TextField("Add a task", text: $taskTitle).focused($taskInputFocused).onSubmit(addTask)
                 Button("Add Task", action: addTask).buttonStyle(.borderedProminent)
+                Button("Paste Tasks", systemImage: "doc.on.clipboard") {
+                    if let text = NSPasteboard.general.string(forType: .string) {
+                        state.captureTasks(text, to: selectedListID ?? state.workspace.lists[0].id)
+                    }
+                }
             }
+            Text("Tip: use !high, @tomorrow or #ListName while capturing a task.")
+                .font(.caption).foregroundStyle(.secondary)
             if visibleTasks.isEmpty {
                 ContentUnavailableView("Start with one task", systemImage: "checklist", description: Text("Tasks save locally and are available offline."))
             } else {
                 List(visibleTasks) { task in
                     HStack {
-                        Button { state.toggleTask(task) } label: {
+                        Button { toggle(task) } label: {
                             Image(systemName: task.completedAt == nil ? "circle" : "checkmark.circle.fill")
                         }
                         .buttonStyle(.plain)
+                        if task.colorTag != nil {
+                            Circle().fill(TaskAppearance.color(for: task.colorTag)).frame(width: 8, height: 8)
+                                .accessibilityLabel("\(task.colorTag ?? "") task")
+                        }
                         Text(task.title).strikethrough(task.completedAt != nil)
                         if task.isStarred == true { Image(systemName: "star.fill").foregroundStyle(.yellow) }
                         Spacer()
@@ -312,8 +331,19 @@ struct DashboardView: View {
                         Button("Details") { taskToEdit = task }
                         Button("Schedule") { selectedTask = task }
                     }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .listRowBackground(Color.clear)
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
+        }
+        .dropDestination(for: String.self) { items, _ in
+            guard !items.isEmpty else { return false }
+            state.captureTasks(items.joined(separator: "\n"), to: selectedListID ?? state.workspace.lists[0].id)
+            return state.errorMessage == nil
         }
     }
 
@@ -373,15 +403,61 @@ struct DashboardView: View {
                     set: { state.setShowTodayPlan($0) }
                 ))
             }
-            Section("Floating tasks") {
-                Toggle("Keep Panel Above Windows", isOn: Binding(
-                    get: { state.settings.pinFloatingTasks != false },
-                    set: { state.setPinFloatingTasks($0) }
+            Section("Apple Calendar") {
+                Text("For regional holidays, subscribe to your region's holiday calendar in Apple Calendar and keep it visible here.")
+                    .foregroundStyle(.secondary)
+                Toggle("Show Apple Events", isOn: Binding(
+                    get: { state.settings.showAppleEvents != false },
+                    set: { state.setShowAppleEvents($0) }
                 ))
+                if state.appleCalendarConnected {
+                    Label("Connected for calendar access", systemImage: "checkmark.circle")
+                    Button("Refresh Apple Events") { state.refreshAppleCalendar(force: true) }
+                    ForEach(state.appleCalendars) { calendar in
+                        Toggle(calendar.title, isOn: Binding(
+                            get: { !(state.settings.hiddenAppleCalendarIDs ?? []).contains(calendar.id) },
+                            set: { state.setAppleCalendarVisible(calendar.id, visible: $0) }
+                        ))
+                    }
+                } else {
+                    Text("Connect only when you want to view Apple Calendar events or publish a plan.")
+                        .foregroundStyle(.secondary)
+                    Button("Connect Apple Calendar…") { state.connectAppleCalendar() }
+                }
+            }
+            Section("Google Calendar") {
+                Text("Subscribed regional holiday calendars appear alongside your other Google calendars.")
+                    .foregroundStyle(.secondary)
+                TextField("OAuth Desktop client ID", text: Binding(
+                    get: { state.settings.googleClientID ?? "" },
+                    set: { state.setGoogleClientID($0) }
+                ))
+                .textContentType(.none)
+                .disabled(state.googleCalendarConnected)
+                if state.googleCalendarConnected {
+                    Label("Connected", systemImage: "checkmark.circle")
+                    Button("Refresh Google Events") { state.refreshGoogleCalendar(force: true) }
+                    ForEach(state.googleCalendars) { calendar in
+                        Toggle(calendar.title, isOn: Binding(
+                            get: { !(state.settings.hiddenGoogleCalendarIDs ?? []).contains(calendar.id) },
+                            set: { state.setGoogleCalendarVisible(calendar.id, visible: $0) }
+                        ))
+                    }
+                    Button("Disconnect Google Calendar", role: .destructive) { state.disconnectGoogleCalendar() }
+                } else {
+                    Text("Use a Google OAuth Desktop client ID. Sign-in opens in your browser; tokens stay in this Mac's Keychain.")
+                        .foregroundStyle(.secondary)
+                    Button("Connect Google Calendar…") { state.connectGoogleCalendar() }
+                        .disabled((state.settings.googleClientID ?? "").isEmpty)
+                }
+            }
+            Section("Floating tasks") {
+                Label("Task and focus panels stay above other windows", systemImage: "square.on.square")
                 Button("Open Floating Tasks") { FloatingPanelManager.shared.showTasks(state: state) }
+                Button("Open Floating Pomodoro") { FloatingPanelManager.shared.showPomodoro(state: state) }
             }
             Section("About this build") {
-                Text("Tasks and planning are stored locally. Cloud sync and calendar integrations are still in development.")
+                Text("Tasks and planning are stored locally. Apple and Google calendars connect only when you choose; cloud task sync is still in development.")
                     .foregroundStyle(.secondary)
                 Button("Reopen Welcome") { state.reopenOnboarding() }
             }
@@ -420,6 +496,11 @@ struct DashboardView: View {
     private func addTask() {
         state.addTask(taskTitle, to: selectedListID ?? state.workspace.lists[0].id)
         if state.errorMessage == nil { taskTitle = "" }
+    }
+
+    private func toggle(_ task: LoopTask) {
+        if reduceMotion { state.toggleTask(task) }
+        else { withAnimation(.easeInOut(duration: 0.18)) { state.toggleTask(task) } }
     }
 
     private var visibleTasks: [LoopTask] {
@@ -464,14 +545,24 @@ private struct TaskDetailSheet: View {
     @State private var priority = 0
     @State private var listID = UUID()
     @State private var isStarred = false
+    @State private var firstStep = ""
+    @State private var estimateMinutes = 0
+    @State private var colorTag = "Default"
     @State private var confirmDelete = false
     @State private var showingImporter = false
+    @State private var newLink = ""
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
             Text("Task details").font(.title2.bold())
             TextField("Title", text: $title)
             TextField("Notes", text: $notes, axis: .vertical).lineLimit(3...6)
+            TextField("First step", text: $firstStep)
+            Stepper("Estimate: \(estimateMinutes == 0 ? "None" : "\(estimateMinutes) min")", value: $estimateMinutes, in: 0...480, step: 5)
+            Picker("Appearance", selection: $colorTag) {
+                ForEach(["Default", "Blue", "Teal", "Orange", "Purple"], id: \.self) { Text($0).tag($0) }
+            }
             Picker("List", selection: $listID) {
                 ForEach(state.workspace.lists) { list in Text(list.name).tag(list.id) }
             }
@@ -491,24 +582,38 @@ private struct TaskDetailSheet: View {
                 HStack {
                     Button(attachment.originalName) { state.openAttachment(attachment) }
                     Spacer()
-                    Text(ByteCountFormatter.string(fromByteCount: attachment.byteCount, countStyle: .file))
-                        .foregroundStyle(.secondary)
+                    if attachment.linkURLString != nil {
+                        Image(systemName: "link").foregroundStyle(.secondary)
+                    } else {
+                        Text(ByteCountFormatter.string(fromByteCount: attachment.byteCount, countStyle: .file))
+                            .foregroundStyle(.secondary)
+                    }
                     Button("Remove", role: .destructive) { state.removeAttachment(attachment, from: task) }
                 }
             }
             Button("Attach File") { showingImporter = true }
             HStack {
+                TextField("Paste a link", text: $newLink)
+                Button("Attach Link") {
+                    state.addLink(to: task, rawURL: newLink)
+                    if state.errorMessage == nil { newLink = "" }
+                }
+            }
+            HStack {
                 Button("Delete Task", role: .destructive) { confirmDelete = true }
                 Spacer()
                 Button("Cancel") { dismiss() }
                 Button("Save") {
-                    state.updateTask(task, title: title, notes: notes, dueAt: hasDueDate ? dueAt : nil, priority: priority == 0 ? nil : priority, listID: listID, isStarred: isStarred)
+                    state.updateTask(task, title: title, notes: notes, dueAt: hasDueDate ? dueAt : nil, priority: priority == 0 ? nil : priority, listID: listID, isStarred: isStarred, firstStep: firstStep, estimateMinutes: estimateMinutes == 0 ? nil : estimateMinutes, colorTag: colorTag == "Default" ? nil : colorTag)
                     if state.errorMessage == nil { dismiss() }
                 }
                 .buttonStyle(.borderedProminent)
             }
+            }
+            .padding(24)
         }
-        .padding(24).frame(width: 460)
+        .frame(width: 500)
+        .frame(maxHeight: 650)
         .onAppear {
             title = task.title
             notes = task.notes
@@ -517,6 +622,9 @@ private struct TaskDetailSheet: View {
             priority = task.priority ?? 0
             listID = task.listID
             isStarred = task.isStarred ?? false
+            firstStep = task.firstStep ?? ""
+            estimateMinutes = task.estimateMinutes ?? 0
+            colorTag = task.colorTag ?? "Default"
         }
         .confirmationDialog("Delete this task and its local calendar block?", isPresented: $confirmDelete) {
             Button("Delete Task", role: .destructive) {
