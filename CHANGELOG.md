@@ -2,6 +2,9 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — local app launch check
+- Rebuilt the unsigned Xcode app with its embedded task widget, launched `dist/Loopinn.app` on macOS, and observed the Loopinn process running. PR #12 macOS CI passed for `236123a`; interactive window and signed widget acceptance remain pending.
+
 ## 11 November 2026 — activity backup and hourly notification (in review)
 - Added persisted focus effect controls for dimming, ripple and edge glow intensity. Floating focus respects Reduce Motion; completion remains visible without animation.
 - Added a persisted Om-bell sound toggle in Focus. Timer and Ripple edge alerts remain visible when sound is off.

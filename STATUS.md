@@ -3,8 +3,8 @@
 **Last verified update:** 11 November 2026, P02/P03 PR #8  
 **Repository:** [Atharav001/Loopinn](https://github.com/Atharav001/Loopinn), public  
 **Baseline SHA:** `3170cc6` on `main`; current branch `codex/p04-p05-experience`, stacked on P04 PR #11
-**CI status:** PR #12 macOS build passed for the first widget package commit; latest backup/notification changes pending CI
-**Latest packaged build:** unsigned `dist/Loopinn.app` built with embedded WidgetKit extension; signed installation and interactive UI acceptance pending
+**CI status:** PR #12 macOS build passed for `236123a`; launch-evidence documentation update pending CI
+**Latest packaged build:** unsigned `dist/Loopinn.app` rebuilt with embedded WidgetKit extension and launched on this Mac; process observed running. Signed installation and interactive UI acceptance pending
 **Current ticket:** P04/P05 macOS implementation on `codex/p04-p05-experience`; 50/50 core checks and unsigned Xcode app/extension build passed
 **Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent; no code from them is being reused. Android target and signed release setup do not exist.
 
