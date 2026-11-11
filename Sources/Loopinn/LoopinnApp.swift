@@ -65,7 +65,7 @@ final class AppState: ObservableObject {
         }
         appleCalendarConnected = appleCalendar.isAuthorized
         if appleCalendarConnected { refreshAppleCalendar() }
-        googleCalendarConnected = googleCalendar.isConnected
+        googleCalendarConnected = googleCalendar.isConnected && !(settings.googleClientID ?? "").isEmpty
         if googleCalendarConnected { refreshGoogleCalendar() }
     }
 

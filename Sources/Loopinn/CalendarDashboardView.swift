@@ -349,23 +349,29 @@ private struct BlockEditor: View {
             }
             Text("This stays in Loopinn until you explicitly publish it to a calendar.")
                 .font(.caption).foregroundStyle(.secondary)
-            if block != nil, state.appleCalendarConnected, !state.appleCalendars.isEmpty {
+            if hasUnsavedChanges {
+                Text("Save your edits before publishing the updated event.")
+                    .font(.caption).foregroundStyle(.orange)
+            }
+            if block != nil, state.appleCalendarConnected, !writableAppleCalendars.isEmpty {
                 Picker("Publish to", selection: $publishCalendarID) {
-                    ForEach(state.appleCalendars) { calendar in Text(calendar.title).tag(calendar.id) }
+                    ForEach(writableAppleCalendars) { calendar in Text(calendar.title).tag(calendar.id) }
                 }
                 Button("Preview Apple Calendar Publish…") {
-                    if publishCalendarID.isEmpty { publishCalendarID = state.appleCalendars[0].id }
+                    if publishCalendarID.isEmpty { publishCalendarID = writableAppleCalendars[0].id }
                     confirmPublish = true
                 }
+                .disabled(hasUnsavedChanges)
             }
-            if block != nil, state.googleCalendarConnected, !state.googleCalendars.isEmpty {
+            if block != nil, state.googleCalendarConnected, !writableGoogleCalendars.isEmpty {
                 Picker("Google calendar", selection: $googlePublishCalendarID) {
-                    ForEach(state.googleCalendars) { calendar in Text(calendar.title).tag(calendar.id) }
+                    ForEach(writableGoogleCalendars) { calendar in Text(calendar.title).tag(calendar.id) }
                 }
                 Button("Preview Google Calendar Publish…") {
-                    if googlePublishCalendarID.isEmpty { googlePublishCalendarID = state.googleCalendars[0].id }
+                    if googlePublishCalendarID.isEmpty { googlePublishCalendarID = writableGoogleCalendars[0].id }
                     confirmGooglePublish = true
                 }
+                .disabled(hasUnsavedChanges)
             }
             ForEach(currentLinks) { link in
                 HStack {
@@ -394,24 +400,24 @@ private struct BlockEditor: View {
         .padding(26).frame(width: 430)
         .background(.regularMaterial)
         .onAppear {
-            publishCalendarID = state.appleCalendars.first?.id ?? ""
-            googlePublishCalendarID = state.googleCalendars.first?.id ?? ""
+            publishCalendarID = writableAppleCalendars.first?.id ?? ""
+            googlePublishCalendarID = writableGoogleCalendars.first?.id ?? ""
         }
         .confirmationDialog("Publish this block to Apple Calendar?", isPresented: $confirmPublish) {
             Button("Publish Event") {
-                if let block { state.publishAppleBlock(block, title: block.title ?? state.workspace.tasks.first(where: { $0.id == block.taskID })?.title ?? "Planned block", calendarID: publishCalendarID) }
+                if let block = currentBlock { state.publishAppleBlock(block, title: blockTitle, calendarID: publishCalendarID) }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("\(title.isEmpty ? "Task block" : title) · \(start.formatted(date: .abbreviated, time: .shortened)) – \(end.formatted(date: .abbreviated, time: .shortened)). Only this event will be written.")
+            Text(publicationPreview)
         }
         .confirmationDialog("Publish this block to Google Calendar?", isPresented: $confirmGooglePublish) {
             Button("Publish Event") {
-                if let block { state.publishGoogleBlock(block, title: block.title ?? state.workspace.tasks.first(where: { $0.id == block.taskID })?.title ?? "Planned block", calendarID: googlePublishCalendarID) }
+                if let block = currentBlock { state.publishGoogleBlock(block, title: blockTitle, calendarID: googlePublishCalendarID) }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("\(title.isEmpty ? "Task block" : title) · \(start.formatted(date: .abbreviated, time: .shortened)) – \(end.formatted(date: .abbreviated, time: .shortened)). Only this event will be written.")
+            Text(publicationPreview)
         }
         .confirmationDialog("Delete this time block?", isPresented: $confirmDelete) {
             Button("Delete Block", role: .destructive) {
@@ -442,4 +448,27 @@ private struct BlockEditor: View {
         guard let block else { return [] }
         return state.workspace.blocks.first(where: { $0.id == block.id })?.externalLinks ?? []
     }
+
+    private var currentBlock: CalendarBlock? {
+        guard let block else { return nil }
+        return state.workspace.blocks.first(where: { $0.id == block.id })
+    }
+
+    private var hasUnsavedChanges: Bool {
+        guard let currentBlock else { return false }
+        return start != currentBlock.startAt || end != currentBlock.endAt || (currentBlock.taskID == nil && title != (currentBlock.title ?? ""))
+    }
+
+    private var blockTitle: String {
+        guard let currentBlock else { return "Planned block" }
+        return currentBlock.title ?? state.workspace.tasks.first(where: { $0.id == currentBlock.taskID })?.title ?? "Planned block"
+    }
+
+    private var publicationPreview: String {
+        guard let currentBlock else { return "No block selected." }
+        return "\(blockTitle) · \(currentBlock.startAt.formatted(date: .abbreviated, time: .shortened)) – \(currentBlock.endAt.formatted(date: .abbreviated, time: .shortened)). Only this event will be written."
+    }
+
+    private var writableAppleCalendars: [CalendarChoice] { state.appleCalendars.filter(\.canWrite) }
+    private var writableGoogleCalendars: [CalendarChoice] { state.googleCalendars.filter(\.canWrite) }
 }

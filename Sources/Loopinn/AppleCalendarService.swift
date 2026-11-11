@@ -16,6 +16,7 @@ struct ExternalCalendarEvent: Identifiable, Sendable {
 struct CalendarChoice: Identifiable, Sendable {
     let id: String
     let title: String
+    let canWrite: Bool
 }
 
 @MainActor
@@ -36,7 +37,7 @@ final class AppleCalendarService {
 
     func calendars() -> [CalendarChoice] {
         guard isAuthorized else { return [] }
-        return store.calendars(for: .event).map { CalendarChoice(id: $0.calendarIdentifier, title: $0.title) }
+        return store.calendars(for: .event).map { CalendarChoice(id: $0.calendarIdentifier, title: $0.title, canWrite: $0.allowsContentModifications) }
     }
 
     func events(from start: Date, to end: Date, calendarIDs: Set<String> = []) throws -> [ExternalCalendarEvent] {

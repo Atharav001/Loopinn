@@ -5,6 +5,7 @@
 ## 11 November 2026 — provider state hardening (in review)
 - Cleared cached calendar ranges after permission loss or disconnect, refreshed events immediately after explicit publish, and made Google Keychain updates preserve the existing token if a write fails.
 - Expanded the Google Desktop client setup guide for the OAuth consent screen, test users and required scopes. Local Swift build and 27/27 checks pass; live Google sign-in still awaits a Desktop client ID.
+- Guarded OAuth randomness and listener cancellation, limited publish choices to calendars that allow writes, and kept the publish preview tied to the saved block so unsaved edits cannot change the approved event. The unsigned app package builds with these changes; interactive UI inspection is still unavailable.
 
 ## 10 November 2026 — P02/P03 macOS feature build and floating focus (in review)
 - Added multi-line paste/drop task capture with documented `!high`, `@tomorrow` and `#ListName` metadata, explainable next-task ranking, first-step/estimate/appearance fields, link attachments, a filtered glass task panel, and independent planner blocks with a backed-up SQLite v2 migration.

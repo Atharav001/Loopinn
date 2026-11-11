@@ -53,9 +53,9 @@ final class GoogleCalendarService {
         let receiver = try LoopbackReceiver()
         let port = try await receiver.start()
         let redirect = "http://127.0.0.1:\(port)"
-        let verifier = randomString()
+        let verifier = try randomString()
         let challenge = Data(SHA256.hash(data: Data(verifier.utf8))).base64URLEncodedString()
-        let state = randomString()
+        let state = try randomString()
         var parts = URLComponents(string: "https://accounts.google.com/o/oauth2/v2/auth")!
         parts.queryItems = [
             URLQueryItem(name: "client_id", value: clientID), URLQueryItem(name: "redirect_uri", value: redirect),
@@ -65,7 +65,10 @@ final class GoogleCalendarService {
             URLQueryItem(name: "code_challenge", value: challenge), URLQueryItem(name: "code_challenge_method", value: "S256"),
             URLQueryItem(name: "state", value: state)
         ]
-        guard let authURL = parts.url, NSWorkspace.shared.open(authURL) else { throw GoogleCalendarError.invalidCallback }
+        guard let authURL = parts.url, NSWorkspace.shared.open(authURL) else {
+            receiver.cancel()
+            throw GoogleCalendarError.invalidCallback
+        }
         let callback = try await receiver.waitForCallback()
         let values = URLComponents(url: callback, resolvingAgainstBaseURL: false)?.queryItems ?? []
         guard values.first(where: { $0.name == "state" })?.value == state else { throw GoogleCalendarError.invalidCallback }
@@ -74,9 +77,11 @@ final class GoogleCalendarService {
             "client_id": clientID, "code": code, "code_verifier": verifier,
             "redirect_uri": redirect, "grant_type": "authorization_code"
         ])
+        let previous = token
         token = GoogleToken(accessToken: response.access_token, refreshToken: response.refresh_token ?? token?.refreshToken ?? "",
                             expiresAt: .now.addingTimeInterval(Double(response.expires_in)))
-        try saveToken()
+        do { try saveToken() }
+        catch { token = previous; throw error }
     }
 
     func disconnect() throws {
@@ -94,7 +99,7 @@ final class GoogleCalendarService {
             if let page { parts.queryItems = [URLQueryItem(name: "pageToken", value: page)] }
             let data = try await request(parts.url!, clientID: clientID)
             let payload = try JSONDecoder().decode(GoogleCalendarList.self, from: data)
-            result += payload.items.map { CalendarChoice(id: $0.id, title: $0.summary) }
+            result += payload.items.map { CalendarChoice(id: $0.id, title: $0.summary, canWrite: $0.accessRole == "owner" || $0.accessRole == "writer") }
             page = payload.nextPageToken
             if page == nil { return result }
         }
@@ -175,8 +180,10 @@ final class GoogleCalendarService {
         let response = try await tokenRequest(["client_id": clientID, "refresh_token": token.refreshToken, "grant_type": "refresh_token"])
         token.accessToken = response.access_token
         token.expiresAt = .now.addingTimeInterval(Double(response.expires_in))
+        let previous = self.token
         self.token = token
-        try saveToken()
+        do { try saveToken() }
+        catch { self.token = previous; throw error }
         return token.accessToken
     }
 
@@ -217,9 +224,11 @@ final class GoogleCalendarService {
         return try JSONDecoder().decode(GoogleToken.self, from: data)
     }
 
-    private func randomString() -> String {
+    private func randomString() throws -> String {
         var bytes = [UInt8](repeating: 0, count: 32)
-        _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+        guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else {
+            throw GoogleCalendarError.invalidResponse
+        }
         return Data(bytes).base64URLEncodedString()
     }
 
@@ -237,7 +246,7 @@ private extension Data {
 }
 
 private struct GoogleCalendarList: Decodable {
-    struct Item: Decodable { let id: String; let summary: String }
+    struct Item: Decodable { let id: String; let summary: String; let accessRole: String? }
     let items: [Item]
     let nextPageToken: String?
 }
@@ -276,6 +285,8 @@ private final class LoopbackReceiver {
         listener = try NWListener(using: parameters, on: .any)
     }
 
+    func cancel() { listener.cancel() }
+
     func start() async throws -> UInt16 {
         return try await withCheckedThrowingContinuation { continuation in
             startContinuation = continuation
@@ -288,6 +299,9 @@ private final class LoopbackReceiver {
                     case .failed(let error):
                         self.startContinuation?.resume(throwing: error); self.startContinuation = nil
                         self.callbackContinuation?.resume(throwing: error); self.callbackContinuation = nil
+                    case .cancelled:
+                        self.startContinuation?.resume(throwing: GoogleCalendarError.invalidCallback); self.startContinuation = nil
+                        self.callbackContinuation?.resume(throwing: GoogleCalendarError.invalidCallback); self.callbackContinuation = nil
                     default: break
                     }
                 }
