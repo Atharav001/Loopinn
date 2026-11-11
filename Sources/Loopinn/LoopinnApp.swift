@@ -98,7 +98,7 @@ final class AppState: ObservableObject {
         googleCalendarConnected = googleCalendar.isConnected && !(settings.googleClientID ?? "").isEmpty
         if googleCalendarConnected { refreshGoogleCalendar() }
         publishWidgetSnapshot()
-        Task { await ActivityNotificationService.shared.requestPermission() }
+        ActivityNotificationService.shared.requestPermission()
     }
 
     func connectAppleCalendar() {
@@ -398,7 +398,7 @@ final class AppState: ObservableObject {
                 activityPrompt = interval
                 FloatingPanelManager.shared.showQuickLog(state: self)
                 NSApp.requestUserAttention(.informationalRequest)
-                Task { await ActivityNotificationService.shared.sendPrompt(for: interval) }
+                ActivityNotificationService.shared.sendPrompt(for: interval)
             }
         } catch { errorMessage = error.localizedDescription }
     }
