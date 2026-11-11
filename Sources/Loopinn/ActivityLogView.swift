@@ -17,9 +17,15 @@ struct QuickLogView: View {
                 Text("\(interval.start.formatted(date: .omitted, time: .shortened)) – \(interval.end.formatted(date: .omitted, time: .shortened))")
                     .foregroundStyle(.secondary)
             } else {
-                HStack {
-                    DatePicker("From", selection: $manualStart, displayedComponents: [.date, .hourAndMinute])
-                    DatePicker("To", selection: $manualEnd, displayedComponents: [.date, .hourAndMinute])
+                ViewThatFits(in: .horizontal) {
+                    HStack {
+                        DatePicker("From", selection: $manualStart, displayedComponents: [.date, .hourAndMinute])
+                        DatePicker("To", selection: $manualEnd, displayedComponents: [.date, .hourAndMinute])
+                    }
+                    VStack {
+                        DatePicker("From", selection: $manualStart, displayedComponents: [.date, .hourAndMinute])
+                        DatePicker("To", selection: $manualEnd, displayedComponents: [.date, .hourAndMinute])
+                    }
                 }
             }
             TextField("What did you work on?", text: $title)

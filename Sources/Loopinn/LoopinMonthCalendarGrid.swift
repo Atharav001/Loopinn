@@ -28,43 +28,43 @@ struct LoopinMonthCalendarGrid: View {
     }
 
     var body: some View {
-        ScrollView([.vertical, .horizontal]) {
+        GeometryReader { geometry in
+            let rowCount = max(1, days.count / 7)
+            let headerHeight: CGFloat = 28
+            let rowHeight = CGFloat(CalendarLayout.monthRowHeight(availableHeight: Double(geometry.size.height), rowCount: rowCount))
             VStack(spacing: 0) {
                 LazyVGrid(columns: columns, spacing: 0) {
                     ForEach(0..<7, id: \.self) { index in
                         let symbol = calendar.shortStandaloneWeekdaySymbols[(index + calendar.firstWeekday - 1) % 7]
                         Text(symbol.uppercased()).font(.system(size: 10, weight: .semibold))
                             .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, minHeight: 28, alignment: .trailing)
+                            .frame(maxWidth: .infinity, minHeight: headerHeight, alignment: .trailing)
                             .padding(.trailing, 9)
                     }
                 }
                 .background(Color(nsColor: .controlBackgroundColor))
-                GeometryReader { geometry in
-                    LazyVGrid(columns: columns, spacing: 0) {
-                        ForEach(days, id: \.self) { day in
-                            dayCell(day)
-                        }
+                LazyVGrid(columns: columns, spacing: 0) {
+                    ForEach(days, id: \.self) { day in
+                        dayCell(day, height: rowHeight, width: geometry.size.width / 7)
                     }
-                    .simultaneousGesture(DragGesture(minimumDistance: 8).onChanged { value in
-                        dragStart = day(at: value.startLocation, width: geometry.size.width)
-                        dragEnd = day(at: value.location, width: geometry.size.width)
-                    }.onEnded { _ in
-                        if let dragStart, let dragEnd { onAddRange(min(dragStart, dragEnd), max(dragStart, dragEnd)) }
-                        dragStart = nil
-                        dragEnd = nil
-                    })
                 }
-                .frame(height: CGFloat(days.count / 7) * 132)
+                .simultaneousGesture(DragGesture(minimumDistance: 8).onChanged { value in
+                    dragStart = day(at: value.startLocation, width: geometry.size.width, rowHeight: rowHeight)
+                    dragEnd = day(at: value.location, width: geometry.size.width, rowHeight: rowHeight)
+                }.onEnded { _ in
+                    if let dragStart, let dragEnd { onAddRange(min(dragStart, dragEnd), max(dragStart, dragEnd)) }
+                    dragStart = nil
+                    dragEnd = nil
+                })
             }
-            .frame(minWidth: 805)
+            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
             .background(Color(nsColor: .windowBackgroundColor))
-            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.primary.opacity(0.13)))
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func dayCell(_ day: Date) -> some View {
+    private func dayCell(_ day: Date, height: CGFloat, width: CGFloat) -> some View {
         let inMonth = calendar.isDate(day, equalTo: month, toGranularity: .month)
         let dayStart = calendar.startOfDay(for: day)
         let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? dayStart.addingTimeInterval(86_400)
@@ -80,7 +80,7 @@ struct LoopinMonthCalendarGrid: View {
             return day >= min(start, end) && day <= max(start, end)
         } ?? false
         return MonthCell(day: day, inMonth: inMonth, isSelected: calendar.isDate(day, inSameDayAs: selectedDay),
-                         inDragRange: inDragRange,
+                         inDragRange: inDragRange, height: height, width: width,
                          items: items, onDay: { onDay(day) }, onAdd: { onAdd(day) }, onItem: { item in
             switch item {
             case .block(let block, _): onBlock(block)
@@ -89,10 +89,10 @@ struct LoopinMonthCalendarGrid: View {
         })
     }
 
-    private func day(at point: CGPoint, width: CGFloat) -> Date? {
+    private func day(at point: CGPoint, width: CGFloat, rowHeight: CGFloat) -> Date? {
         guard point.x >= 0, point.y >= 0, width > 0 else { return nil }
         let column = min(6, Int(point.x / (width / 7)))
-        let row = min(days.count / 7 - 1, Int(point.y / 132))
+        let row = min(days.count / 7 - 1, Int(point.y / rowHeight))
         return days[safe: row * 7 + column]
     }
 }
@@ -148,11 +148,14 @@ private struct MonthCell: View {
     let inMonth: Bool
     let isSelected: Bool
     let inDragRange: Bool
+    let height: CGFloat
+    let width: CGFloat
     let items: [MonthItem]
     let onDay: () -> Void
     let onAdd: () -> Void
     let onItem: (MonthItem) -> Void
     private let calendar = Calendar.current
+    private var visibleEventCount: Int { CalendarLayout.visibleMonthEventCount(cellHeight: Double(height)) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -162,6 +165,9 @@ private struct MonthCell: View {
                         Image(systemName: "plus.circle.fill").font(.system(size: 13)).foregroundStyle(.blue)
                     }
                     .buttonStyle(.plain).help("Add a block on \(day.formatted(date: .abbreviated, time: .omitted))")
+                } else if items.count > visibleEventCount && height < 82 {
+                    Text("+\(items.count - visibleEventCount)")
+                        .font(.system(size: 9, weight: .semibold)).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)
                 Button(action: onDay) {
@@ -173,10 +179,10 @@ private struct MonthCell: View {
                 }
                 .buttonStyle(.plain).help("Open day")
             }
-            ForEach(items.prefix(4)) { item in
+            ForEach(items.prefix(visibleEventCount)) { item in
                 Button { onItem(item) } label: {
                     HStack(spacing: 3) {
-                        if !item.isAllDay {
+                        if !item.isAllDay && width >= 105 {
                             Text(max(item.start, calendar.startOfDay(for: day)).formatted(date: .omitted, time: .shortened))
                                 .font(.system(size: 8, weight: .medium)).lineLimit(1)
                         }
@@ -193,14 +199,14 @@ private struct MonthCell: View {
                 .buttonStyle(.plain)
                 .help("\(item.source): \(item.title)")
             }
-            if items.count > 4 {
-                Button("+\(items.count - 4) more", action: onDay)
+            if items.count > visibleEventCount && height >= 82 {
+                Button("+\(items.count - visibleEventCount) more", action: onDay)
                     .font(.system(size: 9, weight: .semibold)).buttonStyle(.plain).foregroundStyle(.secondary)
             }
             Spacer(minLength: 0)
         }
         .padding(6)
-        .frame(maxWidth: .infinity, minHeight: 132, maxHeight: 132, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: height, maxHeight: height, alignment: .topLeading)
         .background(inDragRange ? Color.accentColor.opacity(0.22) : (isSelected ? Color.accentColor.opacity(0.1) : (hovered ? Color.primary.opacity(0.06) : .clear)))
         .opacity(inMonth ? 1 : 0.48)
         .overlay(Rectangle().strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5))

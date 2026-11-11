@@ -17,31 +17,18 @@ struct CalendarDashboardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 12) {
-                Button("New Event", systemImage: "plus") { prepareNew(on: selectedDate) }
-                    .buttonStyle(.borderedProminent)
-                Picker("View", selection: $scope) {
-                    ForEach(CalendarScope.allCases) { option in Text(option.rawValue.capitalized).tag(option) }
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) {
+                    newEventButton
+                    scopePicker
+                    Spacer(minLength: 4)
+                    calendarSourceMenu
+                    navigationControls
                 }
-                .pickerStyle(.segmented)
-                .frame(width: 340)
-                Spacer()
-                Menu {
-                    if state.appleCalendarConnected {
-                        Button("Refresh Apple Calendar", systemImage: "arrow.clockwise") { state.refreshAppleCalendar(around: selectedDate, force: true) }
-                    } else {
-                        Button("Connect Apple Calendar", systemImage: "calendar.badge.plus") { state.connectAppleCalendar() }
-                    }
-                    if state.googleCalendarConnected {
-                        Button("Refresh Google Calendar", systemImage: "arrow.clockwise") { state.refreshGoogleCalendar(around: selectedDate, force: true) }
-                    } else {
-                        Button("Set Up Google Calendar", systemImage: "gearshape") { state.selectedPage = .settings }
-                    }
-                    Button("Calendar Settings", systemImage: "slider.horizontal.3") { state.selectedPage = .settings }
-                } label: { Label("Calendars", systemImage: "calendar.badge.clock") }
-                Button("Previous", systemImage: "chevron.left") { shift(-1) }.labelStyle(.iconOnly)
-                Button("Today") { select(.now) }
-                Button("Next", systemImage: "chevron.right") { shift(1) }.labelStyle(.iconOnly)
+                VStack(spacing: 8) {
+                    HStack { newEventButton; Spacer(); calendarSourceMenu; navigationControls }
+                    scopePicker.frame(maxWidth: .infinity)
+                }
             }
             .padding(10)
             .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
@@ -53,6 +40,7 @@ struct CalendarDashboardView: View {
             case .year: yearContent
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .sheet(isPresented: $showingNewBlock) {
             BlockEditor(state: state, block: nil, start: proposedStart, end: proposedEnd)
         }
@@ -75,6 +63,43 @@ struct CalendarDashboardView: View {
         .onChange(of: selectedDate) { _, date in
             if state.appleCalendarConnected { state.refreshAppleCalendar(around: date) }
             if state.googleCalendarConnected { state.refreshGoogleCalendar(around: date) }
+        }
+    }
+
+    private var newEventButton: some View {
+        Button("New Event", systemImage: "plus") { prepareNew(on: selectedDate) }
+            .buttonStyle(.borderedProminent)
+    }
+
+    private var scopePicker: some View {
+        Picker("View", selection: $scope) {
+            ForEach(CalendarScope.allCases) { option in Text(option.rawValue.capitalized).tag(option) }
+        }
+        .pickerStyle(.segmented)
+        .frame(width: 340)
+    }
+
+    private var calendarSourceMenu: some View {
+        Menu {
+            if state.appleCalendarConnected {
+                Button("Refresh Apple Calendar", systemImage: "arrow.clockwise") { state.refreshAppleCalendar(around: selectedDate, force: true) }
+            } else {
+                Button("Connect Apple Calendar", systemImage: "calendar.badge.plus") { state.connectAppleCalendar() }
+            }
+            if state.googleCalendarConnected {
+                Button("Refresh Google Calendar", systemImage: "arrow.clockwise") { state.refreshGoogleCalendar(around: selectedDate, force: true) }
+            } else {
+                Button("Set Up Google Calendar", systemImage: "gearshape") { state.selectedPage = .settings }
+            }
+            Button("Calendar Settings", systemImage: "slider.horizontal.3") { state.selectedPage = .settings }
+        } label: { Label("Calendars", systemImage: "calendar.badge.clock") }
+    }
+
+    private var navigationControls: some View {
+        HStack(spacing: 6) {
+            Button("Previous", systemImage: "chevron.left") { shift(-1) }.labelStyle(.iconOnly)
+            Button("Today") { select(.now) }
+            Button("Next", systemImage: "chevron.right") { shift(1) }.labelStyle(.iconOnly)
         }
     }
 

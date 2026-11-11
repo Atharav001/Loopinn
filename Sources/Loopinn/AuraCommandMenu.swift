@@ -7,6 +7,7 @@ import SwiftUI
 struct AuraCommandMenu: View {
     @ObservedObject var state: AppState
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismiss) private var dismissMenu
     @State private var hoveredButton: String?
     @State private var quickTask = ""
     @State private var quickListID: UUID?
@@ -38,7 +39,6 @@ struct AuraCommandMenu: View {
                            startPoint: .topLeading, endPoint: .bottomTrailing)
         }
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(state.settings.accent.color.opacity(0.22), lineWidth: 1))
         .onAppear { quickListID = targetListID }
         .onChange(of: lists.map(\.id)) { _, _ in quickListID = targetListID }
         .preferredColorScheme(state.settings.theme.colorScheme)
@@ -59,7 +59,6 @@ struct AuraCommandMenu: View {
                 .frame(width: 38, height: 38)
                 .background(LinearGradient(colors: [state.settings.accent.color, state.settings.accent.color.opacity(0.55)], startPoint: .topLeading, endPoint: .bottomTrailing),
                             in: RoundedRectangle(cornerRadius: 11))
-                .shadow(color: state.settings.accent.color.opacity(0.35), radius: 8, y: 3)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Loopinn").font(.system(size: 15, weight: .semibold))
                 Text("Command Center").font(.system(size: 11)).foregroundStyle(.secondary)
@@ -99,7 +98,6 @@ struct AuraCommandMenu: View {
                         .frame(width: 35, height: 35)
                         .background(LinearGradient(colors: [state.settings.accent.color, state.settings.accent.color.opacity(0.7)],
                                                    startPoint: .topLeading, endPoint: .bottomTrailing), in: Circle())
-                        .shadow(color: state.settings.accent.color.opacity(hoveringAdd ? 0.5 : 0.2), radius: hoveringAdd ? 9 : 4)
                         .scaleEffect(hoveringAdd && !reduceMotion ? 1.08 : 1)
                 }
                 .buttonStyle(.plain)
@@ -174,7 +172,6 @@ struct AuraCommandMenu: View {
             .contentShape(Rectangle())
             .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .fill(isHovered ? accent.opacity(0.14) : Color.primary.opacity(0.045)))
-            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(accent.opacity(isHovered ? 0.42 : 0.09), lineWidth: 1))
             .scaleEffect(isHovered && !reduceMotion ? 1.015 : 1)
         }
         .buttonStyle(.plain)
@@ -204,6 +201,7 @@ struct AuraCommandMenu: View {
         guard state.errorMessage == nil else { return }
         quickTask = ""
         justAdded = true
+        closeMenu()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { justAdded = false }
     }
 
@@ -220,10 +218,21 @@ struct AuraCommandMenu: View {
     }
 
     private func launch(_ action: @escaping () -> Void) {
-        // Allow the menu-bar popover to relinquish focus before opening a panel.
+        // Close the menu popover before activating another window.
+        closeMenu()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
             NSApp.activate(ignoringOtherApps: true)
             action()
+        }
+    }
+
+    private func closeMenu() {
+        let presentingWindow = NSApp.keyWindow
+        dismissMenu()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.04) {
+            if let presentingWindow, presentingWindow.isVisible && presentingWindow.isKeyWindow {
+                presentingWindow.orderOut(nil)
+            }
         }
     }
 }

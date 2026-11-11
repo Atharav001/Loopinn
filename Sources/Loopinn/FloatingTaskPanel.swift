@@ -36,15 +36,15 @@ final class FloatingPanelManager: ObservableObject {
     }
 
     func showPomodoro(state: AppState) {
-        show(id: pomodoroID, title: "Loopinn Focus", size: NSSize(width: 340, height: 280), state: state, content: AnyView(FloatingPomodoroView(state: state)))
+        show(id: pomodoroID, title: "Loopinn Focus", size: NSSize(width: 350, height: 330), state: state, content: AnyView(FloatingPomodoroView(state: state)))
     }
 
     func showRipple(state: AppState) {
-        show(id: rippleID, title: "Ripple Focus", size: NSSize(width: 360, height: 300), state: state, content: AnyView(RippleFocusView(state: state)))
+        show(id: rippleID, title: "Ripple Focus", size: NSSize(width: 370, height: 420), state: state, content: AnyView(RippleFocusView(state: state)))
     }
 
     func showQuickLog(state: AppState) {
-        show(id: quickLogID, title: "Log activity", size: NSSize(width: 440, height: 340), state: state, content: AnyView(QuickLogView(state: state)))
+        show(id: quickLogID, title: "Log activity", size: NSSize(width: 440, height: 400), state: state, content: AnyView(QuickLogView(state: state)))
     }
 
     private func show(id: String, title: String, size: NSSize, state: AppState, content: AnyView) {
@@ -75,7 +75,7 @@ final class FloatingPanelManager: ObservableObject {
         panel.titleVisibility = .visible
         panel.hasShadow = true
         panel.minSize = NSSize(width: id == quickLogID ? 390 : 280,
-                               height: id == quickLogID || id == rippleID ? 300 : 250)
+                               height: id == rippleID ? 390 : (id == quickLogID ? 380 : 285))
         panel.setFrameAutosaveName("Loopinn.\(id).Panel")
         if let screen = NSScreen.screens.first(where: { $0.visibleFrame.contains(NSPoint(x: panel.frame.midX, y: panel.frame.midY)) }) ?? NSScreen.main {
             var frame = panel.frame
@@ -171,7 +171,6 @@ private struct FloatingPanelChrome: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(accent.opacity(0.3), lineWidth: 1).allowsHitTesting(false))
     }
 }
 

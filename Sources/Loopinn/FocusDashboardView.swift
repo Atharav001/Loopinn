@@ -121,7 +121,7 @@ struct FocusDashboardView: View {
                 get: { state.settings.playAlertSound != false },
                 set: { state.setPlayAlertSound($0) }
             ))
-            Toggle("Dimming, ripple and edge glow", isOn: Binding(
+            Toggle("Focus animation and dimming", isOn: Binding(
                 get: { state.settings.focusEffectsEnabled != false },
                 set: { state.setFocusEffects(enabled: $0) }
             ))
@@ -340,27 +340,6 @@ struct FloatingPomodoroView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.ultraThinMaterial)
         .background(state.settings.focusEffectsEnabled != false && state.pomodoro.status == .running ? Color.black.opacity(0.12 * (state.settings.focusEffectIntensity ?? 0.5)) : .clear)
-        .overlay {
-            TimelineView(.periodic(from: .now, by: 0.25)) { timeline in
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(state.settings.accent.color.opacity(state.settings.focusEffectsEnabled != false && (state.alertGlowUntil ?? .distantPast) > timeline.date ? 0.3 + 0.6 * (state.settings.focusEffectIntensity ?? 0.5) : 0), lineWidth: 5)
-                    .shadow(color: state.settings.accent.color.opacity(state.settings.focusEffectsEnabled != false && (state.alertGlowUntil ?? .distantPast) > timeline.date ? 0.7 : 0), radius: 18)
-                    .allowsHitTesting(false)
-            }
-        }
-        .overlay {
-            if state.settings.focusEffectsEnabled != false && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
-                TimelineView(.periodic(from: .now, by: 0.05)) { timeline in
-                    let remaining = (state.alertGlowUntil ?? .distantPast).timeIntervalSince(timeline.date)
-                    if remaining > 0 && remaining <= 1.5 {
-                        Circle()
-                            .stroke(state.settings.accent.color.opacity(max(0, remaining / 1.5) * (state.settings.focusEffectIntensity ?? 0.5)), lineWidth: 4)
-                            .frame(width: 40 + 180 * (1 - remaining / 1.5), height: 40 + 180 * (1 - remaining / 1.5))
-                            .allowsHitTesting(false)
-                    }
-                }
-            }
-        }
         .preferredColorScheme(state.settings.theme.colorScheme)
         .tint(state.settings.accent.color)
     }

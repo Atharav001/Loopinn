@@ -2,6 +2,12 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — responsive calendar and menu dismissal
+- Removed outer accent borders and alert edge glow from the menu and floating timer windows, while retaining colored hover feedback.
+- Reworked the month calendar to fit all seven columns and all visible week rows in the space supplied by the main window. Cell heights and visible event lines adjust as the window changes size; the calendar toolbar wraps when needed. Year mini-months adapt their column count.
+- Menu actions now request dismissal before opening the chosen window, with a native-window fallback if the menu remains key. The quick task button closes the menu after a successful save.
+- Increased practical minimum sizes for the floating windows, made the Ripple dial shrink with its window, and let the quick-log time controls stack at narrow widths. A new core check verifies month-grid row sizing at several heights.
+
 ## 11 November 2026 — calendar grid, timesheet lanes and opaque title bars
 - Adapted the Loopin-macOS month grid into a week-by-week Loopinn calendar with weekday headers, timed and all-day event rows, source colors, overflow counts, quick day creation, drag range drafting and read-only details for connected Apple/Google events. Day view now uses the hourly planning grid instead of a simple list.
 - Adapted Loopin's overlap-cluster algorithm for planned and logged timesheet rails. Entries are clipped to the visible range, separate lanes prevent overlaps from hiding one another, and rail entries open their editors. Focused tests cover overlapping and boundary-crossing intervals.

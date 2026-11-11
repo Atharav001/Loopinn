@@ -12,7 +12,7 @@ struct LoopinYearCalendarGrid: View {
 
     var body: some View {
         ScrollView {
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 175), spacing: 14), count: 4), spacing: 14) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 155), spacing: 14)], spacing: 14) {
                 ForEach(1...12, id: \.self) { month in
                     LoopinYearMonthCard(year: year, month: month, blocks: blocks, events: events,
                                         onMonth: onMonth, onDay: onDay)

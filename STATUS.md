@@ -5,11 +5,12 @@
 **Baseline SHA:** `3170cc6` on `main`; current branch `codex/import-aura-loopin`, stacked on P04/P05 PR #12
 **CI status:** PR #12 macOS build passed for `236123a`; launch-evidence documentation update pending CI
 **Latest packaged build:** unsigned `dist/Loopinn.app` rebuilt with imported Aura/Loopin views and embedded WidgetKit extension, then freshly launched on this Mac; process observed running. Signed installation and interactive UI acceptance pending
-**Current ticket:** P03/P04 calendar and timesheet UI on `codex/import-aura-loopin`; 52/52 core checks and unsigned Xcode app/extension build passed
+**Current ticket:** P03/P04 calendar and timesheet UI on `codex/import-aura-loopin`; 53/53 core checks and unsigned Xcode app/extension build passed
 **Current UI repair:** `codex/import-aura-loopin` now fixes the collapsed command center and adds empty-workspace entry points; visual acceptance of the rebuilt menu remains pending.
 **Floating window update:** Tasks, Pomodoro, Ripple Focus and Log Activity have per-window pin controls and flexible sizing; Ripple Focus uses a separate double bell. Runtime interaction and sound acceptance remain pending.
 **Window persistence repair:** NSPanel hide-on-deactivate is disabled, so a floating window remains visible when another app is clicked. Pinned panels join all spaces; visual acceptance remains pending.
 **Calendar/timesheet update:** Month events and day/week hourly grids now share Loopinn's block and connected-event data. Timesheet overlap lanes have focused tests; live calendar/provider UI checks remain pending. Floating panels use opaque native title bars.
+**Responsive layout update:** Month grid scales to the available width/height with no fixed 805-point canvas or calendar scroll; menu actions request popover dismissal before opening windows. Local UI interaction acceptance remains pending.
 **Blockers:** Android target and signed release setup do not exist. Google live connection awaits a Desktop client ID. Aura and Loopin-macOS repositories are now available for source adaptation; the notch remains paused.
 
 ## Completion counters
