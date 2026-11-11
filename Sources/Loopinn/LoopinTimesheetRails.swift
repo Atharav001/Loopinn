@@ -8,6 +8,8 @@ struct LoopinTimesheetRails: View {
     let planned: [CalendarBlock]
     let logged: [ActivityEntry]
     let title: (CalendarBlock) -> String
+    let onSelectPlanned: (UUID) -> Void
+    let onSelectLogged: (UUID) -> Void
     @State private var now = Date()
     @State private var showFullDay = true
     private let calendar = Calendar.current
@@ -38,8 +40,8 @@ struct LoopinTimesheetRails: View {
                                 .foregroundStyle(.secondary).frame(width: hourWidth, alignment: .leading)
                         }
                     }
-                    rail("PLANNED", color: .blue, entries: planned.map { RailEntry(id: $0.id, title: title($0), start: $0.startAt, end: $0.endAt) })
-                    rail("LOGGED", color: .green, entries: logged.map { RailEntry(id: $0.id, title: $0.title, start: $0.startAt, end: $0.endAt) })
+                    rail("PLANNED", color: .blue, entries: planned.map { RailEntry(id: $0.id, title: title($0), start: $0.startAt, end: $0.endAt) }, onSelect: onSelectPlanned)
+                    rail("LOGGED", color: .green, entries: logged.map { RailEntry(id: $0.id, title: $0.title, start: $0.startAt, end: $0.endAt) }, onSelect: onSelectLogged)
                 }
                 .padding(.vertical, 5)
             }
@@ -54,7 +56,7 @@ struct LoopinTimesheetRails: View {
             .foregroundStyle(.secondary)
     }
 
-    private func rail(_ label: String, color: Color, entries: [RailEntry]) -> some View {
+    private func rail(_ label: String, color: Color, entries: [RailEntry], onSelect: @escaping (UUID) -> Void) -> some View {
         let width = CGFloat(hours.count) * hourWidth
         let placements = TimesheetRailLayout.place(entries.map { TimesheetRailEntry(id: $0.id, start: $0.start, end: $0.end) }, within: visibleInterval)
         let laneCount = placements.map(\.laneCount).max() ?? 1
@@ -73,12 +75,15 @@ struct LoopinTimesheetRails: View {
                 if let entry = entries.first(where: { $0.id == placement.id }) {
                     let x = CGFloat(placement.start.timeIntervalSince(visibleInterval.start) / 3600) * hourWidth
                     let blockWidth = max(5, CGFloat(placement.end.timeIntervalSince(placement.start) / 3600) * hourWidth)
-                    Text(entry.title).font(.caption2.weight(.medium)).lineLimit(1)
-                        .padding(.horizontal, 7).frame(width: blockWidth, height: 21, alignment: .leading)
-                        .background(color.opacity(label == "PLANNED" ? 0.3 : 0.65), in: RoundedRectangle(cornerRadius: 5))
-                        .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(color.opacity(0.8), style: StrokeStyle(lineWidth: 1, dash: label == "PLANNED" ? [4, 2] : [])))
-                        .offset(x: x, y: 5 + CGFloat(placement.lane) * 25)
-                        .help("\(entry.title) · \(entry.start.formatted(date: .omitted, time: .shortened))–\(entry.end.formatted(date: .omitted, time: .shortened))")
+                    Button { onSelect(entry.id) } label: {
+                        Text(entry.title).font(.caption2.weight(.medium)).lineLimit(1)
+                            .padding(.horizontal, 7).frame(width: blockWidth, height: 21, alignment: .leading)
+                            .background(color.opacity(label == "PLANNED" ? 0.3 : 0.65), in: RoundedRectangle(cornerRadius: 5))
+                            .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(color.opacity(0.8), style: StrokeStyle(lineWidth: 1, dash: label == "PLANNED" ? [4, 2] : [])))
+                    }
+                    .buttonStyle(.plain)
+                    .offset(x: x, y: 5 + CGFloat(placement.lane) * 25)
+                    .help("\(entry.title) · \(entry.start.formatted(date: .omitted, time: .shortened))–\(entry.end.formatted(date: .omitted, time: .shortened))")
                 }
             }
             if calendar.isDate(day, inSameDayAs: now), let x = positionOfNow {

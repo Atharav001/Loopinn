@@ -114,6 +114,11 @@ struct CalendarDashboardView: View {
                                 blockTitle: title(for:),
                                 onDay: { select($0); scope = .day },
                                 onAdd: prepareNew(on:),
+                                onAddRange: { first, last in
+                                    proposedStart = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: first) ?? first
+                                    proposedEnd = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: last) ?? last.addingTimeInterval(3600)
+                                    showingNewBlock = true
+                                },
                                 onBlock: { editingBlock = $0 },
                                 onEvent: { selectedExternalEvent = $0 })
     }
@@ -301,7 +306,7 @@ private struct WeekDayColumn: View {
     }
 }
 
-private struct BlockEditor: View {
+struct BlockEditor: View {
     @ObservedObject var state: AppState
     let block: CalendarBlock?
     @Environment(\.dismiss) private var dismiss

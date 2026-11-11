@@ -11,10 +11,13 @@ struct LoopinMonthCalendarGrid: View {
     let blockTitle: (CalendarBlock) -> String
     let onDay: (Date) -> Void
     let onAdd: (Date) -> Void
+    let onAddRange: (Date, Date) -> Void
     let onBlock: (CalendarBlock) -> Void
     let onEvent: (ExternalCalendarEvent) -> Void
     private let calendar = Calendar.current
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
+    @State private var dragStart: Date?
+    @State private var dragEnd: Date?
 
     private var days: [Date] {
         var result = CalendarLayout.gridDays(for: month)
@@ -37,11 +40,22 @@ struct LoopinMonthCalendarGrid: View {
                     }
                 }
                 .background(Color(nsColor: .controlBackgroundColor))
-                LazyVGrid(columns: columns, spacing: 0) {
-                    ForEach(days, id: \.self) { day in
-                        dayCell(day)
+                GeometryReader { geometry in
+                    LazyVGrid(columns: columns, spacing: 0) {
+                        ForEach(days, id: \.self) { day in
+                            dayCell(day)
+                        }
                     }
+                    .simultaneousGesture(DragGesture(minimumDistance: 8).onChanged { value in
+                        dragStart = day(at: value.startLocation, width: geometry.size.width)
+                        dragEnd = day(at: value.location, width: geometry.size.width)
+                    }.onEnded { _ in
+                        if let dragStart, let dragEnd { onAddRange(min(dragStart, dragEnd), max(dragStart, dragEnd)) }
+                        dragStart = nil
+                        dragEnd = nil
+                    })
                 }
+                .frame(height: CGFloat(days.count / 7) * 132)
             }
             .frame(minWidth: 805)
             .background(Color(nsColor: .windowBackgroundColor))
@@ -61,7 +75,12 @@ struct LoopinMonthCalendarGrid: View {
                 if lhs.isAllDay != rhs.isAllDay { return lhs.isAllDay }
                 return lhs.start < rhs.start
             }
+        let inDragRange = dragStart.map { start in
+            let end = dragEnd ?? start
+            return day >= min(start, end) && day <= max(start, end)
+        } ?? false
         return MonthCell(day: day, inMonth: inMonth, isSelected: calendar.isDate(day, inSameDayAs: selectedDay),
+                         inDragRange: inDragRange,
                          items: items, onDay: { onDay(day) }, onAdd: { onAdd(day) }, onItem: { item in
             switch item {
             case .block(let block, _): onBlock(block)
@@ -69,6 +88,17 @@ struct LoopinMonthCalendarGrid: View {
             }
         })
     }
+
+    private func day(at point: CGPoint, width: CGFloat) -> Date? {
+        guard point.x >= 0, point.y >= 0, width > 0 else { return nil }
+        let column = min(6, Int(point.x / (width / 7)))
+        let row = min(days.count / 7 - 1, Int(point.y / 132))
+        return days[safe: row * 7 + column]
+    }
+}
+
+private extension Array {
+    subscript(safe index: Int) -> Element? { indices.contains(index) ? self[index] : nil }
 }
 
 private enum MonthItem: Identifiable {
@@ -117,6 +147,7 @@ private struct MonthCell: View {
     let day: Date
     let inMonth: Bool
     let isSelected: Bool
+    let inDragRange: Bool
     let items: [MonthItem]
     let onDay: () -> Void
     let onAdd: () -> Void
@@ -169,8 +200,8 @@ private struct MonthCell: View {
             Spacer(minLength: 0)
         }
         .padding(6)
-        .frame(maxWidth: .infinity, minHeight: 124, alignment: .topLeading)
-        .background(isSelected ? Color.accentColor.opacity(0.1) : (hovered ? Color.primary.opacity(0.06) : .clear))
+        .frame(maxWidth: .infinity, minHeight: 132, maxHeight: 132, alignment: .topLeading)
+        .background(inDragRange ? Color.accentColor.opacity(0.22) : (isSelected ? Color.accentColor.opacity(0.1) : (hovered ? Color.primary.opacity(0.06) : .clear)))
         .opacity(inMonth ? 1 : 0.48)
         .overlay(Rectangle().strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5))
         .onHover { value in withAnimation(reduceMotion ? nil : .easeOut(duration: 0.14)) { hovered = value } }
