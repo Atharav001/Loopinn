@@ -80,10 +80,10 @@ final class GoogleCalendarService {
     }
 
     func disconnect() throws {
-        token = nil
         let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: keychainService]
         let result = SecItemDelete(query as CFDictionary)
         guard result == errSecSuccess || result == errSecItemNotFound else { throw GoogleCalendarError.invalidResponse }
+        token = nil
     }
 
     func calendars(clientID: String) async throws -> [CalendarChoice] {
@@ -145,6 +145,7 @@ final class GoogleCalendarService {
         let url = URL(string: "https://www.googleapis.com/calendar/v3/calendars/\(encodedCalendarID(link.calendarID))/events/\(link.eventID)")!
         do { _ = try await request(url, clientID: clientID, method: "DELETE") }
         catch GoogleCalendarError.api(404) { return }
+        catch GoogleCalendarError.api(410) { return }
     }
 
     private func request(_ url: URL, clientID: String, method: String = "GET", body: Data? = nil) async throws -> Data {
@@ -196,7 +197,10 @@ final class GoogleCalendarService {
         guard let token else { return }
         let data = try JSONEncoder().encode(token)
         let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: keychainService]
-        SecItemDelete(query as CFDictionary)
+        let update: [String: Any] = [kSecValueData as String: data]
+        let updated = SecItemUpdate(query as CFDictionary, update as CFDictionary)
+        if updated == errSecSuccess { return }
+        guard updated == errSecItemNotFound else { throw GoogleCalendarError.invalidResponse }
         var add = query
         add[kSecValueData as String] = data
         add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly

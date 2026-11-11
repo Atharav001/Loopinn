@@ -85,6 +85,7 @@ final class AppState: ObservableObject {
             appleCalendarConnected = false
             appleEvents = []
             appleCalendars = []
+            appleLoadedRange = nil
             return
         }
         appleCalendarConnected = true
@@ -157,6 +158,7 @@ final class AppState: ObservableObject {
             googleCalendarConnected = false
             googleEvents = []
             googleCalendars = []
+            googleLoadedRange = nil
         } catch { errorMessage = error.localizedDescription }
     }
 
@@ -210,7 +212,7 @@ final class AppState: ObservableObject {
             do {
                 let link = try await googleCalendar.publish(block: block, title: title, calendarID: calendarID, clientID: clientID)
                 mutate { try service.recordPublishedEvent(link, for: block.id, in: &$0) }
-                refreshGoogleCalendar(around: block.startAt)
+                refreshGoogleCalendar(around: block.startAt, force: true)
             } catch { errorMessage = error.localizedDescription }
         }
     }
@@ -230,7 +232,7 @@ final class AppState: ObservableObject {
         do {
             let link = try appleCalendar.publish(block: block, title: title, calendarID: calendarID)
             mutate { try service.recordPublishedEvent(link, for: block.id, in: &$0) }
-            refreshAppleCalendar(around: block.startAt)
+            refreshAppleCalendar(around: block.startAt, force: true)
         } catch { errorMessage = error.localizedDescription }
     }
 

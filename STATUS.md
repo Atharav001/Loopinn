@@ -1,9 +1,9 @@
 # Build status dashboard
 
-**Last verified update:** 10 November 2026, P02/P03 PR #8  
+**Last verified update:** 11 November 2026, P02/P03 PR #8  
 **Repository:** [Atharav001/Loopinn](https://github.com/Atharav001/Loopinn), public  
-**Baseline SHA:** `3170cc6` on `main`; current branch `codex/p02-p03-macos` at `8240010`, stacked on P01 PR #7  
-**CI status:** PR #7 checks passed; PR #8 macOS build passed for `8240010`  
+**Baseline SHA:** `3170cc6` on `main`; current branch `codex/p02-p03-macos` at `93010e1`, stacked on P01 PR #7  
+**CI status:** PR #7 checks passed; PR #8 macOS build passed for `93010e1`; follow-up provider hardening pending CI  
 **Latest packaged build:** P02/P03 local unsigned `dist/Loopinn.app` built and Info.plist lint passed; this revision has not had an interactive UI launch  
 **Current ticket:** P02/P03 macOS feature implementation plus floating Pomodoro on `codex/p02-p03-macos`; local build, unsigned package and 27/27 core checks passed  
 **Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent; no code from them is being reused. Android target and signed release setup do not exist.

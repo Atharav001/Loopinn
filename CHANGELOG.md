@@ -2,6 +2,10 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — provider state hardening (in review)
+- Cleared cached calendar ranges after permission loss or disconnect, refreshed events immediately after explicit publish, and made Google Keychain updates preserve the existing token if a write fails.
+- Expanded the Google Desktop client setup guide for the OAuth consent screen, test users and required scopes. Local Swift build and 27/27 checks pass; live Google sign-in still awaits a Desktop client ID.
+
 ## 10 November 2026 — P02/P03 macOS feature build and floating focus (in review)
 - Added multi-line paste/drop task capture with documented `!high`, `@tomorrow` and `#ListName` metadata, explainable next-task ranking, first-step/estimate/appearance fields, link attachments, a filtered glass task panel, and independent planner blocks with a backed-up SQLite v2 migration.
 - Added day/week/month/year calendar views, weekly drag create/move/resize, overlap warnings, Apple EventKit read and confirmed publish/remove, Google Desktop OAuth PKCE with Keychain tokens and Calendar API read/publish/remove, source filters, regional holiday calendar display/deduplication, and bounded calendar refresh ranges. Google live connection requires a user-provided Desktop client ID.
