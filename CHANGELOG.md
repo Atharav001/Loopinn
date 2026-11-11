@@ -2,6 +2,10 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — stopwatch and countdown (in review)
+- Added a saved stopwatch with pause/resume and ordered laps, plus a configurable countdown with a persisted deadline and one-time completion state. Both controls appear in the Focus screen, and countdown expiry sounds once during an active session.
+- Local Swift build, unsigned app package and 32/32 core checks pass. Clock-change handling, runtime sound behavior and interactive UI acceptance remain pending.
+
 ## 11 November 2026 — provider state hardening (in review)
 - Made task rows easier to scan with material-backed cards and kept the full task details form reachable in a bounded scrolling sheet. The local app package builds and all 27 core checks pass; GitHub CI for this polish is pending.
 - Cleared cached calendar ranges after permission loss or disconnect, refreshed events immediately after explicit publish, and made Google Keychain updates preserve the existing token if a write fails.
