@@ -2,16 +2,16 @@
 
 **Last verified update:** 11 November 2026, P02/P03 PR #8  
 **Repository:** [Atharav001/Loopinn](https://github.com/Atharav001/Loopinn), public  
-**Baseline SHA:** `3170cc6` on `main`; current branch `codex/p04-focus-alarms`, stacked on P04 PR #10
+**Baseline SHA:** `3170cc6` on `main`; current branch `codex/p04-p05-experience`, stacked on P04 PR #11
 **CI status:** PR #7–#10 macOS builds passed; focus alarm branch pending CI
 **Latest packaged build:** P04 local unsigned `dist/Loopinn.app` built; this revision has not had an interactive UI launch
-**Current ticket:** P04-FR11 repeating focus alarms on `codex/p04-focus-alarms`; local build, unsigned package and 37/37 core checks passed
+**Current ticket:** P04/P05 hourly logbook, timeline and analytics on `codex/p04-p05-experience`; local build, unsigned package and 41/41 core checks passed
 **Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent; no code from them is being reused. Android target and signed release setup do not exist.
 
 ## Completion counters
 - Selected scope: **51 features**.
 - Verified DONE: **0/51** under the full acceptance definition (0.0%).
-- Verified IN REVIEW: **23** (all P01, all P02, all P03, and P04 FR-08/FR-09/FR-10/FR-11/FR-14); these have partial implementation and missing runtime/provider/edge-case evidence.
+- Verified IN REVIEW: **31** (all P01, all P02, all P03, P04 FR-08/09/10/11/14/15/16/18/19, and P05 FR-30/31/33/34); these have partial implementation and missing runtime/provider/edge-case evidence.
 - Verified IN PROGRESS: **0** feature IDs; other feature IDs remain UNVERIFIED/TODO.
 - Verified blocked feature IDs: **0**; the source-reuse audit is limited by missing original repositories.
 - Notch: **optional final P08**, must not be treated as core-complete.
@@ -28,8 +28,8 @@ Do **not** equate lines of code, commits, passing unit tests or phase starts wit
 | P01 | App shell, design system, settings & CI | IN REVIEW | 0 / 6 | Six feature slices compile; UI smoke, panel behavior, global actions and privacy review pending | PR #5, #6, #7 |
 | P02 | Tasks & internal scheduling | IN REVIEW | 0 / 7 | Task capture, recommendations, details, panels and independent blocks compile; UI acceptance pending | PR #8 |
 | P03 | Calendar & external provider integrations | IN REVIEW | 0 / 5 | Calendar views and adapters compile; live provider and UI acceptance pending | PR #8 |
-| P04 | Timers, prompts & logging | IN PROGRESS | 0 / 16 | Pomodoro, floating timer, stopwatch, countdown, Deep Work and repeating reminders compile; runtime and remaining P04 features pending | PR #8–#10; alarm branch |
-| P05 | Analytics, widgets, media & utilities | UNVERIFIED | ? / 10 | Not verified | — |
+| P04 | Timers, prompts & logging | IN PROGRESS | 0 / 16 | Timers, reminders, hourly prompt, quick log and timeline compile; remaining P04 features and runtime acceptance pending | PR #8–#12 |
+| P05 | Analytics, widgets, media & utilities | IN PROGRESS | 0 / 10 | Log-based summary, category chart, period selection and export compile; widgets and utilities remain | PR #12 |
 | P06 | Cloud & Android | UNVERIFIED | ? / 3 | Not verified | — |
 | P07 | Full core regression & pause checkpoint | UNVERIFIED | ? / 0 | Not verified | — |
 | P08 | Optional notch integration — LAST | UNVERIFIED | ? / 4 | Not verified | — |

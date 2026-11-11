@@ -41,6 +41,9 @@ struct MenuContent: View {
             Button("Open Tasks", systemImage: "checklist") { show(.tasks) }
             Button("Open Planner", systemImage: "calendar") { show(.planner) }
             Button("Open Calendar", systemImage: "calendar.circle") { show(.calendar) }
+            Button("Open Logbook", systemImage: "text.book.closed") { show(.logbook) }
+            Button("Open Timeline", systemImage: "square.split.2x1") { show(.timeline) }
+            Button("Log Last Hour", systemImage: "square.and.pencil") { FloatingPanelManager.shared.showQuickLog(state: state) }
             Button("Open Focus", systemImage: "moon.stars") { show(.focus) }
             Button("Open Application Window", systemImage: "macwindow") { show(.today) }
             Button("Open Settings", systemImage: "gearshape") { show(.settings) }
@@ -76,7 +79,7 @@ struct MenuContent: View {
 }
 
 enum DashboardPage: String, CaseIterable, Identifiable {
-    case today = "Today", tasks = "Tasks", planner = "Planner", calendar = "Calendar", focus = "Focus", analytics = "Analytics", settings = "Settings"
+    case today = "Today", tasks = "Tasks", planner = "Planner", calendar = "Calendar", timeline = "Timeline", logbook = "Logbook", focus = "Focus", analytics = "Analytics", settings = "Settings"
     var id: Self { self }
     var icon: String {
         switch self {
@@ -84,6 +87,8 @@ enum DashboardPage: String, CaseIterable, Identifiable {
         case .tasks: "checklist"
         case .planner: "calendar"
         case .calendar: "calendar.circle"
+        case .timeline: "square.split.2x1"
+        case .logbook: "text.book.closed"
         case .focus: "timer"
         case .analytics: "chart.bar"
         case .settings: "gearshape"
@@ -148,10 +153,14 @@ struct DashboardView: View {
                     CalendarDashboardView(state: state)
                 case .calendar:
                     CalendarDashboardView(state: state)
+                case .timeline:
+                    ActivityTimelineView(state: state)
+                case .logbook:
+                    ActivityLogView(state: state)
                 case .focus:
                     FocusDashboardView(state: state)
                 case .analytics:
-                    ContentUnavailableView("No activity yet", systemImage: "chart.bar", description: Text("Reports will use recorded activity, separate from planned time."))
+                    AnalyticsView(state: state)
                 case .settings:
                     settingsContent
                 }

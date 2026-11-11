@@ -28,21 +28,21 @@
 | FR-12 | P04 | Focus overlays & effects | UNVERIFIED | — | — |
 | FR-13 | P04 | Timer alerts & sounds | UNVERIFIED | — | — |
 | FR-14 | P04 | Floating focus widgets | IN REVIEW | PR #8 | Shared timer state in always-on-top glass panel; runtime handoff and display acceptance pending. |
-| FR-15 | P04 | Automatic activity prompts | UNVERIFIED | — | — |
-| FR-16 | P04 | Floating quick-log panel | UNVERIFIED | — | — |
+| FR-15 | P04 | Automatic activity prompts | IN REVIEW | PR #12 branch | Hour-boundary prompts for the previous hour persist their last prompted interval; runtime notification acceptance pending. |
+| FR-16 | P04 | Floating quick-log panel | IN REVIEW | PR #12 branch | Glass always-on-top entry window accepts Enter, save and skip; runtime keyboard acceptance pending. |
 | FR-17 | P04 | Voice activity logging | UNVERIFIED | — | — |
-| FR-18 | P04 | Planned vs actual timeline | UNVERIFIED | — | — |
-| FR-19 | P04 | Manual activity entries | UNVERIFIED | — | — |
+| FR-18 | P04 | Planned vs actual timeline | IN REVIEW | PR #12 branch | Separate planned and logged rails show day intervals without inferring logs from plans; overlap UI acceptance pending. |
+| FR-19 | P04 | Manual activity entries | IN REVIEW | PR #12 branch | Create, edit and delete persist; invalid and duplicate intervals are rejected; UI acceptance pending. |
 | FR-20 | P04 | Natural-language time entry | UNVERIFIED | — | — |
 | FR-21 | P04 | Smart classification | UNVERIFIED | — | — |
 | FR-22 | P04 | Custom classification dictionary | UNVERIFIED | — | — |
 | FR-23 | P04 | Quiet hours & skip handling | UNVERIFIED | — | — |
 | FR-07 | P05 | Desktop task widgets | UNVERIFIED | — | — |
-| FR-30 | P05 | Productivity dashboard | UNVERIFIED | — | — |
-| FR-31 | P05 | Category charts | UNVERIFIED | — | — |
+| FR-30 | P05 | Productivity dashboard | IN REVIEW | PR #12 branch | Tracked time and entry totals use saved activity logs; full dashboard acceptance pending. |
+| FR-31 | P05 | Category charts | IN REVIEW | PR #12 branch | Category bars use clipped log durations; overlap policy and UI acceptance pending. |
 | FR-32 | P05 | Focus performance insights | UNVERIFIED | — | — |
-| FR-33 | P05 | Historical reports | UNVERIFIED | — | — |
-| FR-34 | P05 | Data export | UNVERIFIED | — | — |
+| FR-33 | P05 | Historical reports | IN REVIEW | PR #12 branch | Day/week/month/year activity period selection compiles; report details and UI acceptance pending. |
+| FR-34 | P05 | Data export | IN REVIEW | PR #12 branch | CSV and JSON activity export compile; large-data and round-trip acceptance pending. |
 | FR-37 | P05 | Music controls | UNVERIFIED | — | — |
 | FR-38 | P05 | Music visualizer | UNVERIFIED | — | — |
 | FR-44 | P05 | File shelf & clipboard | UNVERIFIED | — | — |

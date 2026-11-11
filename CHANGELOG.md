@@ -2,6 +2,11 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — hourly logbook and activity insights (in review)
+- Added a durable local logbook with hourly prompts, an always-on-top glass quick-log panel, Enter/skip actions, manual create/edit/delete, duplicate interval validation, and a separate day logbook view.
+- Added a planned-versus-logged timeline, clipped tracked-time summary, category chart, and CSV/JSON activity export. No planned block is silently counted as actual activity.
+- Local Swift build, unsigned app package and 41/41 core checks pass. Runtime prompts, notification permission, UI and large export acceptance remain pending.
+
 ## 11 November 2026 — repeating focus reminders (in review)
 - Added a persisted focus reminder interval with enable/disable and ten-minute snooze. After sleep or relaunch, missed intervals collapse into one alert and schedule the next interval from delivery; the app never floods alerts.
 - Added Focus screen controls and a dismissible check-in banner. Local Swift build, unsigned app package and 37/37 core checks pass; runtime alert behavior remains pending.

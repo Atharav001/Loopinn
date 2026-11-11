@@ -14,6 +14,8 @@ final class AppState: ObservableObject {
     @Published private(set) var utilityTimers: UtilityTimers
     @Published private(set) var focusReminder: FocusReminder
     @Published var focusReminderBanner: String?
+    @Published private(set) var activityLogbook = ActivityLogbook()
+    @Published var activityPrompt: DateInterval?
     @Published private(set) var appleEvents: [ExternalCalendarEvent] = []
     @Published private(set) var appleCalendars: [CalendarChoice] = []
     @Published private(set) var appleCalendarConnected = false
@@ -38,6 +40,7 @@ final class AppState: ObservableObject {
     private var previousWorkspace: Workspace?
     private let dataDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         .appendingPathComponent("Loopinn", isDirectory: true)
+    private var activityStore: ActivityLogStore { ActivityLogStore(directory: dataDirectory) }
     var canEditSettings: Bool { settingsWritable }
 
     init() {
@@ -69,11 +72,19 @@ final class AppState: ObservableObject {
             attachmentStore = nil
             errorMessage = "Saved data could not be opened. Editing is disabled to protect it: \(error.localizedDescription)"
         }
+        do {
+            activityLogbook = try activityStore.load()
+            if activityLogbook.lastPromptedHour == nil {
+                activityLogbook.lastPromptedHour = Calendar.current.dateInterval(of: .hour, for: .now)?.start.addingTimeInterval(-3600)
+                try activityStore.save(activityLogbook)
+            }
+        } catch { errorMessage = "Activity logbook could not be opened: \(error.localizedDescription)" }
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.reconcilePomodoro()
                 self?.reconcileUtilityTimers()
                 self?.reconcileFocusReminder()
+                self?.reconcileActivityPrompt()
             }
         }
         appleCalendarConnected = appleCalendar.isAuthorized
@@ -347,6 +358,50 @@ final class AppState: ObservableObject {
         catch { errorMessage = error.localizedDescription }
     }
 
+    private func reconcileActivityPrompt() {
+        var draft = activityLogbook
+        guard let interval = draft.nextPrompt() else { return }
+        do {
+            try activityStore.save(draft)
+            activityLogbook = draft
+            activityPrompt = interval
+            FloatingPanelManager.shared.showQuickLog(state: self)
+            NSApp.requestUserAttention(.informationalRequest)
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func saveActivity(title: String, start: Date, end: Date, category: String = "Uncategorized", id: UUID? = nil) {
+        do {
+            let entry = try ActivityEntry(id: id ?? UUID(), title: title, startAt: start, endAt: end, category: category)
+            var draft = activityLogbook
+            if id == nil { try draft.add(entry) } else { try draft.update(entry) }
+            try activityStore.save(draft)
+            activityLogbook = draft
+            activityPrompt = nil
+            errorMessage = nil
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    func deleteActivity(_ id: UUID) {
+        var draft = activityLogbook
+        draft.remove(id)
+        do { try activityStore.save(draft); activityLogbook = draft }
+        catch { errorMessage = error.localizedDescription }
+    }
+
+    func skipActivityPrompt() { activityPrompt = nil }
+
+    func exportActivities(asJSON: Bool) {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = asJSON ? "loopinn-activities.json" : "loopinn-activities.csv"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let data = try asJSON ? ActivityExport.json(activityLogbook.entries) : ActivityExport.csv(activityLogbook.entries)
+            try data.write(to: url, options: .atomic)
+            errorMessage = nil
+        } catch { errorMessage = error.localizedDescription }
+    }
+
     func setTheme(_ theme: ThemeMode) {
         var draft = settings
         draft.theme = theme
@@ -472,6 +527,9 @@ final class AppState: ObservableObject {
             focusReminder = FocusReminder()
             try focusReminderStore.save(focusReminder)
             focusReminderBanner = nil
+            activityLogbook = ActivityLogbook()
+            try activityStore.save(activityLogbook)
+            activityPrompt = nil
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }
