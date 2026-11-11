@@ -6,7 +6,6 @@ struct RippleFocusView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var interval = 60
     @State private var nextAlert: Date?
-    @State private var now = Date()
     private let intervals = [10, 30, 60, 120, 180, 300, 600]
 
     var body: some View {
@@ -49,9 +48,8 @@ struct RippleFocusView: View {
             }
         }
         .onReceive(Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()) { date in
-            now = date
             if let nextAlert, date >= nextAlert {
-                NSSound.beep()
+                OmBell.shared.play()
                 self.nextAlert = date.addingTimeInterval(Double(interval))
             }
         }
