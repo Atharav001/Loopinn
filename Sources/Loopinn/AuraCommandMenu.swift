@@ -21,17 +21,10 @@ struct AuraCommandMenu: View {
             Divider().padding(.horizontal, 16)
             quickAddSection
             Divider().padding(.horizontal, 16)
-            ScrollView(.vertical, showsIndicators: true) {
-                commandCenterSection
-            }
-            // MenuBarExtra's window proposes zero height to flexible scroll views.
-            // Give the command list real space so its buttons never disappear.
-            .frame(height: 425)
+            commandCenterSection
             Divider().padding(.horizontal, 16)
             actionRow(id: "application", icon: "macwindow", title: "Open Application", subtitle: "Browse all Loopinn sections") { show(.today) }
                 .padding(.horizontal, 14).padding(.vertical, 6)
-            Divider().padding(.horizontal, 16)
-            settingsRow
             Divider().padding(.horizontal, 16)
             footerSection
         }
@@ -101,32 +94,17 @@ struct AuraCommandMenu: View {
             actionRow(id: "pomodoro", icon: "timer", title: "Pomodoro Timer", subtitle: "Floating focus and break timer") {
                 FloatingPanelManager.shared.showPomodoro(state: state)
             }
-            actionRow(id: "focus", icon: "brain.head.profile", title: "Start Deep Work", subtitle: "Focus session and settings") { show(.focus) }
-            actionRow(id: "stopwatch", icon: "stopwatch", title: "Stopwatch & Countdown", subtitle: "Utility timers in Focus") { show(.focus) }
             actionRow(id: "ripple", icon: "circle.dotted.circle", title: "Ripple Focus", subtitle: "Flexible interval alerts") {
                 FloatingPanelManager.shared.showRipple(state: state)
             }
             actionRow(id: "tasks", icon: "checklist", title: "To-Do Lists", subtitle: "Floating task editor") {
                 FloatingPanelManager.shared.showTasks(state: state)
             }
-            actionRow(id: "task-page", icon: "list.bullet.clipboard", title: "Task Workspace", subtitle: "Lists, details and scheduling") { show(.tasks) }
-            actionRow(id: "calendar", icon: "calendar", title: "Calendar", subtitle: "Day, week, month and year") { show(.calendar) }
-            actionRow(id: "today", icon: "sun.max", title: "Today", subtitle: "Your daily overview") { show(.today) }
-            actionRow(id: "planner", icon: "calendar.badge.plus", title: "Planner", subtitle: "Plan tasks and time blocks") { show(.planner) }
-            actionRow(id: "logbook", icon: "clock.badge.checkmark", title: "Logbook", subtitle: "Timesheet and activity history") { show(.logbook) }
-            actionRow(id: "timeline", icon: "timeline.selection", title: "Timesheet", subtitle: "Planned and logged time rails") { show(.timeline) }
             actionRow(id: "log", icon: "square.and.pencil", title: "Log Activity", subtitle: "Quick floating entry") {
                 FloatingPanelManager.shared.showQuickLog(state: state)
             }
-            actionRow(id: "analytics", icon: "chart.bar", title: "Analytics", subtitle: "Tracked time and focus insights") { show(.analytics) }
-            actionRow(id: "utilities", icon: "square.grid.2x2", title: "Utilities", subtitle: "Files, clipboard and media") { show(.utilities) }
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
-    }
-
-    private var settingsRow: some View {
-        actionRow(id: "settings", icon: "gearshape", title: "Settings", subtitle: "Appearance, calendar and focus") { show(.settings) }
-            .padding(.horizontal, 14).padding(.vertical, 6)
     }
 
     private var footerSection: some View {

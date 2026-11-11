@@ -2,6 +2,10 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — focused menu bar actions
+- Kept only the actions that open floating windows in the menu bar: Pomodoro, Ripple Focus, To-Do Lists and Log Activity. Open Application is the single route to Today, tasks, calendar, Focus, logbook, timesheet, analytics, utilities and settings.
+- Removed the menu scroll area after shortening the action list, so all remaining controls fit in the command center.
+
 ## 11 November 2026 — command center visibility and empty workspace repair
 - Fixed the menu bar command list collapsing to zero height. The list has a visible scroll area, and Open Application and Settings stay directly accessible below it.
 - Added menu links for all implemented sections and timer modes, a Start Here launchpad in Today, and clear actions in empty Today and Analytics views.
