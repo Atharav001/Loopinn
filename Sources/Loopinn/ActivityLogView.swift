@@ -39,6 +39,7 @@ struct QuickLogView: View {
 
 struct ActivityLogView: View {
     @ObservedObject var state: AppState
+    @StateObject private var voice = VoiceLogService()
     @State private var selectedDate = Date()
     @State private var title = ""
     @State private var start = Date().addingTimeInterval(-3600)
@@ -49,6 +50,7 @@ struct ActivityLogView: View {
     @State private var quietEnd = 8
     @State private var rulePhrase = ""
     @State private var ruleCategory = "Work"
+    @State private var naturalText = ""
     private let categories = ["Uncategorized", "Work", "Study", "Break", "Exercise", "Personal"]
 
     private var entries: [ActivityEntry] {
@@ -104,6 +106,10 @@ struct ActivityLogView: View {
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
                 HStack {
                     TextField("What did you do?", text: $title).onSubmit(add)
+                    Button(voice.isRecording ? "Stop dictation" : "Dictate", systemImage: voice.isRecording ? "stop.fill" : "mic.fill") {
+                        if voice.isRecording { voice.stop(); if !voice.transcript.isEmpty { title = voice.transcript } }
+                        else { voice.start() }
+                    }
                     DatePicker("From", selection: $start, displayedComponents: [.date, .hourAndMinute])
                     DatePicker("To", selection: $end, displayedComponents: [.date, .hourAndMinute])
                     Picker("Category", selection: $category) {
@@ -112,6 +118,15 @@ struct ActivityLogView: View {
                     .frame(width: 155)
                     Button(editingID == nil ? "Add" : "Save", action: add).buttonStyle(.borderedProminent)
                 }
+                if let error = voice.errorMessage { Text(error).font(.caption).foregroundStyle(.red) }
+                if voice.isRecording { Text(voice.transcript.isEmpty ? "Listening…" : voice.transcript).font(.caption).foregroundStyle(.secondary) }
+                HStack {
+                    TextField("Example: 11am to noon Design review", text: $naturalText)
+                        .onSubmit(reviewTime)
+                    Button("Review time", action: reviewTime)
+                }
+                Text("Review the filled times before saving. Ambiguous or overnight ranges use the manual fields.")
+                    .font(.caption).foregroundStyle(.secondary)
                 if entries.isEmpty {
                     ContentUnavailableView("Nothing logged for this day", systemImage: "text.book.closed")
                 }
@@ -140,10 +155,21 @@ struct ActivityLogView: View {
             quietStart = (state.activityLogbook.quietHours?.startMinute ?? 1320) / 60
             quietEnd = (state.activityLogbook.quietHours?.endMinute ?? 480) / 60
         }
+        .onDisappear { voice.stop() }
     }
 
     private func add() {
         state.saveActivity(title: title, start: start, end: end, category: category, id: editingID)
         if state.errorMessage == nil { title = ""; editingID = nil }
+    }
+
+    private func reviewTime() {
+        guard let draft = ActivityTimeParser.parse(naturalText, on: selectedDate) else {
+            state.errorMessage = "Use an explicit range such as 11am to noon Design review, or enter the times manually."
+            return
+        }
+        title = draft.title
+        start = draft.startAt
+        end = draft.endAt
     }
 }

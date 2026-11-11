@@ -5,13 +5,13 @@
 **Baseline SHA:** `3170cc6` on `main`; current branch `codex/p04-p05-experience`, stacked on P04 PR #11
 **CI status:** PR #7–#10 macOS builds passed; focus alarm branch pending CI
 **Latest packaged build:** P04 local unsigned `dist/Loopinn.app` built; this revision has not had an interactive UI launch
-**Current ticket:** P04/P05 alerts, quiet hours and activity classification on `codex/p04-p05-experience`; local Swift checks 43/43 and unsigned package build passed
+**Current ticket:** P04/P05 natural-language and permission-gated voice entry on `codex/p04-p05-experience`; local Swift checks 45/45 and unsigned package build passed
 **Blockers:** Original Aura, Loopin and Logtrackin source repositories are absent; no code from them is being reused. Android target and signed release setup do not exist.
 
 ## Completion counters
 - Selected scope: **51 features**.
 - Verified DONE: **0/51** under the full acceptance definition (0.0%).
-- Verified IN REVIEW: **36** (all P01, all P02, all P03, P04 FR-08/09/10/11/12/13/14/15/16/18/19/21/22/23, and P05 FR-30/31/33/34); these have partial implementation and missing runtime/provider/edge-case evidence.
+- Verified IN REVIEW: **38** (all P01, all P02, all P03, P04 FR-08/09/10/11/12/13/14/15/16/17/18/19/20/21/22/23, and P05 FR-30/31/33/34); these have partial implementation and missing runtime/provider/edge-case evidence.
 - Verified IN PROGRESS: **0** feature IDs; other feature IDs remain UNVERIFIED/TODO.
 - Verified blocked feature IDs: **0**; the source-reuse audit is limited by missing original repositories.
 - Notch: **optional final P08**, must not be treated as core-complete.

@@ -2,6 +2,14 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — permission-gated voice draft (in review)
+- Added microphone and speech recognition permission requests, live transcription, and explicit stop. Recognized words fill the editable activity form and never save without user action. The packaged app declares both required usage descriptions.
+- Local Swift checks pass; live permission and transcription acceptance pending.
+
+## 11 November 2026 — reviewable time entry (in review)
+- Added parsing of explicit AM/PM, noon and midnight activity ranges into the manual log form for review. Ambiguous and overnight text is refused with a manual fallback.
+- Local Swift checks pass; packaged and runtime acceptance pending.
+
 ## 11 November 2026 — shared alerts and activity rules (in review)
 - Shared the generated Om bell and edge glow with focus timer transitions and reminders. Added overnight quiet hours to hourly logging and a user-editable phrase dictionary that leaves unknown activity Uncategorized.
 - Local Swift checks pass; runtime sound, overlay and timezone acceptance remain pending.

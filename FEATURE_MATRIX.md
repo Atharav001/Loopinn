@@ -30,10 +30,10 @@
 | FR-14 | P04 | Floating focus widgets | IN REVIEW | PR #8 | Shared timer state in always-on-top glass panel; runtime handoff and display acceptance pending. |
 | FR-15 | P04 | Automatic activity prompts | IN REVIEW | PR #12 branch | Hour-boundary prompts for the previous hour persist their last prompted interval; runtime notification acceptance pending. |
 | FR-16 | P04 | Floating quick-log panel | IN REVIEW | PR #12 branch | Glass always-on-top entry window accepts Enter, save and skip; runtime keyboard acceptance pending. |
-| FR-17 | P04 | Voice activity logging | UNVERIFIED | — | — |
+| FR-17 | P04 | Voice activity logging | IN REVIEW | PR #12 branch | Microphone and speech consent gate live dictation; transcript fills an editable form and is never auto-saved; denial and runtime acceptance pending. |
 | FR-18 | P04 | Planned vs actual timeline | IN REVIEW | PR #12 branch | Separate planned and logged rails show day intervals without inferring logs from plans; overlap UI acceptance pending. |
 | FR-19 | P04 | Manual activity entries | IN REVIEW | PR #12 branch | Create, edit and delete persist; invalid and duplicate intervals are rejected; UI acceptance pending. |
-| FR-20 | P04 | Natural-language time entry | UNVERIFIED | — | — |
+| FR-20 | P04 | Natural-language time entry | IN REVIEW | PR #12 branch | Explicit AM/PM, noon and midnight ranges fill a reviewable manual form; ambiguous and overnight ranges fall back to manual entry; broader language acceptance pending. |
 | FR-21 | P04 | Smart classification | IN REVIEW | PR #12 branch | Longest matching user rule categorizes logs; unknown remains Uncategorized; correction acceptance pending. |
 | FR-22 | P04 | Custom classification dictionary | IN REVIEW | PR #12 branch | Rule add/remove persists with the logbook; edit/import acceptance pending. |
 | FR-23 | P04 | Quiet hours & skip handling | IN REVIEW | PR #12 branch | Overnight quiet hours and skipped hourly prompts compile; timezone and runtime acceptance pending. |
