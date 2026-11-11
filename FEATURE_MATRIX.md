@@ -25,8 +25,8 @@
 | FR-09 | P04 | Stopwatch & countdown | IN REVIEW | P04 timer branch | Persisted stopwatch with ordered laps and countdown deadline with single completion transition compile; clock-change and runtime alert acceptance pending. |
 | FR-10 | P04 | Deep Work mode | IN REVIEW | P04 Deep Work branch | Configurable long-focus preset shares Pomodoro state, optional linked task is visible in dashboard and floating timer, and completion does not create an activity log; runtime UI acceptance pending. |
 | FR-11 | P04 | Repeating focus alarms | IN REVIEW | P04 alarm branch | Saved interval deadline, enable/disable, snooze and missed-interval collapse compile; runtime alert and permission behavior pending. |
-| FR-12 | P04 | Focus overlays & effects | UNVERIFIED | — | — |
-| FR-13 | P04 | Timer alerts & sounds | UNVERIFIED | — | — |
+| FR-12 | P04 | Focus overlays & effects | IN REVIEW | PR #12 branch | Floating timer and Ripple edge glow compile; multi-display and Reduce Motion acceptance pending. |
+| FR-13 | P04 | Timer alerts & sounds | IN REVIEW | PR #12 branch | Generated 1.5-second Om bell is shared by Ripple, timer completion and reminders; mute and permission acceptance pending. |
 | FR-14 | P04 | Floating focus widgets | IN REVIEW | PR #8 | Shared timer state in always-on-top glass panel; runtime handoff and display acceptance pending. |
 | FR-15 | P04 | Automatic activity prompts | IN REVIEW | PR #12 branch | Hour-boundary prompts for the previous hour persist their last prompted interval; runtime notification acceptance pending. |
 | FR-16 | P04 | Floating quick-log panel | IN REVIEW | PR #12 branch | Glass always-on-top entry window accepts Enter, save and skip; runtime keyboard acceptance pending. |
@@ -34,9 +34,9 @@
 | FR-18 | P04 | Planned vs actual timeline | IN REVIEW | PR #12 branch | Separate planned and logged rails show day intervals without inferring logs from plans; overlap UI acceptance pending. |
 | FR-19 | P04 | Manual activity entries | IN REVIEW | PR #12 branch | Create, edit and delete persist; invalid and duplicate intervals are rejected; UI acceptance pending. |
 | FR-20 | P04 | Natural-language time entry | UNVERIFIED | — | — |
-| FR-21 | P04 | Smart classification | UNVERIFIED | — | — |
-| FR-22 | P04 | Custom classification dictionary | UNVERIFIED | — | — |
-| FR-23 | P04 | Quiet hours & skip handling | UNVERIFIED | — | — |
+| FR-21 | P04 | Smart classification | IN REVIEW | PR #12 branch | Longest matching user rule categorizes logs; unknown remains Uncategorized; correction acceptance pending. |
+| FR-22 | P04 | Custom classification dictionary | IN REVIEW | PR #12 branch | Rule add/remove persists with the logbook; edit/import acceptance pending. |
+| FR-23 | P04 | Quiet hours & skip handling | IN REVIEW | PR #12 branch | Overnight quiet hours and skipped hourly prompts compile; timezone and runtime acceptance pending. |
 | FR-07 | P05 | Desktop task widgets | UNVERIFIED | — | — |
 | FR-30 | P05 | Productivity dashboard | IN REVIEW | PR #12 branch | Tracked time and entry totals use saved activity logs; full dashboard acceptance pending. |
 | FR-31 | P05 | Category charts | IN REVIEW | PR #12 branch | Category bars use clipped log durations; overlap policy and UI acceptance pending. |

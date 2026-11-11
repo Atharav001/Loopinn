@@ -30,6 +30,8 @@ public enum ActivityLogError: LocalizedError {
 public struct ActivityLogbook: Codable, Equatable, Sendable {
     public var entries: [ActivityEntry] = []
     public var lastPromptedHour: Date?
+    public var quietHours: ActivityQuietHours?
+    public var classificationRules: [String: String]?
 
     public init() {}
 
@@ -48,12 +50,48 @@ public struct ActivityLogbook: Codable, Equatable, Sendable {
 
     public mutating func remove(_ id: UUID) { entries.removeAll { $0.id == id } }
 
+    public func category(for title: String) -> String {
+        let lower = title.lowercased()
+        let matching = (classificationRules ?? [:]).keys.filter { lower.contains($0.lowercased()) }
+        guard let phrase = matching.sorted(by: { $0.count > $1.count }).first else { return "Uncategorized" }
+        return classificationRules?[phrase] ?? "Uncategorized"
+    }
+
+    public mutating func setRule(phrase: String, category: String) {
+        let key = phrase.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !key.isEmpty else { return }
+        var rules = classificationRules ?? [:]
+        rules[key] = category
+        classificationRules = rules
+    }
+
+    public mutating func removeRule(_ phrase: String) { classificationRules?.removeValue(forKey: phrase) }
+
     public mutating func nextPrompt(at now: Date = .now, calendar: Calendar = .current) -> DateInterval? {
         guard let hourStart = calendar.dateInterval(of: .hour, for: now)?.start,
               let previous = calendar.date(byAdding: .hour, value: -1, to: hourStart) else { return nil }
         if let lastPromptedHour, lastPromptedHour >= previous { return nil }
         lastPromptedHour = previous
+        if quietHours?.contains(now, calendar: calendar) == true { return nil }
         return DateInterval(start: previous, end: hourStart)
+    }
+}
+
+public struct ActivityQuietHours: Codable, Equatable, Sendable {
+    public var startMinute: Int
+    public var endMinute: Int
+
+    public init(startHour: Int, endHour: Int) {
+        startMinute = min(23, max(0, startHour)) * 60
+        endMinute = min(23, max(0, endHour)) * 60
+    }
+
+    public func contains(_ date: Date, calendar: Calendar = .current) -> Bool {
+        let components = calendar.dateComponents([.hour, .minute], from: date)
+        let minute = (components.hour ?? 0) * 60 + (components.minute ?? 0)
+        if startMinute == endMinute { return false }
+        if startMinute < endMinute { return minute >= startMinute && minute < endMinute }
+        return minute >= startMinute || minute < endMinute
     }
 }
 

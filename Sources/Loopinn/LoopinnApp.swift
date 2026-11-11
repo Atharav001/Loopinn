@@ -14,6 +14,7 @@ final class AppState: ObservableObject {
     @Published private(set) var utilityTimers: UtilityTimers
     @Published private(set) var focusReminder: FocusReminder
     @Published var focusReminderBanner: String?
+    @Published var alertGlowUntil: Date?
     @Published private(set) var activityLogbook = ActivityLogbook()
     @Published var activityPrompt: DateInterval?
     @Published private(set) var appleEvents: [ExternalCalendarEvent] = []
@@ -271,7 +272,12 @@ final class AppState: ObservableObject {
     private func reconcilePomodoro() {
         let previous = pomodoro
         pomodoro.reconcile()
-        if pomodoro != previous { try? pomodoroStore.save(pomodoro) }
+        if pomodoro != previous {
+            do {
+                try pomodoroStore.save(pomodoro)
+                if pomodoro.phase != previous.phase || pomodoro.status == .completed { triggerFocusAlert() }
+            } catch { errorMessage = error.localizedDescription }
+        }
         objectWillChange.send()
     }
 
@@ -303,7 +309,7 @@ final class AppState: ObservableObject {
     private func reconcileUtilityTimers() {
         if utilityTimers.countdown.reconcile() {
             saveUtilityTimers()
-            NSSound.beep()
+            triggerFocusAlert()
         }
         if utilityTimers.stopwatch.status == .running || utilityTimers.countdown.status == .running {
             objectWillChange.send()
@@ -329,9 +335,14 @@ final class AppState: ObservableObject {
         do {
             try focusReminderStore.save(focusReminder)
             focusReminderBanner = "Time for a short focus check-in."
-            NSSound.beep()
+            triggerFocusAlert()
             NSApp.requestUserAttention(.informationalRequest)
         } catch { errorMessage = error.localizedDescription }
+    }
+
+    private func triggerFocusAlert() {
+        alertGlowUntil = .now.addingTimeInterval(1.5)
+        OmBell.shared.play()
     }
 
     func setFocusReminderEnabled(_ enabled: Bool) {
@@ -360,20 +371,32 @@ final class AppState: ObservableObject {
 
     private func reconcileActivityPrompt() {
         var draft = activityLogbook
-        guard let interval = draft.nextPrompt() else { return }
+        let interval = draft.nextPrompt()
+        guard draft != activityLogbook else { return }
         do {
             try activityStore.save(draft)
             activityLogbook = draft
-            activityPrompt = interval
-            FloatingPanelManager.shared.showQuickLog(state: self)
-            NSApp.requestUserAttention(.informationalRequest)
+            if let interval {
+                activityPrompt = interval
+                FloatingPanelManager.shared.showQuickLog(state: self)
+                NSApp.requestUserAttention(.informationalRequest)
+            }
         } catch { errorMessage = error.localizedDescription }
+    }
+
+    func setActivityQuietHours(startHour: Int?, endHour: Int?) {
+        var draft = activityLogbook
+        if let startHour, let endHour { draft.quietHours = ActivityQuietHours(startHour: startHour, endHour: endHour) }
+        else { draft.quietHours = nil }
+        do { try activityStore.save(draft); activityLogbook = draft }
+        catch { errorMessage = error.localizedDescription }
     }
 
     func saveActivity(title: String, start: Date, end: Date, category: String = "Uncategorized", id: UUID? = nil) {
         do {
-            let entry = try ActivityEntry(id: id ?? UUID(), title: title, startAt: start, endAt: end, category: category)
             var draft = activityLogbook
+            let resolvedCategory = category == "Uncategorized" ? draft.category(for: title) : category
+            let entry = try ActivityEntry(id: id ?? UUID(), title: title, startAt: start, endAt: end, category: resolvedCategory)
             if id == nil { try draft.add(entry) } else { try draft.update(entry) }
             try activityStore.save(draft)
             activityLogbook = draft
@@ -385,6 +408,20 @@ final class AppState: ObservableObject {
     func deleteActivity(_ id: UUID) {
         var draft = activityLogbook
         draft.remove(id)
+        do { try activityStore.save(draft); activityLogbook = draft }
+        catch { errorMessage = error.localizedDescription }
+    }
+
+    func setActivityRule(phrase: String, category: String) {
+        var draft = activityLogbook
+        draft.setRule(phrase: phrase, category: category)
+        do { try activityStore.save(draft); activityLogbook = draft }
+        catch { errorMessage = error.localizedDescription }
+    }
+
+    func removeActivityRule(_ phrase: String) {
+        var draft = activityLogbook
+        draft.removeRule(phrase)
         do { try activityStore.save(draft); activityLogbook = draft }
         catch { errorMessage = error.localizedDescription }
     }

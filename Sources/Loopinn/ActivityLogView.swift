@@ -45,6 +45,10 @@ struct ActivityLogView: View {
     @State private var end = Date()
     @State private var category = "Uncategorized"
     @State private var editingID: UUID?
+    @State private var quietStart = 22
+    @State private var quietEnd = 8
+    @State private var rulePhrase = ""
+    @State private var ruleCategory = "Work"
     private let categories = ["Uncategorized", "Work", "Study", "Break", "Exercise", "Personal"]
 
     private var entries: [ActivityEntry] {
@@ -61,6 +65,43 @@ struct ActivityLogView: View {
                     Button("Export JSON") { state.exportActivities(asJSON: true) }
                     DatePicker("Day", selection: $selectedDate, displayedComponents: .date).labelsHidden()
                 }
+                HStack {
+                    Toggle("Quiet hours", isOn: Binding(
+                        get: { state.activityLogbook.quietHours != nil },
+                        set: { state.setActivityQuietHours(startHour: $0 ? quietStart : nil, endHour: $0 ? quietEnd : nil) }
+                    ))
+                    .frame(width: 140)
+                    if state.activityLogbook.quietHours != nil {
+                        Stepper("From \(quietStart):00", value: $quietStart, in: 0...23)
+                        Stepper("Until \(quietEnd):00", value: $quietEnd, in: 0...23)
+                        Button("Apply") { state.setActivityQuietHours(startHour: quietStart, endHour: quietEnd) }
+                    }
+                }
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Activity categories").font(.headline)
+                    Text("Unknown activities stay Uncategorized. Add words you want Loopinn to recognize.")
+                        .font(.caption).foregroundStyle(.secondary)
+                    HStack {
+                        TextField("Word or phrase", text: $rulePhrase)
+                        Picker("Category", selection: $ruleCategory) {
+                            ForEach(categories.filter { $0 != "Uncategorized" }, id: \.self) { Text($0).tag($0) }
+                        }
+                        Button("Add Rule") {
+                            state.setActivityRule(phrase: rulePhrase, category: ruleCategory)
+                            rulePhrase = ""
+                        }
+                    }
+                    ForEach((state.activityLogbook.classificationRules ?? [:]).keys.sorted(), id: \.self) { phrase in
+                        HStack {
+                            Text(phrase)
+                            Spacer()
+                            Text(state.activityLogbook.classificationRules?[phrase] ?? "")
+                            Button("Remove", role: .destructive) { state.removeActivityRule(phrase) }
+                        }
+                    }
+                }
+                .padding(16)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
                 HStack {
                     TextField("What did you do?", text: $title).onSubmit(add)
                     DatePicker("From", selection: $start, displayedComponents: [.date, .hourAndMinute])
@@ -94,6 +135,10 @@ struct ActivityLogView: View {
                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
                 }
             }
+        }
+        .onAppear {
+            quietStart = (state.activityLogbook.quietHours?.startMinute ?? 1320) / 60
+            quietEnd = (state.activityLogbook.quietHours?.endMinute ?? 480) / 60
         }
     }
 

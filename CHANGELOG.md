@@ -2,6 +2,10 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 11 November 2026 — shared alerts and activity rules (in review)
+- Shared the generated Om bell and edge glow with focus timer transitions and reminders. Added overnight quiet hours to hourly logging and a user-editable phrase dictionary that leaves unknown activity Uncategorized.
+- Local Swift checks pass; runtime sound, overlay and timezone acceptance remain pending.
+
 ## 11 November 2026 — hourly logbook and activity insights (in review)
 - Added a durable local logbook with hourly prompts, an always-on-top glass quick-log panel, Enter/skip actions, manual create/edit/delete, duplicate interval validation, and a separate day logbook view.
 - Added a planned-versus-logged timeline, clipped tracked-time summary, category chart, and CSV/JSON activity export. No planned block is silently counted as actual activity.

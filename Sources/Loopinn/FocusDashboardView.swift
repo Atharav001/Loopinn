@@ -282,6 +282,14 @@ struct FloatingPomodoroView: View {
         .padding(24)
         .frame(minWidth: 300, minHeight: 210)
         .background(.ultraThinMaterial)
+        .overlay {
+            TimelineView(.periodic(from: .now, by: 0.25)) { timeline in
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(state.settings.accent.color.opacity((state.alertGlowUntil ?? .distantPast) > timeline.date ? 0.9 : 0), lineWidth: 5)
+                    .shadow(color: state.settings.accent.color.opacity((state.alertGlowUntil ?? .distantPast) > timeline.date ? 0.8 : 0), radius: 18)
+                    .allowsHitTesting(false)
+            }
+        }
         .preferredColorScheme(state.settings.theme.colorScheme)
         .tint(state.settings.accent.color)
     }
