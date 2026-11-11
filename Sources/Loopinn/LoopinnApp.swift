@@ -98,6 +98,7 @@ final class AppState: ObservableObject {
         googleCalendarConnected = googleCalendar.isConnected && !(settings.googleClientID ?? "").isEmpty
         if googleCalendarConnected { refreshGoogleCalendar() }
         publishWidgetSnapshot()
+        Task { await ActivityNotificationService.shared.requestPermission() }
     }
 
     func connectAppleCalendar() {
@@ -391,6 +392,7 @@ final class AppState: ObservableObject {
                 activityPrompt = interval
                 FloatingPanelManager.shared.showQuickLog(state: self)
                 NSApp.requestUserAttention(.informationalRequest)
+                Task { await ActivityNotificationService.shared.sendPrompt(for: interval) }
             }
         } catch { errorMessage = error.localizedDescription }
     }
@@ -572,7 +574,8 @@ final class AppState: ObservableObject {
         do {
             try WorkspaceBackup.create(workspace: workspace, settings: settings,
                                        attachmentsDirectory: dataDirectory.appendingPathComponent("attachments"),
-                                       at: destination)
+                                       at: destination, activityLogbook: activityLogbook,
+                                       utilityShelf: utilityShelf, pomodoro: pomodoro)
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }
@@ -588,13 +591,28 @@ final class AppState: ObservableObject {
             let safetyURL = safetyDirectory.appendingPathComponent("before-restore-\(UUID().uuidString).loopinnbackup", isDirectory: true)
             try WorkspaceBackup.create(workspace: workspace, settings: settings,
                                        attachmentsDirectory: dataDirectory.appendingPathComponent("attachments"),
-                                       at: safetyURL)
+                                       at: safetyURL, activityLogbook: activityLogbook,
+                                       utilityShelf: utilityShelf, pomodoro: pomodoro)
             try WorkspaceBackup.installAttachments(from: source, workspace: snapshot.workspace,
                                                    into: dataDirectory.appendingPathComponent("attachments"))
-            try database.save(snapshot.workspace)
-            do { try settingsStore.save(snapshot.settings) }
+            let oldWorkspace = workspace
+            let oldSettings = settings
+            let oldLogbook = activityLogbook
+            let oldShelf = utilityShelf
+            let oldPomodoro = pomodoro
+            do {
+                try database.save(snapshot.workspace)
+                try settingsStore.save(snapshot.settings)
+                if let logbook = snapshot.activityLogbook { try activityStore.save(logbook) }
+                if let shelf = snapshot.utilityShelf { try utilityShelfStore.save(shelf) }
+                if let timer = snapshot.pomodoro { try pomodoroStore.save(timer) }
+            }
             catch {
-                try? database.save(workspace)
+                try? database.save(oldWorkspace)
+                try? settingsStore.save(oldSettings)
+                try? activityStore.save(oldLogbook)
+                try? utilityShelfStore.save(oldShelf)
+                try? pomodoroStore.save(oldPomodoro)
                 throw error
             }
             previousWorkspace = workspace
@@ -602,6 +620,10 @@ final class AppState: ObservableObject {
             workspace = snapshot.workspace
             publishWidgetSnapshot()
             settings = snapshot.settings
+            if let logbook = snapshot.activityLogbook { activityLogbook = logbook }
+            if let shelf = snapshot.utilityShelf { utilityShelf = shelf }
+            if let timer = snapshot.pomodoro { pomodoro = timer }
+            activityPrompt = nil
             errorMessage = nil
         } catch { errorMessage = error.localizedDescription }
     }

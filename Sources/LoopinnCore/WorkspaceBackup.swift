@@ -24,16 +24,25 @@ public struct WorkspaceSnapshot: Codable, Sendable {
     public let version: Int
     public let workspace: Workspace
     public let settings: AppSettings
+    public let activityLogbook: ActivityLogbook?
+    public let utilityShelf: UtilityShelf?
+    public let pomodoro: PomodoroSession?
 
-    public init(workspace: Workspace, settings: AppSettings) {
-        version = 1
+    public init(workspace: Workspace, settings: AppSettings, activityLogbook: ActivityLogbook? = nil,
+                utilityShelf: UtilityShelf? = nil, pomodoro: PomodoroSession? = nil) {
+        version = 2
         self.workspace = workspace
         self.settings = settings
+        self.activityLogbook = activityLogbook
+        self.utilityShelf = utilityShelf
+        self.pomodoro = pomodoro
     }
 }
 
 public enum WorkspaceBackup {
-    public static func create(workspace: Workspace, settings: AppSettings, attachmentsDirectory: URL, at destination: URL) throws {
+    public static func create(workspace: Workspace, settings: AppSettings, attachmentsDirectory: URL, at destination: URL,
+                              activityLogbook: ActivityLogbook? = nil, utilityShelf: UtilityShelf? = nil,
+                              pomodoro: PomodoroSession? = nil) throws {
         try validate(workspace)
         let files = try attachmentNames(in: workspace)
         let manager = FileManager.default
@@ -48,7 +57,8 @@ public enum WorkspaceBackup {
             guard manager.fileExists(atPath: source.path) else { throw BackupError.missingAttachment(name) }
             try manager.copyItem(at: source, to: attachmentTarget.appendingPathComponent(name))
         }
-        let snapshot = WorkspaceSnapshot(workspace: workspace, settings: settings)
+        let snapshot = WorkspaceSnapshot(workspace: workspace, settings: settings,
+                                         activityLogbook: activityLogbook, utilityShelf: utilityShelf, pomodoro: pomodoro)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         try encoder.encode(snapshot).write(to: staging.appendingPathComponent("workspace.json"), options: .atomic)
@@ -58,7 +68,7 @@ public enum WorkspaceBackup {
     public static func inspect(at source: URL) throws -> WorkspaceSnapshot {
         let data = try Data(contentsOf: source.appendingPathComponent("workspace.json"))
         let snapshot = try JSONDecoder().decode(WorkspaceSnapshot.self, from: data)
-        guard snapshot.version == 1, snapshot.settings.version == 1, snapshot.workspace.schemaVersion == 1 else {
+        guard (snapshot.version == 1 || snapshot.version == 2), snapshot.settings.version == 1, snapshot.workspace.schemaVersion == 1 else {
             throw BackupError.unsupportedVersion
         }
         try validate(snapshot.workspace)

@@ -47,6 +47,7 @@
 		C869B9095017B3819D1455CC /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87A4FC8D87C1BD84028997B6 /* WidgetSnapshot.swift */; };
 		CAA9D7222C2E14DE7BBFF91B /* FocusInsights.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCB139069661DE38AC853EB3 /* FocusInsights.swift */; };
 		D04B004D55E13A04BF40847E /* AppleCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442EBD439EDF09E56F63030C /* AppleCalendarService.swift */; };
+		D377A41FBCFB9E7CEF7188EB /* ActivityNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E54E6C4100A0405DEF2A983F /* ActivityNotificationService.swift */; };
 		DDE198C28ACA1B9D7B0ACE1F /* UtilityTimers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74F5147627AF2F5FF52A0EF7 /* UtilityTimers.swift */; };
 		E3F0E468FC87FD66FCD27531 /* FocusDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03A5D6CBB9E126500C9E1BE /* FocusDashboardView.swift */; };
 		ECCF3838245E0914AD92FBED /* CalendarDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8ADAD1BBFA58CA060D28CD3 /* CalendarDashboardView.swift */; };
@@ -158,6 +159,7 @@
 		DCB139069661DE38AC853EB3 /* FocusInsights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusInsights.swift; sourceTree = "<group>"; };
 		DD9C81FDDFA02E3E82EDB53D /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		E00337C4BD4DE9BA3F752589 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
+		E54E6C4100A0405DEF2A983F /* ActivityNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityNotificationService.swift; sourceTree = "<group>"; };
 		EDB11144489FB9F857A4CDB7 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		FF88CEDBE89D875765EAAF9A /* CommandPaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandPaletteView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -203,6 +205,7 @@
 			isa = PBXGroup;
 			children = (
 				735B1DD6C098C80655923848 /* ActivityLogView.swift */,
+				E54E6C4100A0405DEF2A983F /* ActivityNotificationService.swift */,
 				1389DDB3C64E64913420AF4D /* ActivityTimelineView.swift */,
 				E00337C4BD4DE9BA3F752589 /* AnalyticsView.swift */,
 				442EBD439EDF09E56F63030C /* AppleCalendarService.swift */,
@@ -427,6 +430,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F685B9A0018C32754FC65C07 /* ActivityLogView.swift in Sources */,
+				D377A41FBCFB9E7CEF7188EB /* ActivityNotificationService.swift in Sources */,
 				C10E8E9F6E6960C577412860 /* ActivityTimelineView.swift in Sources */,
 				AFEAF4E5E015CD7ACD4DE2E1 /* AnalyticsView.swift in Sources */,
 				D04B004D55E13A04BF40847E /* AppleCalendarService.swift in Sources */,

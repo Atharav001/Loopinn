@@ -81,4 +81,26 @@ final class WorkspaceBackupTests: XCTestCase {
         try WorkspaceBackup.create(workspace: workspace, settings: AppSettings(), attachmentsDirectory: root, at: backup)
         XCTAssertEqual(try WorkspaceBackup.inspect(at: backup).workspace.tasks[0].attachments?.first?.linkURLString, "https://example.com")
     }
+
+    func testVersionTwoBackupIncludesActivityShelfAndFocusHistory() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        var book = ActivityLogbook()
+        try book.add(ActivityEntry(title: "Research", startAt: start, endAt: start.addingTimeInterval(3600)))
+        var shelf = UtilityShelf()
+        shelf.capture("Saved note")
+        var focus = PomodoroSession()
+        focus.startDeepWork(minutes: 30, taskID: nil, at: start)
+        focus.reconcile(at: start.addingTimeInterval(1800))
+        let backup = root.appendingPathComponent("all.loopinnbackup")
+        try WorkspaceBackup.create(workspace: Workspace(), settings: AppSettings(), attachmentsDirectory: root,
+                                   at: backup, activityLogbook: book, utilityShelf: shelf, pomodoro: focus)
+        let snapshot = try WorkspaceBackup.inspect(at: backup)
+        XCTAssertEqual(snapshot.version, 2)
+        XCTAssertEqual(snapshot.activityLogbook, book)
+        XCTAssertEqual(snapshot.utilityShelf, shelf)
+        XCTAssertEqual(snapshot.pomodoro, focus)
+    }
 }
