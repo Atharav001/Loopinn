@@ -2,6 +2,10 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 12 November 2026 — quick-log prompt dismissal
+- Saving from the floating quick-log panel, including pressing Enter, now hides that panel only after the activity is saved successfully. Skipping an hourly prompt also hides it.
+- Logging from another app view while an hourly prompt is open closes the stale prompt. Save errors remain visible in the panel so the entered text can be corrected; reopening after success starts with a fresh one-hour manual range.
+
 ## 11 November 2026 — responsive calendar and menu dismissal
 - Removed outer accent borders and alert edge glow from the menu and floating timer windows, while retaining colored hover feedback.
 - Reworked the month calendar to fit all seven columns and all visible week rows in the space supplied by the main window. Cell heights and visible event lines adjust as the window changes size; the calendar toolbar wraps when needed. Year mini-months adapt their column count.

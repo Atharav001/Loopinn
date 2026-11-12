@@ -30,6 +30,9 @@ struct QuickLogView: View {
             }
             TextField("What did you work on?", text: $title)
                 .focused($focused).onSubmit(save)
+            if let error = state.errorMessage {
+                Text(error).font(.caption).foregroundStyle(.red).lineLimit(2)
+            }
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 6) {
                         ForEach(suggestions, id: \.self) { suggestion in
@@ -44,7 +47,10 @@ struct QuickLogView: View {
                 }
                 HStack {
                     if state.activityPrompt != nil {
-                        Button("Skip") { state.skipActivityPrompt() }
+                        Button("Skip") {
+                            title = ""
+                            state.skipActivityPrompt()
+                        }
                     }
                     Spacer()
                     Button("Log activity", action: save).buttonStyle(.borderedProminent)
@@ -64,7 +70,12 @@ struct QuickLogView: View {
         }
         let interval = state.activityPrompt ?? DateInterval(start: manualStart, end: manualEnd)
         state.saveActivity(title: title, start: interval.start, end: interval.end, category: category)
-        if state.errorMessage == nil { title = "" }
+        if state.errorMessage == nil {
+            title = ""
+            manualEnd = .now
+            manualStart = manualEnd.addingTimeInterval(-3600)
+            FloatingPanelManager.shared.hideQuickLog()
+        }
     }
 }
 

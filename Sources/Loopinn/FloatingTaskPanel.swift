@@ -47,6 +47,10 @@ final class FloatingPanelManager: ObservableObject {
         show(id: quickLogID, title: "Log activity", size: NSSize(width: 440, height: 400), state: state, content: AnyView(QuickLogView(state: state)))
     }
 
+    func hideQuickLog() {
+        panels[quickLogID]?.orderOut(nil)
+    }
+
     private func show(id: String, title: String, size: NSSize, state: AppState, content: AnyView) {
         if id == tasksID { setPinned(state.settings.pinFloatingTasks != false, for: tasksID) }
         if let panel = panels[id] {

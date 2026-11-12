@@ -11,6 +11,7 @@
 **Window persistence repair:** NSPanel hide-on-deactivate is disabled, so a floating window remains visible when another app is clicked. Pinned panels join all spaces; visual acceptance remains pending.
 **Calendar/timesheet update:** Month events and day/week hourly grids now share Loopinn's block and connected-event data. Timesheet overlap lanes have focused tests; live calendar/provider UI checks remain pending. Floating panels use opaque native title bars.
 **Responsive layout update:** Month grid scales to the available width/height with no fixed 805-point canvas or calendar scroll; menu actions request popover dismissal before opening windows. Local UI interaction acceptance remains pending.
+**Quick-log update:** Enter/Log hides the floating panel after a successful save; Skip hides an hourly prompt. Errors leave the panel visible for correction. Runtime click and keyboard acceptance remains pending.
 **Blockers:** Android target and signed release setup do not exist. Google live connection awaits a Desktop client ID. Aura and Loopin-macOS repositories are now available for source adaptation; the notch remains paused.
 
 ## Completion counters
