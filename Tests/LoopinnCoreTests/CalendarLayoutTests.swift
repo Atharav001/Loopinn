@@ -22,4 +22,16 @@ final class CalendarLayoutTests: XCTestCase {
         XCTAssertEqual(days.count % 7, 0)
         XCTAssertTrue(days.contains { calendar.isDate($0, equalTo: date, toGranularity: .day) })
     }
+
+    func testMonthGridFitsFiveAndSixWeeksAtDifferentWindowHeights() {
+        for rows in [5, 6] {
+            for height in [360.0, 520.0, 720.0] {
+                let rowHeight = CalendarLayout.monthRowHeight(availableHeight: height, rowCount: rows)
+                XCTAssertEqual(rowHeight * Double(rows) + 28, height, accuracy: 0.001)
+                XCTAssertGreaterThanOrEqual(CalendarLayout.visibleMonthEventCount(cellHeight: rowHeight), 1)
+            }
+        }
+        XCTAssertGreaterThan(CalendarLayout.visibleMonthEventCount(cellHeight: 140),
+                             CalendarLayout.visibleMonthEventCount(cellHeight: 65))
+    }
 }

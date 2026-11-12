@@ -4,6 +4,8 @@ import SwiftUI
 struct ActivityTimelineView: View {
     @ObservedObject var state: AppState
     @State private var day = Date()
+    @State private var editingBlock: CalendarBlock?
+    @State private var editingEntry: ActivityEntry?
 
     private var planned: [CalendarBlock] { CalendarLayout.blocks(on: day, from: state.workspace.blocks) }
     private var logged: [ActivityEntry] {
@@ -21,6 +23,10 @@ struct ActivityTimelineView: View {
                     DatePicker("Day", selection: $day, displayedComponents: .date).labelsHidden()
                 }
                 Text("A plan never becomes an activity log automatically.").foregroundStyle(.secondary)
+                LoopinTimesheetRails(day: day, planned: planned, logged: logged,
+                                    title: { block in block.title ?? state.workspace.tasks.first(where: { $0.id == block.taskID })?.title ?? "Planned block" },
+                                    onSelectPlanned: { id in editingBlock = planned.first(where: { $0.id == id }) },
+                                    onSelectLogged: { id in editingEntry = logged.first(where: { $0.id == id }) })
                 HStack(alignment: .top, spacing: 14) {
                     rail("Planned", icon: "calendar", isEmpty: planned.isEmpty) {
                         ForEach(planned) { block in
@@ -34,6 +40,12 @@ struct ActivityTimelineView: View {
                     }
                 }
             }
+        }
+        .sheet(item: $editingBlock) { block in
+            BlockEditor(state: state, block: block, start: block.startAt, end: block.endAt)
+        }
+        .sheet(item: $editingEntry) { entry in
+            ActivityEntryEditor(state: state, entry: entry)
         }
     }
 
@@ -55,5 +67,45 @@ struct ActivityTimelineView: View {
         }
         .padding(10).frame(maxWidth: .infinity, alignment: .leading)
         .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+private struct ActivityEntryEditor: View {
+    @ObservedObject var state: AppState
+    let entry: ActivityEntry
+    @Environment(\.dismiss) private var dismiss
+    @State private var title: String
+    @State private var start: Date
+    @State private var end: Date
+    @State private var category: String
+
+    init(state: AppState, entry: ActivityEntry) {
+        self.state = state
+        self.entry = entry
+        _title = State(initialValue: entry.title)
+        _start = State(initialValue: entry.startAt)
+        _end = State(initialValue: entry.endAt)
+        _category = State(initialValue: entry.category)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Edit logged activity").font(.title2.bold())
+            TextField("Activity", text: $title)
+            DatePicker("From", selection: $start)
+            DatePicker("To", selection: $end)
+            TextField("Category", text: $category)
+            HStack {
+                Button("Delete", role: .destructive) { state.deleteActivity(entry.id); if state.errorMessage == nil { dismiss() } }
+                Spacer()
+                Button("Cancel") { dismiss() }
+                Button("Save") {
+                    state.saveActivity(title: title, start: start, end: end, category: category, id: entry.id)
+                    if state.errorMessage == nil { dismiss() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(24).frame(minWidth: 380)
     }
 }

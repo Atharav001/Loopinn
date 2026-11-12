@@ -420,6 +420,7 @@ final class AppState: ObservableObject {
 
     func saveActivity(title: String, start: Date, end: Date, category: String = "Uncategorized", id: UUID? = nil) {
         do {
+            let wasPromptVisible = activityPrompt != nil
             var draft = activityLogbook
             let resolvedCategory = category == "Uncategorized" ? draft.category(for: title) : category
             let entry = try ActivityEntry(id: id ?? UUID(), title: title, startAt: start, endAt: end, category: resolvedCategory)
@@ -428,6 +429,7 @@ final class AppState: ObservableObject {
             activityLogbook = draft
             activityPrompt = nil
             errorMessage = nil
+            if wasPromptVisible { FloatingPanelManager.shared.hideQuickLog() }
         } catch { errorMessage = error.localizedDescription }
     }
 
@@ -452,7 +454,10 @@ final class AppState: ObservableObject {
         catch { errorMessage = error.localizedDescription }
     }
 
-    func skipActivityPrompt() { activityPrompt = nil }
+    func skipActivityPrompt() {
+        activityPrompt = nil
+        FloatingPanelManager.shared.hideQuickLog()
+    }
 
     func addShelfFile() {
         let panel = NSOpenPanel()
@@ -870,8 +875,9 @@ struct LoopinnApp: App {
 
     var body: some Scene {
         MenuBarExtra("Loopinn", systemImage: "circle.hexagongrid.fill") {
-            MenuContent(state: state)
+            AuraCommandMenu(state: state)
         }
+        .menuBarExtraStyle(.window)
         Window("Loopinn", id: "dashboard") {
             DashboardView(state: state)
                 .frame(minWidth: 900, minHeight: 600)
