@@ -141,7 +141,7 @@ final class FloatingPanelManager: ObservableObject {
     }
 
     func showPomodoro(state: AppState) {
-        show(id: pomodoroID, title: "Focus timer", size: NSSize(width: 330, height: 270), state: state, content: AnyView(FloatingPomodoroView(state: state)))
+        show(id: pomodoroID, title: "Focus timer", size: NSSize(width: 330, height: 340), state: state, content: AnyView(FloatingPomodoroView(state: state)))
     }
 
     func showRipple(state: AppState) {
@@ -185,7 +185,7 @@ final class FloatingPanelManager: ObservableObject {
         panel.titleVisibility = .visible
         panel.hasShadow = true
         panel.minSize = NSSize(width: id == quickLogID ? 340 : 280,
-                               height: id == rippleID ? 330 : (id == quickLogID ? 250 : 255))
+                               height: id == rippleID ? 330 : (id == quickLogID ? 250 : (id == pomodoroID ? 310 : 255)))
         panel.setFrameAutosaveName("Loopinn.\(id).Panel")
         if id == quickLogID { panel.setContentSize(NSSize(width: 380, height: 260)) }
         if let screen = NSScreen.screens.first(where: { $0.visibleFrame.contains(NSPoint(x: panel.frame.midX, y: panel.frame.midY)) }) ?? NSScreen.main {

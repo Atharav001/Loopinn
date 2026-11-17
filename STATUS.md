@@ -1,5 +1,7 @@
 # Build status dashboard
 
+**18 November 2026 Pomodoro editing:** Focus and short-rest durations are directly editable in the floating timer and Focus screen. Active countdowns keep their deadline, and the next phase uses the new length. Release build and 54/54 tests passed; UI acceptance pending.
+
 **18 November 2026 screen alert:** Pomodoro and Ripple now show a click-through display-edge glow and status cue on starts and alerts. Duration is configurable from 1 to 6 seconds in Settings and Focus. Release build and 53/53 tests passed; live visual acceptance pending.
 
 **17 November 2026 timer alert:** Pomodoro and Ripple floating windows briefly highlight their edge on timer starts and transitions, with their existing distinct tones. Reduced Motion and mute settings are respected. Release build and 53/53 tests passed; runtime audiovisual acceptance pending.

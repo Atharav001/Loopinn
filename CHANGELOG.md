@@ -2,6 +2,10 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 18 November 2026 — editable Pomodoro focus and rest (in review)
+- Added direct focus and short-rest minute controls to the floating Pomodoro window. Focus screen controls remain available during a session; edits apply to the next phase without changing the active deadline.
+- Preserved the original active focus duration for history when settings change mid-session. Release build and 54 core tests passed, including a new edit-during-session check; runtime UI acceptance remains pending.
+
 ## 18 November 2026 — screen-wide timer alert (in review)
 - Moved the timer transition glow from floating-window borders to a click-through overlay around each display, with a small status cue. The overlay closes automatically.
 - Added a persisted 1–6 second alert duration control in Settings and Focus. Existing sound, effect strength, mute and Reduce Motion preferences apply. Release build and 53 core tests passed; live visual acceptance remains pending.

@@ -95,7 +95,7 @@ struct FocusDashboardView: View {
     private var pomodoroSettingsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Pomodoro rhythm").font(.headline)
-            Text("Adjust the work and break pattern before starting a session.")
+            Text("Changes during a session apply to the next phase.")
                 .font(.subheadline).foregroundStyle(.secondary)
             Stepper("Focus: \(state.pomodoro.focusMinutes) min", value: Binding(
                 get: { state.pomodoro.focusMinutes },
@@ -138,7 +138,6 @@ struct FocusDashboardView: View {
                 set: { state.setFocusEffects(duration: $0) }
             ), in: 1...6, step: 0.5)
         }
-        .disabled(state.pomodoro.status == .running || state.pomodoro.status == .paused)
         .padding(24)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
@@ -316,7 +315,7 @@ struct FloatingPomodoroView: View {
     @ObservedObject var state: AppState
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             HStack {
                 Text(state.pomodoro.mode == .deepWork ? "Deep Work" : "Cycle \(state.pomodoro.completedCycles + 1)")
                     .font(.caption).foregroundStyle(.secondary)
@@ -338,11 +337,42 @@ struct FloatingPomodoroView: View {
                 }
                 Button("Reset", systemImage: "arrow.counterclockwise") { state.resetPomodoro() }
             }
+            if state.pomodoro.mode == .pomodoro {
+                Divider()
+                ViewThatFits(in: .horizontal) {
+                  HStack(spacing: 8) { durationControls }
+                  VStack(alignment: .leading, spacing: 5) { durationControls }
+                }
+                .font(.caption)
+                Text("Changes apply to the next phase")
+                    .font(.caption2).foregroundStyle(.secondary)
+            }
         }
         .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(state.settings.focusEffectsEnabled != false && state.pomodoro.status == .running ? Color.black.opacity(0.12 * (state.settings.focusEffectIntensity ?? 0.5)) : .clear)
         .preferredColorScheme(state.settings.theme.colorScheme)
         .tint(state.settings.accent.color)
+    }
+
+    private var durationControls: some View {
+        Group {
+                    Stepper("Focus \(state.pomodoro.focusMinutes)m", value: Binding(
+                        get: { state.pomodoro.focusMinutes },
+                        set: { updateDurations(focus: $0) }
+                    ), in: 1...180)
+                    Stepper("Rest \(state.pomodoro.breakMinutes)m", value: Binding(
+                        get: { state.pomodoro.breakMinutes },
+                        set: { updateDurations(rest: $0) }
+                    ), in: 1...60)
+        }
+    }
+
+    private func updateDurations(focus: Int? = nil, rest: Int? = nil) {
+        state.configurePomodoro(focus: focus ?? state.pomodoro.focusMinutes,
+                                shortBreak: rest ?? state.pomodoro.breakMinutes,
+                                longBreak: state.pomodoro.longBreakMinutes,
+                                every: state.pomodoro.cyclesBeforeLongBreak,
+                                autoAdvance: state.pomodoro.autoAdvance)
     }
 }

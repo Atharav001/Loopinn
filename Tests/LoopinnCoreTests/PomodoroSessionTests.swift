@@ -3,6 +3,17 @@ import XCTest
 @testable import LoopinnCore
 
 final class PomodoroSessionTests: XCTestCase {
+    func testEditingFocusAndRestPreservesActiveDeadlineAndUsesNewNextPhase() throws {
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        var session = PomodoroSession()
+        session.start(at: start)
+        session.configure(focus: 40, shortBreak: 8, longBreak: 20, longBreakEvery: 4, autoAdvance: true)
+        let restored = try JSONDecoder().decode(PomodoroSession.self, from: JSONEncoder().encode(session))
+        XCTAssertEqual(restored.remaining(at: start.addingTimeInterval(60)), 24 * 60)
+        session.reconcile(at: start.addingTimeInterval(25 * 60))
+        XCTAssertEqual(session.focusHistory.last?.activeSeconds, 25 * 60)
+        XCTAssertEqual(session.remaining(at: start.addingTimeInterval(25 * 60)), 8 * 60)
+    }
     func testPauseResumeAndRelaunchDeadline() throws {
         let now = Date(timeIntervalSince1970: 1_700_000_000)
         var session = PomodoroSession()

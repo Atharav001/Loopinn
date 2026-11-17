@@ -35,12 +35,13 @@ public struct PomodoroSession: Codable, Equatable, Sendable {
     public var focusStartedAt: Date?
     public var activeSegmentStartedAt: Date?
     public var accumulatedFocusSeconds: TimeInterval = 0
+    public var activeFocusMinutes: Int?
 
     public init() {}
 
     private enum CodingKeys: String, CodingKey {
         case phase, status, focusMinutes, breakMinutes, longBreakMinutes, cyclesBeforeLongBreak, autoAdvance, completedCycles, deadline, pausedRemaining
-        case mode, linkedTaskID, deepWorkMinutes, completedAt, focusHistory, focusStartedAt, activeSegmentStartedAt, accumulatedFocusSeconds
+        case mode, linkedTaskID, deepWorkMinutes, completedAt, focusHistory, focusStartedAt, activeSegmentStartedAt, accumulatedFocusSeconds, activeFocusMinutes
     }
 
     public init(from decoder: Decoder) throws {
@@ -63,6 +64,7 @@ public struct PomodoroSession: Codable, Equatable, Sendable {
         focusStartedAt = try container.decodeIfPresent(Date.self, forKey: .focusStartedAt)
         activeSegmentStartedAt = try container.decodeIfPresent(Date.self, forKey: .activeSegmentStartedAt)
         accumulatedFocusSeconds = try container.decodeIfPresent(TimeInterval.self, forKey: .accumulatedFocusSeconds) ?? 0
+        activeFocusMinutes = try container.decodeIfPresent(Int.self, forKey: .activeFocusMinutes)
     }
 
     public func remaining(at now: Date = .now) -> TimeInterval {
@@ -77,7 +79,7 @@ public struct PomodoroSession: Codable, Equatable, Sendable {
     public mutating func start(at now: Date = .now) {
         guard status == .idle || status == .paused else { return }
         if phase == .focus {
-            if status == .idle { focusStartedAt = now; accumulatedFocusSeconds = 0 }
+            if status == .idle { focusStartedAt = now; accumulatedFocusSeconds = 0; activeFocusMinutes = focusMinutes }
             activeSegmentStartedAt = now
         }
         deadline = now.addingTimeInterval(status == .paused ? (pausedRemaining ?? 0) : remaining(at: now))
@@ -105,7 +107,7 @@ public struct PomodoroSession: Codable, Equatable, Sendable {
     }
 
     public mutating func configure(focus: Int, shortBreak: Int, longBreak: Int, longBreakEvery: Int, autoAdvance: Bool) {
-        guard status == .idle || status == .completed else { return }
+        // Preserve the active deadline; edited lengths apply to the next phase.
         focusMinutes = min(180, max(1, focus))
         breakMinutes = min(60, max(1, shortBreak))
         longBreakMinutes = min(120, max(1, longBreak))
@@ -145,6 +147,7 @@ public struct PomodoroSession: Codable, Equatable, Sendable {
             } else {
                 phase = .focus
                 focusStartedAt = next
+                activeFocusMinutes = focusMinutes
                 activeSegmentStartedAt = next
                 accumulatedFocusSeconds = 0
             }
@@ -166,12 +169,14 @@ public struct PomodoroSession: Codable, Equatable, Sendable {
     }
 
     private mutating func recordFocus(endingAt end: Date) {
-        let start = focusStartedAt ?? end.addingTimeInterval(-Double(focusMinutes * 60))
+        let recordedMinutes = activeFocusMinutes ?? focusMinutes
+        let start = focusStartedAt ?? end.addingTimeInterval(-Double(recordedMinutes * 60))
         let active = accumulatedFocusSeconds + max(0, end.timeIntervalSince(activeSegmentStartedAt ?? end))
-        focusHistory.append(FocusRecord(startAt: start, endAt: end, activeSeconds: min(Double(focusMinutes * 60), max(0, active)), mode: mode, taskID: linkedTaskID))
+        focusHistory.append(FocusRecord(startAt: start, endAt: end, activeSeconds: min(Double(recordedMinutes * 60), max(0, active)), mode: mode, taskID: linkedTaskID))
         focusStartedAt = nil
         activeSegmentStartedAt = nil
         accumulatedFocusSeconds = 0
+        activeFocusMinutes = nil
     }
 }
 
