@@ -32,19 +32,19 @@ final class FloatingPanelManager: ObservableObject {
     }
 
     func showTasks(state: AppState) {
-        show(id: tasksID, title: "Loopinn Tasks", size: NSSize(width: 360, height: 450), state: state, content: AnyView(FloatingTasksView(state: state)))
+        show(id: tasksID, title: "Tasks", size: NSSize(width: 340, height: 390), state: state, content: AnyView(FloatingTasksView(state: state)))
     }
 
     func showPomodoro(state: AppState) {
-        show(id: pomodoroID, title: "Loopinn Focus", size: NSSize(width: 350, height: 330), state: state, content: AnyView(FloatingPomodoroView(state: state)))
+        show(id: pomodoroID, title: "Focus timer", size: NSSize(width: 330, height: 270), state: state, content: AnyView(FloatingPomodoroView(state: state)))
     }
 
     func showRipple(state: AppState) {
-        show(id: rippleID, title: "Ripple Focus", size: NSSize(width: 370, height: 420), state: state, content: AnyView(RippleFocusView(state: state)))
+        show(id: rippleID, title: "Ripple Focus", size: NSSize(width: 340, height: 350), state: state, content: AnyView(RippleFocusView(state: state)))
     }
 
     func showQuickLog(state: AppState) {
-        show(id: quickLogID, title: "Log activity", size: NSSize(width: 440, height: 400), state: state, content: AnyView(QuickLogView(state: state)))
+        show(id: quickLogID, title: "Log activity", size: NSSize(width: 420, height: 350), state: state, content: AnyView(QuickLogView(state: state)))
     }
 
     func hideQuickLog() {
@@ -78,8 +78,8 @@ final class FloatingPanelManager: ObservableObject {
         panel.titlebarAppearsTransparent = false
         panel.titleVisibility = .visible
         panel.hasShadow = true
-        panel.minSize = NSSize(width: id == quickLogID ? 390 : 280,
-                               height: id == rippleID ? 390 : (id == quickLogID ? 380 : 285))
+        panel.minSize = NSSize(width: id == quickLogID ? 380 : 280,
+                               height: id == rippleID ? 330 : (id == quickLogID ? 330 : 255))
         panel.setFrameAutosaveName("Loopinn.\(id).Panel")
         if let screen = NSScreen.screens.first(where: { $0.visibleFrame.contains(NSPoint(x: panel.frame.midX, y: panel.frame.midY)) }) ?? NSScreen.main {
             var frame = panel.frame
@@ -107,7 +107,6 @@ final class FloatingPanelManager: ObservableObject {
 
 private struct FloatingPanelChrome: View {
     @ObservedObject private var manager = FloatingPanelManager.shared
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var hoveringPin = false
     let id: String
     let title: String
@@ -134,18 +133,14 @@ private struct FloatingPanelChrome: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 10) {
+            HStack(spacing: 9) {
                 Image(systemName: icon)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 13, weight: .medium))
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(accent)
-                    .frame(width: 32, height: 32)
-                    .background(accent.opacity(0.15), in: RoundedRectangle(cornerRadius: 9))
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(title).font(.subheadline.weight(.semibold)).lineLimit(1)
-                    Text(manager.isPinned(id) ? "Always on top" : "Regular window")
-                        .font(.system(size: 10)).foregroundStyle(.secondary)
-                }
+                    .frame(width: 28, height: 28)
+                    .background(accent.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+                Text(title).font(.system(size: 13, weight: .semibold)).lineLimit(1)
                 Spacer()
                 Button {
                     if id == "tasks" { state.setPinFloatingTasks(!manager.isPinned(id)) }
@@ -153,28 +148,24 @@ private struct FloatingPanelChrome: View {
                 } label: {
                     Image(systemName: manager.isPinned(id) ? "pin.fill" : "pin")
                         .font(.system(size: 12, weight: .semibold))
-                        .frame(width: 32, height: 28)
+                        .frame(width: 30, height: 28)
                         .foregroundStyle(manager.isPinned(id) ? accent : Color.secondary)
-                        .background(accent.opacity(hoveringPin ? 0.25 : 0.12), in: RoundedRectangle(cornerRadius: 8))
-                        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(accent.opacity(hoveringPin ? 0.45 : 0.15)))
-                        .scaleEffect(hoveringPin && !reduceMotion ? 1.08 : 1)
+                        .background(hoveringPin ? accent.opacity(0.12) : Color.clear, in: RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
                 .onHover { hovering in
-                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) { hoveringPin = hovering }
+                    withAnimation(.easeOut(duration: 0.15)) { hoveringPin = hovering }
                 }
                 .help(manager.isPinned(id) ? "Unpin window from the top" : "Pin window above other apps")
                 .accessibilityLabel(manager.isPinned(id) ? "Unpin window" : "Pin window")
             }
-            .padding(.leading, 18).padding(.trailing, 12).padding(.top, 9).padding(.bottom, 9)
-            .background(LinearGradient(colors: [accent.opacity(0.18), Color(nsColor: .windowBackgroundColor).opacity(0.85)],
-                                       startPoint: .topLeading, endPoint: .bottomTrailing))
-            .overlay(alignment: .bottom) { Rectangle().fill(accent.opacity(0.25)).frame(height: 1) }
+            .padding(.horizontal, 16).padding(.vertical, 8)
+            .background(Color(nsColor: .windowBackgroundColor).opacity(0.7))
+            Divider()
             content.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .background(.regularMaterial)
     }
 }
 
@@ -189,11 +180,9 @@ private struct FloatingTasksView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Label("Tasks", systemImage: "checklist").font(.headline)
-                Spacer()
-                Text("\(state.workspace.tasks.filter { $0.completedAt == nil }.count) open")
+                Text("\(state.workspace.tasks.filter { $0.completedAt == nil }.count) open tasks")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Picker("List", selection: $selectedListID) {
@@ -206,12 +195,14 @@ private struct FloatingTasksView: View {
                 Button("Add", systemImage: "plus", action: addTask).labelStyle(.iconOnly)
                     .buttonStyle(.borderedProminent)
             }
-            Divider()
             if visibleTasks.isEmpty {
-                ContentUnavailableView("All caught up", systemImage: "checkmark.circle")
+                VStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle").font(.title2).foregroundStyle(.tertiary)
+                    Text("All caught up").font(.subheadline).foregroundStyle(.secondary)
+                }.frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 10) {
+                    LazyVStack(alignment: .leading, spacing: 6) {
                         ForEach(visibleTasks) { task in
                             HStack(alignment: .top) {
                                 Button {
@@ -223,16 +214,15 @@ private struct FloatingTasksView: View {
                                 Text(task.title).lineLimit(2)
                                 Spacer(minLength: 0)
                             }
-                            .padding(10)
-                            .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 10))
+                            .padding(9)
+                            .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 9))
                         }
                     }
                 }
             }
         }
-        .padding(18)
+        .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.ultraThinMaterial)
         .preferredColorScheme(state.settings.theme.colorScheme)
         .tint(state.settings.accent.color)
     }

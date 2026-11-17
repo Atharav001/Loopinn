@@ -312,15 +312,14 @@ struct FloatingPomodoroView: View {
     @ObservedObject var state: AppState
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 10) {
             HStack {
-                Label("Focus timer", systemImage: "timer").font(.headline)
-                Spacer()
                 Text(state.pomodoro.mode == .deepWork ? "Deep Work" : "Cycle \(state.pomodoro.completedCycles + 1)")
                     .font(.caption).foregroundStyle(.secondary)
+                Spacer()
             }
             Text(String(format: "%02d:%02d", Int(ceil(state.pomodoro.remaining())) / 60, Int(ceil(state.pomodoro.remaining())) % 60))
-                .font(.system(size: 52, weight: .medium, design: .rounded)).monospacedDigit()
+                .font(.system(size: 46, weight: .medium, design: .rounded)).monospacedDigit()
             Text(state.pomodoro.mode == .deepWork ? "DEEP WORK" : (state.pomodoro.phase == .focus ? "FOCUS" : "BREAK"))
                 .font(.caption.weight(.semibold)).tracking(3).foregroundStyle(.secondary)
             if state.pomodoro.mode == .deepWork, let id = state.pomodoro.linkedTaskID {
@@ -336,9 +335,8 @@ struct FloatingPomodoroView: View {
                 Button("Reset", systemImage: "arrow.counterclockwise") { state.resetPomodoro() }
             }
         }
-        .padding(24)
+        .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.ultraThinMaterial)
         .background(state.settings.focusEffectsEnabled != false && state.pomodoro.status == .running ? Color.black.opacity(0.12 * (state.settings.focusEffectIntensity ?? 0.5)) : .clear)
         .preferredColorScheme(state.settings.theme.colorScheme)
         .tint(state.settings.accent.color)

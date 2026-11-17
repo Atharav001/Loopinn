@@ -2,9 +2,9 @@ import SwiftUI
 
 enum LoopinnDesign {
     static let sidebarWidth: CGFloat = 250
-    static let cardRadius: CGFloat = 18
+    static let cardRadius: CGFloat = 14
     static let panelRadius: CGFloat = 18
-    static let contentSpacing: CGFloat = 24
+    static let contentSpacing: CGFloat = 18
 }
 
 struct LoopinnCard<Content: View>: View {
@@ -16,7 +16,7 @@ struct LoopinnCard<Content: View>: View {
 
     var body: some View {
         content
-            .padding(20)
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: LoopinnDesign.cardRadius))
             .overlay {

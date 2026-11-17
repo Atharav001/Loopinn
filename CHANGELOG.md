@@ -2,6 +2,10 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 17 November 2026 — compact window and menu polish (in review)
+- Unified the menu and Tasks, Focus, Ripple Focus and Log Activity windows around restrained color, compact spacing and simpler headers. Kept pinning, resizing, quick actions and keyboard submission intact.
+- Reduced dashboard card bulk for a more consistent visual rhythm. The unsigned release app builds, 53/53 tests pass, and the rebuilt app launched on macOS; visual acceptance remains pending.
+
 ## 12 November 2026 — quick-log prompt dismissal
 - Saving from the floating quick-log panel, including pressing Enter, now hides that panel only after the activity is saved successfully. Skipping an hourly prompt also hides it.
 - Logging from another app view while an hourly prompt is open closes the stale prompt. Save errors remain visible in the panel so the entered text can be corrected; reopening after success starts with a fresh one-hour manual range.

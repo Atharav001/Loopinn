@@ -12,9 +12,7 @@ struct AuraCommandMenu: View {
     @State private var quickTask = ""
     @State private var quickListID: UUID?
     @State private var justAdded = false
-    @State private var hoveringAdd = false
     @FocusState private var quickFocused: Bool
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var lists: [TaskList] { state.workspace.lists }
     private var targetListID: UUID { quickListID.flatMap { id in lists.first(where: { $0.id == id })?.id } ?? lists.first?.id ?? UUID() }
@@ -32,13 +30,9 @@ struct AuraCommandMenu: View {
             Divider().padding(.horizontal, 16)
             footerSection
         }
-        .frame(width: 320)
+        .frame(width: 300)
         .fixedSize(horizontal: true, vertical: true)
-        .background {
-            LinearGradient(colors: [Color(nsColor: .windowBackgroundColor), state.settings.accent.color.opacity(0.09), Color(nsColor: .windowBackgroundColor)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background(.regularMaterial)
         .onAppear { quickListID = targetListID }
         .onChange(of: lists.map(\.id)) { _, _ in quickListID = targetListID }
         .preferredColorScheme(state.settings.theme.colorScheme)
@@ -51,21 +45,20 @@ struct AuraCommandMenu: View {
     }
 
     private var headerSection: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Image(systemName: "circle.hexagongrid.fill")
-                .font(.system(size: 17, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
                 .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(.white)
-                .frame(width: 38, height: 38)
-                .background(LinearGradient(colors: [state.settings.accent.color, state.settings.accent.color.opacity(0.55)], startPoint: .topLeading, endPoint: .bottomTrailing),
-                            in: RoundedRectangle(cornerRadius: 11))
+                .frame(width: 32, height: 32)
+                .background(state.settings.accent.color, in: RoundedRectangle(cornerRadius: 9))
             VStack(alignment: .leading, spacing: 2) {
                 Text("Loopinn").font(.system(size: 15, weight: .semibold))
                 Text("Command Center").font(.system(size: 11)).foregroundStyle(.secondary)
             }
             Spacer()
         }
-        .padding(.horizontal, 18).padding(.top, 14).padding(.bottom, 10)
+        .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 10)
     }
 
     private var quickAddSection: some View {
@@ -87,34 +80,27 @@ struct AuraCommandMenu: View {
                     .font(.system(size: 13, weight: .medium))
                     .focused($quickFocused)
                     .onSubmit(submitQuickTask)
-                    .padding(.horizontal, 11).padding(.vertical, 9)
-                    .background(Color.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 10))
-                    .overlay(RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(state.settings.accent.color.opacity(quickFocused ? 0.75 : 0.16), lineWidth: quickFocused ? 2 : 1))
+                    .padding(.horizontal, 10).padding(.vertical, 8)
+                    .background(Color.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 9))
                 Button(action: submitQuickTask) {
                     Image(systemName: "arrow.up")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(.white)
-                        .frame(width: 35, height: 35)
-                        .background(LinearGradient(colors: [state.settings.accent.color, state.settings.accent.color.opacity(0.7)],
-                                                   startPoint: .topLeading, endPoint: .bottomTrailing), in: Circle())
-                        .scaleEffect(hoveringAdd && !reduceMotion ? 1.08 : 1)
+                        .frame(width: 32, height: 32)
+                        .background(state.settings.accent.color, in: RoundedRectangle(cornerRadius: 9))
                 }
                 .buttonStyle(.plain)
-                .onHover { hovering in
-                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) { hoveringAdd = hovering }
-                }
                 .accessibilityLabel("Add task")
             }
             if let error = state.errorMessage {
                 Text(error).font(.caption2).foregroundStyle(.red).lineLimit(2)
             }
         }
-        .padding(.horizontal, 14).padding(.vertical, 10)
+        .padding(.horizontal, 14).padding(.vertical, 9)
     }
 
     private var commandCenterSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
             sectionLabel("QUICK ACTIONS")
             actionRow(id: "pomodoro", icon: "timer", title: "Pomodoro Timer", subtitle: "Floating focus and break timer") {
                 launch { FloatingPanelManager.shared.showPomodoro(state: state) }
@@ -129,7 +115,7 @@ struct AuraCommandMenu: View {
                 launch { FloatingPanelManager.shared.showQuickLog(state: state) }
             }
         }
-        .padding(.horizontal, 14).padding(.vertical, 10)
+        .padding(.horizontal, 14).padding(.vertical, 8)
     }
 
     private var footerSection: some View {
@@ -151,14 +137,13 @@ struct AuraCommandMenu: View {
         let accent = rowColor(for: id)
         let isHovered = hoveredButton == id
         return Button(action: action) {
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 Image(systemName: icon)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 14, weight: .medium))
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(accent)
-                    .frame(width: 36, height: 36)
-                    .background(LinearGradient(colors: [accent.opacity(0.25), accent.opacity(0.09)], startPoint: .topLeading, endPoint: .bottomTrailing),
-                                in: RoundedRectangle(cornerRadius: 10))
+                    .frame(width: 30, height: 30)
+                    .background(accent.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title).font(.system(size: 12, weight: .semibold))
                     Text(subtitle).font(.system(size: 10)).foregroundStyle(.secondary)
@@ -168,15 +153,14 @@ struct AuraCommandMenu: View {
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(isHovered ? accent : Color.secondary)
             }
-            .padding(.horizontal, 12).padding(.vertical, 10)
+            .padding(.horizontal, 10).padding(.vertical, 7)
             .contentShape(Rectangle())
-            .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(isHovered ? accent.opacity(0.14) : Color.primary.opacity(0.045)))
-            .scaleEffect(isHovered && !reduceMotion ? 1.015 : 1)
+            .background(RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .fill(isHovered ? accent.opacity(0.11) : Color.primary.opacity(0.035)))
         }
         .buttonStyle(.plain)
         .onHover { hovering in
-            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.16)) { hoveredButton = hovering ? id : nil }
+            withAnimation(.easeOut(duration: 0.16)) { hoveredButton = hovering ? id : nil }
         }
     }
 

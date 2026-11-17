@@ -11,8 +11,8 @@ struct QuickLogView: View {
     private let suggestions = ["Coding", "Deep Work", "Meeting", "Planning", "Research", "Break"]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label("What did you do?", systemImage: "clock.badge.questionmark").font(.title2.bold())
+        VStack(alignment: .leading, spacing: 12) {
+            Text("What did you do?").font(.subheadline.weight(.semibold))
             if let interval = state.activityPrompt {
                 Text("\(interval.start.formatted(date: .omitted, time: .shortened)) – \(interval.end.formatted(date: .omitted, time: .shortened))")
                     .foregroundStyle(.secondary)
@@ -57,9 +57,8 @@ struct QuickLogView: View {
                         .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
         }
-        .padding(24)
+        .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.ultraThinMaterial)
         .onAppear { focused = true }
     }
 
