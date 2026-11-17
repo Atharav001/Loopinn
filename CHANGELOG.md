@@ -2,6 +2,69 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 18 November 2026 — editable Pomodoro focus and rest (in review)
+- Added direct focus and short-rest minute controls to the floating Pomodoro window. Focus screen controls remain available during a session; edits apply to the next phase without changing the active deadline.
+- Preserved the original active focus duration for history when settings change mid-session. Release build and 54 core tests passed, including a new edit-during-session check; runtime UI acceptance remains pending.
+
+## 18 November 2026 — screen-wide timer alert (in review)
+- Moved the timer transition glow from floating-window borders to a click-through overlay around each display, with a small status cue. The overlay closes automatically.
+- Added a persisted 1–6 second alert duration control in Settings and Focus. Existing sound, effect strength, mute and Reduce Motion preferences apply. Release build and 53 core tests passed; live visual acceptance remains pending.
+
+## 17 November 2026 — focus transition alert (in review)
+- Added a 2.5-second breathing edge highlight to the floating Pomodoro and Ripple windows when timers start or transition. Reduced Motion keeps a steady highlight.
+- Pomodoro start/completion uses the existing Om tone; Ripple start/interval uses its double bell. The sound toggle still mutes both. Release build and 53 core tests passed; live audio and visual acceptance remain pending.
+
+## 17 November 2026 — edge bars and responsive logging (in review)
+- Added collapsible left/right edge bars for floating Tasks, Focus and Ripple, with vertical dragging and one-click expansion.
+- Made Quick Log a compact last-hour prompt that closes on successful Enter/save, and wrapped the Logbook entry form to fit narrower windows.
+- Planner now starts in Week view and emphasizes planning, while Calendar retains month and connected-calendar controls. Release app build passed; live interaction acceptance is still pending.
+
+## 17 November 2026 — compact window and menu polish (in review)
+- Unified the menu and Tasks, Focus, Ripple Focus and Log Activity windows around restrained color, compact spacing and simpler headers. Kept pinning, resizing, quick actions and keyboard submission intact.
+- Reduced dashboard card bulk for a more consistent visual rhythm. The unsigned release app builds, 53/53 tests pass, and the rebuilt app launched on macOS; visual acceptance remains pending.
+
+## 12 November 2026 — quick-log prompt dismissal
+- Saving from the floating quick-log panel, including pressing Enter, now hides that panel only after the activity is saved successfully. Skipping an hourly prompt also hides it.
+- Logging from another app view while an hourly prompt is open closes the stale prompt. Save errors remain visible in the panel so the entered text can be corrected; reopening after success starts with a fresh one-hour manual range.
+
+## 11 November 2026 — responsive calendar and menu dismissal
+- Removed outer accent borders and alert edge glow from the menu and floating timer windows, while retaining colored hover feedback.
+- Reworked the month calendar to fit all seven columns and all visible week rows in the space supplied by the main window. Cell heights and visible event lines adjust as the window changes size; the calendar toolbar wraps when needed. Year mini-months adapt their column count.
+- Menu actions now request dismissal before opening the chosen window, with a native-window fallback if the menu remains key. The quick task button closes the menu after a successful save.
+- Increased practical minimum sizes for the floating windows, made the Ripple dial shrink with its window, and let the quick-log time controls stack at narrow widths. A new core check verifies month-grid row sizing at several heights.
+
+## 11 November 2026 — calendar grid, timesheet lanes and opaque title bars
+- Adapted the Loopin-macOS month grid into a week-by-week Loopinn calendar with weekday headers, timed and all-day event rows, source colors, overflow counts, quick day creation, drag range drafting and read-only details for connected Apple/Google events. Day view now uses the hourly planning grid instead of a simple list.
+- Adapted Loopin's overlap-cluster algorithm for planned and logged timesheet rails. Entries are clipped to the visible range, separate lanes prevent overlaps from hiding one another, and rail entries open their editors. Focused tests cover overlapping and boundary-crossing intervals.
+- Restored standard opaque macOS title bars on floating panels so the traffic-light controls have a solid background. Apple Calendar remains available through EventKit; live Google connection still needs the user's OAuth Desktop client ID.
+
+## 11 November 2026 — persistent floating windows and richer controls
+- Fixed floating panels hiding when Loopinn loses focus by disabling panel hide-on-deactivate. Pinned panels also join all spaces; unpinned panels remain regular windows.
+- Added distinct colored icon tiles, accent borders, gradients and hover responses to the menu actions, task capture and floating-window headers. Motion respects the macOS Reduce Motion preference.
+
+## 11 November 2026 — floating-window pin controls and Ripple double bell
+- Added a visible pin control in the title area of the Tasks, Pomodoro, Ripple Focus and Log Activity windows. Pinning changes each panel's window level, defaults on, and persists independently; the Tasks pin stays in sync with its existing setting.
+- Removed fixed content minimums so panels expand with resizing, with practical window minimums to keep their controls accessible.
+- Gave Ripple Focus a distinct, louder sharp two-strike bell while retaining the existing sound toggle and the Om sound for other focus alerts.
+
+## 11 November 2026 — menu action responsiveness
+- Deferred command execution until the menu-bar popover releases focus, then explicitly brought floating panels and the application window forward. Reopening an existing floating panel now raises it as well.
+- Quick task capture now focuses its field for an empty submission and shows storage errors in the menu instead of failing silently.
+
+## 11 November 2026 — focused menu bar actions
+- Kept only the actions that open floating windows in the menu bar: Pomodoro, Ripple Focus, To-Do Lists and Log Activity. Open Application is the single route to Today, tasks, calendar, Focus, logbook, timesheet, analytics, utilities and settings.
+- Removed the menu scroll area after shortening the action list, so all remaining controls fit in the command center.
+
+## 11 November 2026 — command center visibility and empty workspace repair
+- Fixed the menu bar command list collapsing to zero height. The list has a visible scroll area, and Open Application and Settings stay directly accessible below it.
+- Added menu links for all implemented sections and timer modes, a Start Here launchpad in Today, and clear actions in empty Today and Analytics views.
+- Made the floating Log Activity panel usable without an hourly prompt by allowing an editable time range.
+
+## 11 November 2026 — Aura and Loopin-macOS source adaptation (in review)
+- Adapted Aura's menu bar command center layout and quick task entry to Loopinn's single app state. It exposes the floating Pomodoro, Focus, Ripple Focus, tasks, calendar, logbook, timesheet, quick log, settings and application windows.
+- Adapted Loopin-macOS's interactive mini month year calendar and planned/logged timesheet rails to Loopinn's existing calendar blocks and activity records. Added direct month-day creation, a logbook month picker, and Loopin-style quick suggestions to the hourly logging panel.
+- Kept the existing local store so imported views do not create a second set of tasks or activity logs. No notch code was imported. The unsigned Xcode app build and 50/50 core checks pass; the rebuilt app was relaunched on this Mac. Interactive menu and window acceptance remains pending.
+
 ## 11 November 2026 — local app launch check
 - Rebuilt the unsigned Xcode app with its embedded task widget, launched `dist/Loopinn.app` on macOS, and observed the Loopinn process running. PR #12 macOS CI passed for `236123a`; interactive window and signed widget acceptance remain pending.
 

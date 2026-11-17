@@ -16,8 +16,8 @@
 | FR-05 | P02 | Task details & scheduling | IN REVIEW | PR #1; PR #8 | Due-only and linked-block invariants, first step, estimate and appearance compile; UI smoke pending. |
 | FR-06 | P02 | Sticky floating to-do | IN REVIEW | PR #8 | Keyed always-on-top glass panel, list filter and quick add/complete compile; multi-display UI check pending. |
 | FR-29 | P02 | Task and time-block planning | IN REVIEW | PR #8 | Linked and independent blocks persist; drag and editor paths compile; approval UX and edge checks pending. |
-| FR-24 | P03 | Day/week/month/year calendar | IN REVIEW | PR #8 | Four views and cross-midnight day filtering compile; UI/timezone checks pending. |
-| FR-25 | P03 | Interactive weekly planner | IN REVIEW | PR #8 | Weekly drag create/move/resize plus date editor compile; gesture/overlap UI checks pending. |
+| FR-24 | P03 | Day/week/month/year calendar | IN REVIEW | PR #13 | Responsive full month grid shows timed and all-day Apple/Google events beside local blocks, with drag range drafting; Day and Week use hourly planning columns, and Year has adaptive mini-months. Live UI/timezone checks pending. |
+| FR-25 | P03 | Interactive weekly planner | IN REVIEW | PR #13 | Day/Week drag create/move/resize, month-day add and date editor compile; gesture/overlap UI checks pending. |
 | FR-26 | P03 | Apple Calendar integration | IN REVIEW | PR #8 | EventKit permission read and per-block confirmed publish/remove to writable calendars compile; live permission/revocation tests pending. |
 | FR-27 | P03 | Google Calendar integration | IN REVIEW | PR #8 | Desktop OAuth PKCE, Keychain, calendar listing, bounded API reads/publish/remove to writable calendars compile; client ID/live acceptance pending. |
 | FR-28 | P03 | Calendar filters & holidays | IN REVIEW | PR #8 | Persisted source filters, all-day labels and subscribed regional holiday calendar deduplication; live region acceptance pending. |
@@ -25,13 +25,13 @@
 | FR-09 | P04 | Stopwatch & countdown | IN REVIEW | P04 timer branch | Persisted stopwatch with ordered laps and countdown deadline with single completion transition compile; clock-change and runtime alert acceptance pending. |
 | FR-10 | P04 | Deep Work mode | IN REVIEW | P04 Deep Work branch | Configurable long-focus preset shares Pomodoro state, optional linked task is visible in dashboard and floating timer, and completion does not create an activity log; runtime UI acceptance pending. |
 | FR-11 | P04 | Repeating focus alarms | IN REVIEW | P04 alarm branch | Saved interval deadline, enable/disable, snooze and missed-interval collapse compile; runtime alert and permission behavior pending. |
-| FR-12 | P04 | Focus overlays & effects | IN REVIEW | PR #12 branch | Floating timer and Ripple edge glow compile; multi-display and Reduce Motion acceptance pending. |
-| FR-13 | P04 | Timer alerts & sounds | IN REVIEW | PR #12 branch | Generated 1.5-second Om bell is shared by Ripple, timer completion and reminders; mute and permission acceptance pending. |
+| FR-12 | P04 | Focus overlays & effects | IN REVIEW | PR #13 | Floating timer and Ripple progress effects compile; edge glow was removed by user request. Multi-display and Reduce Motion acceptance pending. |
+| FR-13 | P04 | Timer alerts & sounds | IN REVIEW | PR #13 | Ripple uses a louder two-strike bell; Om remains on timer completion and reminders. Mute and live audio acceptance pending. |
 | FR-14 | P04 | Floating focus widgets | IN REVIEW | PR #8 | Shared timer state in always-on-top glass panel; runtime handoff and display acceptance pending. |
 | FR-15 | P04 | Automatic activity prompts | IN REVIEW | PR #12 branch | Hour-boundary prompts for the previous hour persist their last prompted interval; runtime notification acceptance pending. |
 | FR-16 | P04 | Floating quick-log panel | IN REVIEW | PR #12 branch | Glass always-on-top entry window accepts Enter, save and skip; runtime keyboard acceptance pending. |
 | FR-17 | P04 | Voice activity logging | IN REVIEW | PR #12 branch | Microphone and speech consent gate live dictation; transcript fills an editable form and is never auto-saved; denial and runtime acceptance pending. |
-| FR-18 | P04 | Planned vs actual timeline | IN REVIEW | PR #12 branch | Separate planned and logged rails show day intervals without inferring logs from plans; overlap UI acceptance pending. |
+| FR-18 | P04 | Planned vs actual timeline | IN REVIEW | PR #13 | Separate planned/logged rails clip cross-day intervals, assign overlaps to visible lanes and open entry editors; live UI acceptance pending. |
 | FR-19 | P04 | Manual activity entries | IN REVIEW | PR #12 branch | Create, edit and delete persist; invalid and duplicate intervals are rejected; UI acceptance pending. |
 | FR-20 | P04 | Natural-language time entry | IN REVIEW | PR #12 branch | Explicit AM/PM, noon and midnight ranges fill a reviewable manual form; ambiguous and overnight ranges fall back to manual entry; broader language acceptance pending. |
 | FR-21 | P04 | Smart classification | IN REVIEW | PR #12 branch | Longest matching user rule categorizes logs; unknown remains Uncategorized; correction acceptance pending. |

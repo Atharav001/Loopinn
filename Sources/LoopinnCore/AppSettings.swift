@@ -26,6 +26,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var playAlertSound: Bool?
     public var focusEffectsEnabled: Bool?
     public var focusEffectIntensity: Double?
+    public var alertEffectSeconds: Double?
 
     public init(theme: ThemeMode = .system, accent: AccentChoice = .blue) {
         version = 1
@@ -43,6 +44,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         playAlertSound = true
         focusEffectsEnabled = true
         focusEffectIntensity = 0.5
+        alertEffectSeconds = 2.5
     }
 }
 

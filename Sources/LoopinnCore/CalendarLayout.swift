@@ -6,6 +6,14 @@ public enum CalendarScope: String, CaseIterable, Identifiable, Sendable {
 }
 
 public enum CalendarLayout {
+    public static func monthRowHeight(availableHeight: Double, rowCount: Int, headerHeight: Double = 28) -> Double {
+        max(1, (availableHeight - headerHeight) / Double(max(1, rowCount)))
+    }
+
+    public static func visibleMonthEventCount(cellHeight: Double) -> Int {
+        max(1, min(4, Int((cellHeight - 49) / 19)))
+    }
+
     public static func interval(containing date: Date, scope: CalendarScope, calendar: Calendar = .current) -> DateInterval {
         let component: Calendar.Component
         switch scope {

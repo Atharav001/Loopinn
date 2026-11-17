@@ -95,7 +95,7 @@ struct FocusDashboardView: View {
     private var pomodoroSettingsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Pomodoro rhythm").font(.headline)
-            Text("Adjust the work and break pattern before starting a session.")
+            Text("Changes during a session apply to the next phase.")
                 .font(.subheadline).foregroundStyle(.secondary)
             Stepper("Focus: \(state.pomodoro.focusMinutes) min", value: Binding(
                 get: { state.pomodoro.focusMinutes },
@@ -117,11 +117,11 @@ struct FocusDashboardView: View {
                 get: { state.pomodoro.autoAdvance },
                 set: { configurePomodoro(autoAdvance: $0) }
             ))
-            Toggle("Play the Om bell on timer alerts", isOn: Binding(
+            Toggle("Play bell sounds for timer and Ripple alerts", isOn: Binding(
                 get: { state.settings.playAlertSound != false },
                 set: { state.setPlayAlertSound($0) }
             ))
-            Toggle("Dimming, ripple and edge glow", isOn: Binding(
+            Toggle("Focus animation and dimming", isOn: Binding(
                 get: { state.settings.focusEffectsEnabled != false },
                 set: { state.setFocusEffects(enabled: $0) }
             ))
@@ -133,8 +133,11 @@ struct FocusDashboardView: View {
                 ), in: 0...1)
                 .frame(width: 180)
             }
+            Stepper("Screen alert: \(state.settings.alertEffectSeconds ?? 2.5, specifier: "%.1f") seconds", value: Binding(
+                get: { state.settings.alertEffectSeconds ?? 2.5 },
+                set: { state.setFocusEffects(duration: $0) }
+            ), in: 1...6, step: 0.5)
         }
-        .disabled(state.pomodoro.status == .running || state.pomodoro.status == .paused)
         .padding(24)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
@@ -312,15 +315,14 @@ struct FloatingPomodoroView: View {
     @ObservedObject var state: AppState
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 8) {
             HStack {
-                Label("Focus timer", systemImage: "timer").font(.headline)
-                Spacer()
                 Text(state.pomodoro.mode == .deepWork ? "Deep Work" : "Cycle \(state.pomodoro.completedCycles + 1)")
                     .font(.caption).foregroundStyle(.secondary)
+                Spacer()
             }
             Text(String(format: "%02d:%02d", Int(ceil(state.pomodoro.remaining())) / 60, Int(ceil(state.pomodoro.remaining())) % 60))
-                .font(.system(size: 52, weight: .medium, design: .rounded)).monospacedDigit()
+                .font(.system(size: 46, weight: .medium, design: .rounded)).monospacedDigit()
             Text(state.pomodoro.mode == .deepWork ? "DEEP WORK" : (state.pomodoro.phase == .focus ? "FOCUS" : "BREAK"))
                 .font(.caption.weight(.semibold)).tracking(3).foregroundStyle(.secondary)
             if state.pomodoro.mode == .deepWork, let id = state.pomodoro.linkedTaskID {
@@ -335,33 +337,42 @@ struct FloatingPomodoroView: View {
                 }
                 Button("Reset", systemImage: "arrow.counterclockwise") { state.resetPomodoro() }
             }
-        }
-        .padding(24)
-        .frame(minWidth: 300, minHeight: 210)
-        .background(.ultraThinMaterial)
-        .background(state.settings.focusEffectsEnabled != false && state.pomodoro.status == .running ? Color.black.opacity(0.12 * (state.settings.focusEffectIntensity ?? 0.5)) : .clear)
-        .overlay {
-            TimelineView(.periodic(from: .now, by: 0.25)) { timeline in
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(state.settings.accent.color.opacity(state.settings.focusEffectsEnabled != false && (state.alertGlowUntil ?? .distantPast) > timeline.date ? 0.3 + 0.6 * (state.settings.focusEffectIntensity ?? 0.5) : 0), lineWidth: 5)
-                    .shadow(color: state.settings.accent.color.opacity(state.settings.focusEffectsEnabled != false && (state.alertGlowUntil ?? .distantPast) > timeline.date ? 0.7 : 0), radius: 18)
-                    .allowsHitTesting(false)
-            }
-        }
-        .overlay {
-            if state.settings.focusEffectsEnabled != false && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
-                TimelineView(.periodic(from: .now, by: 0.05)) { timeline in
-                    let remaining = (state.alertGlowUntil ?? .distantPast).timeIntervalSince(timeline.date)
-                    if remaining > 0 && remaining <= 1.5 {
-                        Circle()
-                            .stroke(state.settings.accent.color.opacity(max(0, remaining / 1.5) * (state.settings.focusEffectIntensity ?? 0.5)), lineWidth: 4)
-                            .frame(width: 40 + 180 * (1 - remaining / 1.5), height: 40 + 180 * (1 - remaining / 1.5))
-                            .allowsHitTesting(false)
-                    }
+            if state.pomodoro.mode == .pomodoro {
+                Divider()
+                ViewThatFits(in: .horizontal) {
+                  HStack(spacing: 8) { durationControls }
+                  VStack(alignment: .leading, spacing: 5) { durationControls }
                 }
+                .font(.caption)
+                Text("Changes apply to the next phase")
+                    .font(.caption2).foregroundStyle(.secondary)
             }
         }
+        .padding(16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(state.settings.focusEffectsEnabled != false && state.pomodoro.status == .running ? Color.black.opacity(0.12 * (state.settings.focusEffectIntensity ?? 0.5)) : .clear)
         .preferredColorScheme(state.settings.theme.colorScheme)
         .tint(state.settings.accent.color)
+    }
+
+    private var durationControls: some View {
+        Group {
+                    Stepper("Focus \(state.pomodoro.focusMinutes)m", value: Binding(
+                        get: { state.pomodoro.focusMinutes },
+                        set: { updateDurations(focus: $0) }
+                    ), in: 1...180)
+                    Stepper("Rest \(state.pomodoro.breakMinutes)m", value: Binding(
+                        get: { state.pomodoro.breakMinutes },
+                        set: { updateDurations(rest: $0) }
+                    ), in: 1...60)
+        }
+    }
+
+    private func updateDurations(focus: Int? = nil, rest: Int? = nil) {
+        state.configurePomodoro(focus: focus ?? state.pomodoro.focusMinutes,
+                                shortBreak: rest ?? state.pomodoro.breakMinutes,
+                                longBreak: state.pomodoro.longBreakMinutes,
+                                every: state.pomodoro.cyclesBeforeLongBreak,
+                                autoAdvance: state.pomodoro.autoAdvance)
     }
 }

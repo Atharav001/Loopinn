@@ -4,36 +4,55 @@ import SwiftUI
 struct QuickLogView: View {
     @ObservedObject var state: AppState
     @State private var title = ""
+    @State private var category = "Uncategorized"
     @FocusState private var focused: Bool
+    private let suggestions = ["Coding", "Deep Work", "Meeting", "Planning", "Research", "Break"]
+    private var lastHour: DateInterval {
+        let end = Calendar.current.dateInterval(of: .hour, for: .now)?.start ?? Date()
+        return DateInterval(start: Calendar.current.date(byAdding: .hour, value: -1, to: end) ?? end.addingTimeInterval(-3600), end: end)
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label("What did you do?", systemImage: "clock.badge.questionmark").font(.title2.bold())
-            if let interval = state.activityPrompt {
-                Text("\(interval.start.formatted(date: .omitted, time: .shortened)) – \(interval.end.formatted(date: .omitted, time: .shortened))")
-                    .foregroundStyle(.secondary)
-                TextField("Describe the last hour", text: $title)
-                    .focused($focused).onSubmit(save)
+        VStack(alignment: .leading, spacing: 8) {
+            Text("What did you do in the last hour?").font(.subheadline.weight(.semibold))
+            Text("\(lastHour.start.formatted(date: .omitted, time: .shortened)) – \(lastHour.end.formatted(date: .omitted, time: .shortened))")
+                .font(.caption).foregroundStyle(.secondary)
+            TextField("What did you work on?", text: $title)
+                .focused($focused).onSubmit(save)
+            if let error = state.errorMessage {
+                Text(error).font(.caption).foregroundStyle(.red).lineLimit(2)
+            }
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(suggestions, id: \.self) { suggestion in
+                            Button(suggestion) {
+                                if title.isEmpty { title = suggestion }
+                                category = suggestion == "Break" ? "Break" : "Work"
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+                    }
+                }
                 HStack {
-                    Button("Skip") { state.skipActivityPrompt() }
+                    Button("Dismiss") { title = ""; state.skipActivityPrompt() }
                     Spacer()
                     Button("Log activity", action: save).buttonStyle(.borderedProminent)
                         .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
-            } else {
-                ContentUnavailableView("No hour to log", systemImage: "checkmark.circle")
-            }
         }
-        .padding(24)
-        .frame(minWidth: 350, minHeight: 230)
-        .background(.ultraThinMaterial)
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear { focused = true }
     }
 
     private func save() {
-        guard let interval = state.activityPrompt else { return }
-        state.saveActivity(title: title, start: interval.start, end: interval.end)
-        if state.errorMessage == nil { title = "" }
+        let interval = lastHour
+        state.saveActivity(title: title, start: interval.start, end: interval.end, category: category)
+        if state.errorMessage == nil {
+            title = ""
+            FloatingPanelManager.shared.hideQuickLog()
+        }
     }
 }
 
@@ -67,6 +86,7 @@ struct ActivityLogView: View {
                     Button("Export JSON") { state.exportActivities(asJSON: true) }
                     DatePicker("Day", selection: $selectedDate, displayedComponents: .date).labelsHidden()
                 }
+                logbookMonth
                 HStack {
                     Toggle("Quiet hours", isOn: Binding(
                         get: { state.activityLogbook.quietHours != nil },
@@ -104,20 +124,22 @@ struct ActivityLogView: View {
                 }
                 .padding(16)
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
-                HStack {
-                    TextField("What did you do?", text: $title).onSubmit(add)
-                    Button(voice.isRecording ? "Stop dictation" : "Dictate", systemImage: voice.isRecording ? "stop.fill" : "mic.fill") {
-                        if voice.isRecording { voice.stop(); if !voice.transcript.isEmpty { title = voice.transcript } }
-                        else { voice.start() }
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        TextField("What did you do?", text: $title).onSubmit(add)
+                        Button(voice.isRecording ? "Stop dictation" : "Dictate", systemImage: voice.isRecording ? "stop.fill" : "mic.fill") {
+                            if voice.isRecording { voice.stop(); if !voice.transcript.isEmpty { title = voice.transcript } }
+                            else { voice.start() }
+                        }.labelStyle(.iconOnly)
+                        Button(editingID == nil ? "Add activity" : "Save changes", action: add).buttonStyle(.borderedProminent)
                     }
-                    DatePicker("From", selection: $start, displayedComponents: [.date, .hourAndMinute])
-                    DatePicker("To", selection: $end, displayedComponents: [.date, .hourAndMinute])
-                    Picker("Category", selection: $category) {
-                        ForEach(categories, id: \.self) { Text($0).tag($0) }
+                    ViewThatFits(in: .horizontal) {
+                        HStack { activityTimeFields }
+                        VStack(alignment: .leading, spacing: 8) { activityTimeFields }
                     }
-                    .frame(width: 155)
-                    Button(editingID == nil ? "Add" : "Save", action: add).buttonStyle(.borderedProminent)
                 }
+                .padding(14)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
                 if let error = voice.errorMessage { Text(error).font(.caption).foregroundStyle(.red) }
                 if voice.isRecording { Text(voice.transcript.isEmpty ? "Listening…" : voice.transcript).font(.caption).foregroundStyle(.secondary) }
                 HStack {
@@ -161,6 +183,51 @@ struct ActivityLogView: View {
     private func add() {
         state.saveActivity(title: title, start: start, end: end, category: category, id: editingID)
         if state.errorMessage == nil { title = ""; editingID = nil }
+    }
+
+    private var activityTimeFields: some View {
+        Group {
+            DatePicker("From", selection: $start, displayedComponents: [.date, .hourAndMinute])
+            DatePicker("To", selection: $end, displayedComponents: [.date, .hourAndMinute])
+            Picker("Category", selection: $category) {
+                ForEach(categories, id: \.self) { Text($0).tag($0) }
+            }.frame(width: 145)
+        }
+    }
+
+    private var logbookMonth: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Button("Previous month", systemImage: "chevron.left") { shiftMonth(-1) }.labelStyle(.iconOnly)
+                Text(selectedDate.formatted(.dateTime.month(.wide).year())).font(.headline)
+                Button("Next month", systemImage: "chevron.right") { shiftMonth(1) }.labelStyle(.iconOnly)
+                Spacer()
+                Button("Today") { selectedDate = .now }
+            }
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 5), count: 7), spacing: 5) {
+                ForEach(CalendarLayout.gridDays(for: selectedDate), id: \.self) { day in
+                    let count = state.activityLogbook.entries.filter { Calendar.current.isDate($0.startAt, inSameDayAs: day) }.count
+                    Button { selectedDate = day } label: {
+                        VStack(spacing: 4) {
+                            Text(day.formatted(.dateTime.day())).font(.subheadline.weight(Calendar.current.isDate(day, inSameDayAs: selectedDate) ? .bold : .regular))
+                            Circle().fill(count > 0 ? Color.accentColor : .clear).frame(width: 4, height: 4)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 36)
+                        .background(Calendar.current.isDate(day, inSameDayAs: selectedDate) ? Color.accentColor.opacity(0.17) : .clear,
+                                    in: RoundedRectangle(cornerRadius: 8))
+                        .opacity(Calendar.current.isDate(day, equalTo: selectedDate, toGranularity: .month) ? 1 : 0.35)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(day.formatted(date: .complete, time: .omitted)), \(count) logged activities")
+                }
+            }
+        }
+        .padding(16)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func shiftMonth(_ amount: Int) {
+        selectedDate = Calendar.current.date(byAdding: .month, value: amount, to: selectedDate) ?? selectedDate
     }
 
     private func reviewTime() {

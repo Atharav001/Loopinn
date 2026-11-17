@@ -9,19 +9,20 @@ struct RippleFocusView: View {
     private let intervals = [10, 30, 60, 120, 180, 300, 600]
 
     var body: some View {
-        VStack(spacing: 18) {
-            Label("Ripple Focus", systemImage: "circle.dotted.circle").font(.title2.bold())
+        GeometryReader { geometry in
+        let dialSize = min(124, max(84, geometry.size.height - 180))
+        VStack(spacing: 10) {
             TimelineView(.periodic(from: .now, by: 0.25)) { timeline in
                 let remaining = max(0, Int(ceil(nextAlert?.timeIntervalSince(timeline.date) ?? Double(interval))))
                 ZStack {
-                    Circle().stroke(state.settings.accent.color.opacity(0.18), lineWidth: 12)
+                    Circle().stroke(state.settings.accent.color.opacity(0.12), lineWidth: 8)
                     Circle().trim(from: 0, to: nextAlert == nil ? 0 : CGFloat(1 - Double(remaining) / Double(interval)))
-                        .stroke(state.settings.accent.color, style: StrokeStyle(lineWidth: 12, lineCap: .round))
+                        .stroke(state.settings.accent.color, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                         .rotationEffect(.degrees(-90))
                         .animation(reduceMotion ? nil : .easeInOut(duration: 0.25), value: remaining)
-                    Text("\(remaining)s").font(.system(size: 36, weight: .semibold, design: .rounded)).monospacedDigit()
+                    Text("\(remaining)s").font(.system(size: 30, weight: .medium, design: .rounded)).monospacedDigit()
                 }
-                .frame(width: 150, height: 150)
+                .frame(width: dialSize, height: dialSize)
             }
             Picker("Alert every", selection: $interval) {
                 ForEach(intervals, id: \.self) { seconds in
@@ -29,27 +30,25 @@ struct RippleFocusView: View {
                 }
             }
             .onChange(of: interval) { _, _ in if nextAlert != nil { nextAlert = .now.addingTimeInterval(Double(interval)) } }
+            Text("A sharp double bell sounds at each interval.")
+                .font(.caption).foregroundStyle(.secondary)
             HStack {
                 Button(nextAlert == nil ? "Start" : "Stop") {
-                    nextAlert = nextAlert == nil ? .now.addingTimeInterval(Double(interval)) : nil
+                    if nextAlert == nil {
+                        nextAlert = .now.addingTimeInterval(Double(interval))
+                        state.triggerRippleAlert()
+                    } else { nextAlert = nil }
                 }
                 .buttonStyle(.borderedProminent)
                 if nextAlert != nil { Button("Restart") { nextAlert = .now.addingTimeInterval(Double(interval)) } }
             }
         }
-        .padding(24)
-        .frame(minWidth: 310, minHeight: 270)
-        .background(.ultraThinMaterial)
-        .background {
-            TimelineView(.periodic(from: .now, by: 0.25)) { timeline in
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(state.settings.accent.color.opacity(state.settings.focusEffectsEnabled != false && nextAlert.map { abs($0.timeIntervalSince(timeline.date)) < 1.5 } == true ? 0.3 + 0.6 * (state.settings.focusEffectIntensity ?? 0.5) : 0.12), lineWidth: 6)
-                    .shadow(color: state.settings.accent.color.opacity(state.settings.focusEffectsEnabled != false && nextAlert.map { abs($0.timeIntervalSince(timeline.date)) < 1.5 } == true ? 0.8 : 0), radius: 20)
-            }
+        .padding(16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .onReceive(Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()) { date in
             if let nextAlert, date >= nextAlert {
-                if state.settings.playAlertSound != false { OmBell.shared.play() }
+                state.triggerRippleAlert()
                 self.nextAlert = date.addingTimeInterval(Double(interval))
             }
         }

@@ -282,15 +282,17 @@ final class AppState: ObservableObject {
         if pomodoro != previous {
             do {
                 try pomodoroStore.save(pomodoro)
-                if pomodoro.phase != previous.phase || pomodoro.status == .completed { triggerFocusAlert() }
+                if pomodoro.phase != previous.phase || pomodoro.status == .completed { triggerFocusAlert(label: pomodoro.status == .completed ? "Session complete" : "Next focus phase") }
             } catch { errorMessage = error.localizedDescription }
         }
         objectWillChange.send()
     }
 
     func startPomodoro() {
+        let wasRunning = pomodoro.status == .running
         pomodoro.start()
         savePomodoro()
+        if !wasRunning && pomodoro.status == .running { triggerFocusAlert(label: "Focus started") }
     }
 
     func configurePomodoro(focus: Int, shortBreak: Int, longBreak: Int, every: Int, autoAdvance: Bool) {
@@ -301,6 +303,7 @@ final class AppState: ObservableObject {
     func startDeepWork(minutes: Int, taskID: UUID?) {
         pomodoro.startDeepWork(minutes: minutes, taskID: taskID)
         savePomodoro()
+        triggerFocusAlert(label: "Deep work started")
     }
 
     func pausePomodoro() {
@@ -352,9 +355,22 @@ final class AppState: ObservableObject {
         } catch { errorMessage = error.localizedDescription }
     }
 
-    private func triggerFocusAlert() {
-        alertGlowUntil = .now.addingTimeInterval(1.5)
+    private func triggerFocusAlert(label: String = "Time is up") {
+        let duration = min(6, max(1, settings.alertEffectSeconds ?? 2.5))
+        alertGlowUntil = .now.addingTimeInterval(duration)
+        if settings.focusEffectsEnabled != false {
+            ScreenAlertOverlay.shared.show(label: label, color: settings.accent.color, duration: duration, intensity: settings.focusEffectIntensity ?? 0.5)
+        }
         if settings.playAlertSound != false { OmBell.shared.play() }
+    }
+
+    func triggerRippleAlert() {
+        let duration = min(6, max(1, settings.alertEffectSeconds ?? 2.5))
+        alertGlowUntil = .now.addingTimeInterval(duration)
+        if settings.focusEffectsEnabled != false {
+            ScreenAlertOverlay.shared.show(label: "Ripple alert", color: .cyan, duration: duration, intensity: settings.focusEffectIntensity ?? 0.5)
+        }
+        if settings.playAlertSound != false { RippleBell.shared.play() }
     }
 
     func setPlayAlertSound(_ enabled: Bool) {
@@ -363,10 +379,11 @@ final class AppState: ObservableObject {
         saveSettings(draft)
     }
 
-    func setFocusEffects(enabled: Bool? = nil, intensity: Double? = nil) {
+    func setFocusEffects(enabled: Bool? = nil, intensity: Double? = nil, duration: Double? = nil) {
         var draft = settings
         if let enabled { draft.focusEffectsEnabled = enabled }
         if let intensity { draft.focusEffectIntensity = min(1, max(0, intensity)) }
+        if let duration { draft.alertEffectSeconds = min(6, max(1, duration)) }
         saveSettings(draft)
     }
 
@@ -420,6 +437,7 @@ final class AppState: ObservableObject {
 
     func saveActivity(title: String, start: Date, end: Date, category: String = "Uncategorized", id: UUID? = nil) {
         do {
+            let wasPromptVisible = activityPrompt != nil
             var draft = activityLogbook
             let resolvedCategory = category == "Uncategorized" ? draft.category(for: title) : category
             let entry = try ActivityEntry(id: id ?? UUID(), title: title, startAt: start, endAt: end, category: resolvedCategory)
@@ -428,6 +446,7 @@ final class AppState: ObservableObject {
             activityLogbook = draft
             activityPrompt = nil
             errorMessage = nil
+            if wasPromptVisible { FloatingPanelManager.shared.hideQuickLog() }
         } catch { errorMessage = error.localizedDescription }
     }
 
@@ -452,7 +471,10 @@ final class AppState: ObservableObject {
         catch { errorMessage = error.localizedDescription }
     }
 
-    func skipActivityPrompt() { activityPrompt = nil }
+    func skipActivityPrompt() {
+        activityPrompt = nil
+        FloatingPanelManager.shared.hideQuickLog()
+    }
 
     func addShelfFile() {
         let panel = NSOpenPanel()
@@ -870,8 +892,9 @@ struct LoopinnApp: App {
 
     var body: some Scene {
         MenuBarExtra("Loopinn", systemImage: "circle.hexagongrid.fill") {
-            MenuContent(state: state)
+            AuraCommandMenu(state: state)
         }
+        .menuBarExtraStyle(.window)
         Window("Loopinn", id: "dashboard") {
             DashboardView(state: state)
                 .frame(minWidth: 900, minHeight: 600)
