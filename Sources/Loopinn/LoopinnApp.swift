@@ -289,8 +289,10 @@ final class AppState: ObservableObject {
     }
 
     func startPomodoro() {
+        let wasRunning = pomodoro.status == .running
         pomodoro.start()
         savePomodoro()
+        if !wasRunning && pomodoro.status == .running { triggerFocusAlert() }
     }
 
     func configurePomodoro(focus: Int, shortBreak: Int, longBreak: Int, every: Int, autoAdvance: Bool) {
@@ -301,6 +303,7 @@ final class AppState: ObservableObject {
     func startDeepWork(minutes: Int, taskID: UUID?) {
         pomodoro.startDeepWork(minutes: minutes, taskID: taskID)
         savePomodoro()
+        triggerFocusAlert()
     }
 
     func pausePomodoro() {
@@ -353,8 +356,13 @@ final class AppState: ObservableObject {
     }
 
     private func triggerFocusAlert() {
-        alertGlowUntil = .now.addingTimeInterval(1.5)
+        alertGlowUntil = .now.addingTimeInterval(2.5)
         if settings.playAlertSound != false { OmBell.shared.play() }
+    }
+
+    func triggerRippleAlert() {
+        alertGlowUntil = .now.addingTimeInterval(2.5)
+        if settings.playAlertSound != false { RippleBell.shared.play() }
     }
 
     func setPlayAlertSound(_ enabled: Bool) {

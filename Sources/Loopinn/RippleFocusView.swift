@@ -34,7 +34,10 @@ struct RippleFocusView: View {
                 .font(.caption).foregroundStyle(.secondary)
             HStack {
                 Button(nextAlert == nil ? "Start" : "Stop") {
-                    nextAlert = nextAlert == nil ? .now.addingTimeInterval(Double(interval)) : nil
+                    if nextAlert == nil {
+                        nextAlert = .now.addingTimeInterval(Double(interval))
+                        state.triggerRippleAlert()
+                    } else { nextAlert = nil }
                 }
                 .buttonStyle(.borderedProminent)
                 if nextAlert != nil { Button("Restart") { nextAlert = .now.addingTimeInterval(Double(interval)) } }
@@ -45,7 +48,7 @@ struct RippleFocusView: View {
         }
         .onReceive(Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()) { date in
             if let nextAlert, date >= nextAlert {
-                if state.settings.playAlertSound != false { RippleBell.shared.play() }
+                state.triggerRippleAlert()
                 self.nextAlert = date.addingTimeInterval(Double(interval))
             }
         }

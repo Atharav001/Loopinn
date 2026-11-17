@@ -145,6 +145,7 @@ final class FloatingPanelManager: ObservableObject {
 
 private struct FloatingPanelChrome: View {
     @ObservedObject private var manager = FloatingPanelManager.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var hoveringPin = false
     let id: String
     let title: String
@@ -239,6 +240,18 @@ private struct FloatingPanelChrome: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.regularMaterial)
+        .overlay {
+            if id == "pomodoro" || id == "ripple" {
+                TimelineView(.periodic(from: .now, by: 0.1)) { timeline in
+                    let active = (state.alertGlowUntil ?? .distantPast) > timeline.date
+                    let pulse = reduceMotion ? 0.45 : 0.35 + 0.35 * abs(sin(timeline.date.timeIntervalSinceReferenceDate * 7))
+                    RoundedRectangle(cornerRadius: 10)
+                        .strokeBorder(accent.opacity(active ? pulse : 0), lineWidth: 2)
+                        .shadow(color: accent.opacity(active && !reduceMotion ? pulse * 0.6 : 0), radius: 8)
+                        .allowsHitTesting(false)
+                }
+            }
+        }
     }
 }
 

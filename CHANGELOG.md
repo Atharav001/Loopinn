@@ -2,6 +2,10 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 17 November 2026 — focus transition alert (in review)
+- Added a 2.5-second breathing edge highlight to the floating Pomodoro and Ripple windows when timers start or transition. Reduced Motion keeps a steady highlight.
+- Pomodoro start/completion uses the existing Om tone; Ripple start/interval uses its double bell. The sound toggle still mutes both. Release build and 53 core tests passed; live audio and visual acceptance remain pending.
+
 ## 17 November 2026 — edge bars and responsive logging (in review)
 - Added collapsible left/right edge bars for floating Tasks, Focus and Ripple, with vertical dragging and one-click expansion.
 - Made Quick Log a compact last-hour prompt that closes on successful Enter/save, and wrapped the Logbook entry form to fit narrower windows.
