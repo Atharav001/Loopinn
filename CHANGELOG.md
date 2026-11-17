@@ -2,6 +2,11 @@
 
 > Append entries only after actual implementation or verified baseline audit.
 
+## 17 November 2026 — edge bars and responsive logging (in review)
+- Added collapsible left/right edge bars for floating Tasks, Focus and Ripple, with vertical dragging and one-click expansion.
+- Made Quick Log a compact last-hour prompt that closes on successful Enter/save, and wrapped the Logbook entry form to fit narrower windows.
+- Planner now starts in Week view and emphasizes planning, while Calendar retains month and connected-calendar controls. Release app build passed; live interaction acceptance is still pending.
+
 ## 17 November 2026 — compact window and menu polish (in review)
 - Unified the menu and Tasks, Focus, Ripple Focus and Log Activity windows around restrained color, compact spacing and simpler headers. Kept pinning, resizing, quick actions and keyboard submission intact.
 - Reduced dashboard card bulk for a more consistent visual rhythm. The unsigned release app builds, 53/53 tests pass, and the rebuilt app launched on macOS; visual acceptance remains pending.

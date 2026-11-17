@@ -7,6 +7,8 @@ final class FloatingPanelManager: ObservableObject {
     static let shared = FloatingPanelManager()
     private var panels: [String: NSPanel] = [:]
     @Published private(set) var pinned: [String: Bool] = [:]
+    @Published private(set) var compact: [String: Bool] = [:]
+    private var expandedFrames: [String: NSRect] = [:]
     private let tasksID = "tasks"
     private let pomodoroID = "pomodoro"
     private let rippleID = "ripple"
@@ -22,6 +24,40 @@ final class FloatingPanelManager: ObservableObject {
 
     func togglePinned(_ id: String) {
         setPinned(!isPinned(id), for: id)
+    }
+
+    func isCompact(_ id: String) -> Bool { compact[id] == true }
+
+    func toggleCompact(_ id: String) {
+        guard let panel = panels[id], id != quickLogID else { return }
+        if isCompact(id) {
+            compact[id] = false
+            panel.minSize = NSSize(width: 280, height: id == rippleID ? 330 : 255)
+            if let frame = expandedFrames[id] { panel.setFrame(frame, display: true, animate: true) }
+        } else {
+            expandedFrames[id] = panel.frame
+            compact[id] = true
+            panel.minSize = NSSize(width: 210, height: 88)
+            dock(id, on: .right, y: panel.frame.midY)
+        }
+    }
+
+    enum Edge { case left, right }
+
+    func dock(_ id: String, on edge: Edge, y: CGFloat? = nil) {
+        guard let panel = panels[id], let screen = panel.screen ?? NSScreen.main else { return }
+        let visible = screen.visibleFrame
+        var frame = panel.frame
+        frame.size = NSSize(width: 210, height: 88)
+        frame.origin.x = edge == .left ? visible.minX : visible.maxX - frame.width
+        frame.origin.y = min(max((y ?? frame.midY) - frame.height / 2, visible.minY), visible.maxY - frame.height)
+        panel.setFrame(frame, display: true, animate: true)
+    }
+
+    func moveDocked(_ id: String, by offset: CGFloat) {
+        guard let panel = panels[id], let screen = panel.screen ?? NSScreen.main else { return }
+        let edge: Edge = panel.frame.midX < screen.visibleFrame.midX ? .left : .right
+        dock(id, on: edge, y: panel.frame.midY - offset)
     }
 
     private func setPinned(_ value: Bool, for id: String) {
@@ -44,7 +80,7 @@ final class FloatingPanelManager: ObservableObject {
     }
 
     func showQuickLog(state: AppState) {
-        show(id: quickLogID, title: "Log activity", size: NSSize(width: 420, height: 350), state: state, content: AnyView(QuickLogView(state: state)))
+        show(id: quickLogID, title: "Log activity", size: NSSize(width: 380, height: 260), state: state, content: AnyView(QuickLogView(state: state)))
     }
 
     func hideQuickLog() {
@@ -54,6 +90,7 @@ final class FloatingPanelManager: ObservableObject {
     private func show(id: String, title: String, size: NSSize, state: AppState, content: AnyView) {
         if id == tasksID { setPinned(state.settings.pinFloatingTasks != false, for: tasksID) }
         if let panel = panels[id] {
+            if id == quickLogID { panel.setContentSize(NSSize(width: 380, height: 260)) }
             panel.hidesOnDeactivate = false
             panel.level = isPinned(id) ? .floating : .normal
             NSApp.activate(ignoringOtherApps: true)
@@ -78,9 +115,10 @@ final class FloatingPanelManager: ObservableObject {
         panel.titlebarAppearsTransparent = false
         panel.titleVisibility = .visible
         panel.hasShadow = true
-        panel.minSize = NSSize(width: id == quickLogID ? 380 : 280,
-                               height: id == rippleID ? 330 : (id == quickLogID ? 330 : 255))
+        panel.minSize = NSSize(width: id == quickLogID ? 340 : 280,
+                               height: id == rippleID ? 330 : (id == quickLogID ? 250 : 255))
         panel.setFrameAutosaveName("Loopinn.\(id).Panel")
+        if id == quickLogID { panel.setContentSize(NSSize(width: 380, height: 260)) }
         if let screen = NSScreen.screens.first(where: { $0.visibleFrame.contains(NSPoint(x: panel.frame.midX, y: panel.frame.midY)) }) ?? NSScreen.main {
             var frame = panel.frame
             let visible = screen.visibleFrame
@@ -112,6 +150,7 @@ private struct FloatingPanelChrome: View {
     let title: String
     @ObservedObject var state: AppState
     let content: AnyView
+    @State private var dragStartY: CGFloat?
 
     private var accent: Color {
         switch id {
@@ -142,6 +181,16 @@ private struct FloatingPanelChrome: View {
                     .background(accent.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
                 Text(title).font(.system(size: 13, weight: .semibold)).lineLimit(1)
                 Spacer()
+                if id != "quick-log" {
+                    Button {
+                        manager.toggleCompact(id)
+                    } label: {
+                        Image(systemName: manager.isCompact(id) ? "arrow.up.left.and.arrow.down.right" : "rectangle.compress.vertical")
+                            .frame(width: 28, height: 28)
+                    }
+                    .buttonStyle(.plain)
+                    .help(manager.isCompact(id) ? "Expand window" : "Dock as edge bar")
+                }
                 Button {
                     if id == "tasks" { state.setPinFloatingTasks(!manager.isPinned(id)) }
                     else { manager.togglePinned(id) }
@@ -162,7 +211,31 @@ private struct FloatingPanelChrome: View {
             .padding(.horizontal, 16).padding(.vertical, 8)
             .background(Color(nsColor: .windowBackgroundColor).opacity(0.7))
             Divider()
-            content.frame(maxWidth: .infinity, maxHeight: .infinity)
+            if manager.isCompact(id) {
+                HStack {
+                    if id == "pomodoro" {
+                        Text(String(format: "%02d:%02d", Int(ceil(state.pomodoro.remaining())) / 60, Int(ceil(state.pomodoro.remaining())) % 60))
+                            .monospacedDigit()
+                    } else if id == "tasks" {
+                        Text("\(state.workspace.tasks.filter { $0.completedAt == nil }.count) open tasks")
+                    } else {
+                        Text("Interval alerts")
+                    }
+                    Spacer()
+                    Button("Left") { manager.dock(id, on: .left) }.buttonStyle(.plain).font(.caption)
+                    Button("Right") { manager.dock(id, on: .right) }.buttonStyle(.plain).font(.caption)
+                }
+                .font(.caption.weight(.medium))
+                .padding(.horizontal, 12)
+                .frame(maxHeight: .infinity)
+                .gesture(DragGesture().onChanged { value in
+                    if dragStartY == nil { dragStartY = value.translation.height }
+                    manager.moveDocked(id, by: value.translation.height - (dragStartY ?? 0))
+                    dragStartY = value.translation.height
+                }.onEnded { _ in dragStartY = nil })
+            } else {
+                content.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.regularMaterial)

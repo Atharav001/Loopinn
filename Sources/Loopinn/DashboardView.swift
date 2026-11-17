@@ -157,7 +157,7 @@ struct DashboardView: View {
                 case .tasks:
                     taskContent
                 case .planner:
-                    CalendarDashboardView(state: state)
+                    CalendarDashboardView(state: state, planningMode: true)
                 case .calendar:
                     CalendarDashboardView(state: state)
                 case .timeline:

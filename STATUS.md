@@ -1,5 +1,7 @@
 # Build status dashboard
 
+**17 November 2026 compact surfaces follow-up:** Floating Tasks, Focus and Ripple now offer an edge bar with left/right docking and vertical movement, with one-click expansion. Quick Log shows only the most recently completed hour in a compact panel; Logbook entry fields wrap instead of clipping; Planner starts in Week view. Release build passed. Runtime drag and resize acceptance remains pending.
+
 **17 November 2026 UI polish:** The menu and four floating windows now share a quieter, compact visual style with smaller starting sizes, reduced duplication, restrained color and hover feedback. Release app build succeeded, 53/53 tests passed, and the rebuilt app launched locally. Visual interaction acceptance remains pending; feature counters below are unchanged.
 
 **Last verified update:** 11 November 2026, P02/P03 PR #8  

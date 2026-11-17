@@ -5,29 +5,18 @@ struct QuickLogView: View {
     @ObservedObject var state: AppState
     @State private var title = ""
     @State private var category = "Uncategorized"
-    @State private var manualStart = Date().addingTimeInterval(-3600)
-    @State private var manualEnd = Date()
     @FocusState private var focused: Bool
     private let suggestions = ["Coding", "Deep Work", "Meeting", "Planning", "Research", "Break"]
+    private var lastHour: DateInterval {
+        let end = Calendar.current.dateInterval(of: .hour, for: .now)?.start ?? Date()
+        return DateInterval(start: Calendar.current.date(byAdding: .hour, value: -1, to: end) ?? end.addingTimeInterval(-3600), end: end)
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("What did you do?").font(.subheadline.weight(.semibold))
-            if let interval = state.activityPrompt {
-                Text("\(interval.start.formatted(date: .omitted, time: .shortened)) – \(interval.end.formatted(date: .omitted, time: .shortened))")
-                    .foregroundStyle(.secondary)
-            } else {
-                ViewThatFits(in: .horizontal) {
-                    HStack {
-                        DatePicker("From", selection: $manualStart, displayedComponents: [.date, .hourAndMinute])
-                        DatePicker("To", selection: $manualEnd, displayedComponents: [.date, .hourAndMinute])
-                    }
-                    VStack {
-                        DatePicker("From", selection: $manualStart, displayedComponents: [.date, .hourAndMinute])
-                        DatePicker("To", selection: $manualEnd, displayedComponents: [.date, .hourAndMinute])
-                    }
-                }
-            }
+        VStack(alignment: .leading, spacing: 8) {
+            Text("What did you do in the last hour?").font(.subheadline.weight(.semibold))
+            Text("\(lastHour.start.formatted(date: .omitted, time: .shortened)) – \(lastHour.end.formatted(date: .omitted, time: .shortened))")
+                .font(.caption).foregroundStyle(.secondary)
             TextField("What did you work on?", text: $title)
                 .focused($focused).onSubmit(save)
             if let error = state.errorMessage {
@@ -46,33 +35,22 @@ struct QuickLogView: View {
                     }
                 }
                 HStack {
-                    if state.activityPrompt != nil {
-                        Button("Skip") {
-                            title = ""
-                            state.skipActivityPrompt()
-                        }
-                    }
+                    Button("Dismiss") { title = ""; state.skipActivityPrompt() }
                     Spacer()
                     Button("Log activity", action: save).buttonStyle(.borderedProminent)
                         .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
         }
         .padding(16)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear { focused = true }
     }
 
     private func save() {
-        if state.activityPrompt == nil && manualEnd <= manualStart {
-            state.errorMessage = "The end time must be after the start time."
-            return
-        }
-        let interval = state.activityPrompt ?? DateInterval(start: manualStart, end: manualEnd)
+        let interval = lastHour
         state.saveActivity(title: title, start: interval.start, end: interval.end, category: category)
         if state.errorMessage == nil {
             title = ""
-            manualEnd = .now
-            manualStart = manualEnd.addingTimeInterval(-3600)
             FloatingPanelManager.shared.hideQuickLog()
         }
     }
@@ -146,20 +124,22 @@ struct ActivityLogView: View {
                 }
                 .padding(16)
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
-                HStack {
-                    TextField("What did you do?", text: $title).onSubmit(add)
-                    Button(voice.isRecording ? "Stop dictation" : "Dictate", systemImage: voice.isRecording ? "stop.fill" : "mic.fill") {
-                        if voice.isRecording { voice.stop(); if !voice.transcript.isEmpty { title = voice.transcript } }
-                        else { voice.start() }
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        TextField("What did you do?", text: $title).onSubmit(add)
+                        Button(voice.isRecording ? "Stop dictation" : "Dictate", systemImage: voice.isRecording ? "stop.fill" : "mic.fill") {
+                            if voice.isRecording { voice.stop(); if !voice.transcript.isEmpty { title = voice.transcript } }
+                            else { voice.start() }
+                        }.labelStyle(.iconOnly)
+                        Button(editingID == nil ? "Add activity" : "Save changes", action: add).buttonStyle(.borderedProminent)
                     }
-                    DatePicker("From", selection: $start, displayedComponents: [.date, .hourAndMinute])
-                    DatePicker("To", selection: $end, displayedComponents: [.date, .hourAndMinute])
-                    Picker("Category", selection: $category) {
-                        ForEach(categories, id: \.self) { Text($0).tag($0) }
+                    ViewThatFits(in: .horizontal) {
+                        HStack { activityTimeFields }
+                        VStack(alignment: .leading, spacing: 8) { activityTimeFields }
                     }
-                    .frame(width: 155)
-                    Button(editingID == nil ? "Add" : "Save", action: add).buttonStyle(.borderedProminent)
                 }
+                .padding(14)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
                 if let error = voice.errorMessage { Text(error).font(.caption).foregroundStyle(.red) }
                 if voice.isRecording { Text(voice.transcript.isEmpty ? "Listening…" : voice.transcript).font(.caption).foregroundStyle(.secondary) }
                 HStack {
@@ -203,6 +183,16 @@ struct ActivityLogView: View {
     private func add() {
         state.saveActivity(title: title, start: start, end: end, category: category, id: editingID)
         if state.errorMessage == nil { title = ""; editingID = nil }
+    }
+
+    private var activityTimeFields: some View {
+        Group {
+            DatePicker("From", selection: $start, displayedComponents: [.date, .hourAndMinute])
+            DatePicker("To", selection: $end, displayedComponents: [.date, .hourAndMinute])
+            Picker("Category", selection: $category) {
+                ForEach(categories, id: \.self) { Text($0).tag($0) }
+            }.frame(width: 145)
+        }
     }
 
     private var logbookMonth: some View {

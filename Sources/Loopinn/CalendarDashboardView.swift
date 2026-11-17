@@ -3,6 +3,7 @@ import SwiftUI
 
 struct CalendarDashboardView: View {
     @ObservedObject var state: AppState
+    var planningMode = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var scope: CalendarScope = .month
     @State private var selectedDate = Date()
@@ -22,17 +23,17 @@ struct CalendarDashboardView: View {
                     newEventButton
                     scopePicker
                     Spacer(minLength: 4)
-                    calendarSourceMenu
+                    if !planningMode { calendarSourceMenu }
                     navigationControls
                 }
                 VStack(spacing: 8) {
-                    HStack { newEventButton; Spacer(); calendarSourceMenu; navigationControls }
+                    HStack { newEventButton; Spacer(); if !planningMode { calendarSourceMenu }; navigationControls }
                     scopePicker.frame(maxWidth: .infinity)
                 }
             }
             .padding(10)
             .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
-            Text(heading).font(.title2.weight(.semibold)).padding(.leading, 4)
+            Text(planningMode ? "Plan your week · \(heading)" : heading).font(.title2.weight(.semibold)).padding(.leading, 4)
             switch scope {
             case .day: dayContent
             case .week: weekContent
@@ -58,6 +59,7 @@ struct CalendarDashboardView: View {
             }
             .padding(24).frame(minWidth: 360)
         }
+        .onAppear { if planningMode { scope = .week } }
         .onAppear { if state.appleCalendarConnected { state.refreshAppleCalendar(around: selectedDate) } }
         .onAppear { if state.googleCalendarConnected { state.refreshGoogleCalendar(around: selectedDate) } }
         .onChange(of: selectedDate) { _, date in
