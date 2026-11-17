@@ -1,5 +1,7 @@
 # Build status dashboard
 
+**18 November 2026 screen alert:** Pomodoro and Ripple now show a click-through display-edge glow and status cue on starts and alerts. Duration is configurable from 1 to 6 seconds in Settings and Focus. Release build and 53/53 tests passed; live visual acceptance pending.
+
 **17 November 2026 timer alert:** Pomodoro and Ripple floating windows briefly highlight their edge on timer starts and transitions, with their existing distinct tones. Reduced Motion and mute settings are respected. Release build and 53/53 tests passed; runtime audiovisual acceptance pending.
 
 **17 November 2026 compact surfaces follow-up:** Floating Tasks, Focus and Ripple now offer an edge bar with left/right docking and vertical movement, with one-click expansion. Quick Log shows only the most recently completed hour in a compact panel; Logbook entry fields wrap instead of clipping; Planner starts in Week view. Release build passed. Runtime drag and resize acceptance remains pending.

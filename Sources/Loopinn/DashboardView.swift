@@ -513,6 +513,20 @@ struct DashboardView: View {
                 Button("Open Floating Tasks") { FloatingPanelManager.shared.showTasks(state: state) }
                 Button("Open Floating Pomodoro") { FloatingPanelManager.shared.showPomodoro(state: state) }
             }
+            Section("Screen alerts") {
+                Toggle("Glow around the display when timers start or alert", isOn: Binding(
+                    get: { state.settings.focusEffectsEnabled != false },
+                    set: { state.setFocusEffects(enabled: $0) }
+                ))
+                Stepper("Glow duration: \(state.settings.alertEffectSeconds ?? 2.5, specifier: "%.1f") seconds", value: Binding(
+                    get: { state.settings.alertEffectSeconds ?? 2.5 },
+                    set: { state.setFocusEffects(duration: $0) }
+                ), in: 1...6, step: 0.5)
+                Toggle("Play timer alert sounds", isOn: Binding(
+                    get: { state.settings.playAlertSound != false },
+                    set: { state.setPlayAlertSound($0) }
+                ))
+            }
             Section("About this build") {
                 Text("Tasks and planning are stored locally. Apple and Google calendars connect only when you choose; cloud task sync is still in development.")
                     .foregroundStyle(.secondary)

@@ -133,6 +133,10 @@ struct FocusDashboardView: View {
                 ), in: 0...1)
                 .frame(width: 180)
             }
+            Stepper("Screen alert: \(state.settings.alertEffectSeconds ?? 2.5, specifier: "%.1f") seconds", value: Binding(
+                get: { state.settings.alertEffectSeconds ?? 2.5 },
+                set: { state.setFocusEffects(duration: $0) }
+            ), in: 1...6, step: 0.5)
         }
         .disabled(state.pomodoro.status == .running || state.pomodoro.status == .paused)
         .padding(24)

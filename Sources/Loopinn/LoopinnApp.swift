@@ -282,7 +282,7 @@ final class AppState: ObservableObject {
         if pomodoro != previous {
             do {
                 try pomodoroStore.save(pomodoro)
-                if pomodoro.phase != previous.phase || pomodoro.status == .completed { triggerFocusAlert() }
+                if pomodoro.phase != previous.phase || pomodoro.status == .completed { triggerFocusAlert(label: pomodoro.status == .completed ? "Session complete" : "Next focus phase") }
             } catch { errorMessage = error.localizedDescription }
         }
         objectWillChange.send()
@@ -292,7 +292,7 @@ final class AppState: ObservableObject {
         let wasRunning = pomodoro.status == .running
         pomodoro.start()
         savePomodoro()
-        if !wasRunning && pomodoro.status == .running { triggerFocusAlert() }
+        if !wasRunning && pomodoro.status == .running { triggerFocusAlert(label: "Focus started") }
     }
 
     func configurePomodoro(focus: Int, shortBreak: Int, longBreak: Int, every: Int, autoAdvance: Bool) {
@@ -303,7 +303,7 @@ final class AppState: ObservableObject {
     func startDeepWork(minutes: Int, taskID: UUID?) {
         pomodoro.startDeepWork(minutes: minutes, taskID: taskID)
         savePomodoro()
-        triggerFocusAlert()
+        triggerFocusAlert(label: "Deep work started")
     }
 
     func pausePomodoro() {
@@ -355,13 +355,21 @@ final class AppState: ObservableObject {
         } catch { errorMessage = error.localizedDescription }
     }
 
-    private func triggerFocusAlert() {
-        alertGlowUntil = .now.addingTimeInterval(2.5)
+    private func triggerFocusAlert(label: String = "Time is up") {
+        let duration = min(6, max(1, settings.alertEffectSeconds ?? 2.5))
+        alertGlowUntil = .now.addingTimeInterval(duration)
+        if settings.focusEffectsEnabled != false {
+            ScreenAlertOverlay.shared.show(label: label, color: settings.accent.color, duration: duration, intensity: settings.focusEffectIntensity ?? 0.5)
+        }
         if settings.playAlertSound != false { OmBell.shared.play() }
     }
 
     func triggerRippleAlert() {
-        alertGlowUntil = .now.addingTimeInterval(2.5)
+        let duration = min(6, max(1, settings.alertEffectSeconds ?? 2.5))
+        alertGlowUntil = .now.addingTimeInterval(duration)
+        if settings.focusEffectsEnabled != false {
+            ScreenAlertOverlay.shared.show(label: "Ripple alert", color: .cyan, duration: duration, intensity: settings.focusEffectIntensity ?? 0.5)
+        }
         if settings.playAlertSound != false { RippleBell.shared.play() }
     }
 
@@ -371,10 +379,11 @@ final class AppState: ObservableObject {
         saveSettings(draft)
     }
 
-    func setFocusEffects(enabled: Bool? = nil, intensity: Double? = nil) {
+    func setFocusEffects(enabled: Bool? = nil, intensity: Double? = nil, duration: Double? = nil) {
         var draft = settings
         if let enabled { draft.focusEffectsEnabled = enabled }
         if let intensity { draft.focusEffectIntensity = min(1, max(0, intensity)) }
+        if let duration { draft.alertEffectSeconds = min(6, max(1, duration)) }
         saveSettings(draft)
     }
 

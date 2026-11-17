@@ -3,6 +3,75 @@ import LoopinnCore
 import SwiftUI
 
 @MainActor
+final class ScreenAlertOverlay {
+    static let shared = ScreenAlertOverlay()
+    private var panels: [NSPanel] = []
+    private var generation = 0
+
+    func show(label: String, color: Color, duration: Double, intensity: Double) {
+        panels.forEach { $0.orderOut(nil) }
+        panels.removeAll()
+        generation += 1
+        let currentGeneration = generation
+        let end = Date.now.addingTimeInterval(duration)
+        for screen in NSScreen.screens {
+            let panel = NSPanel(contentRect: screen.frame, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+            panel.level = .statusBar
+            panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+            panel.ignoresMouseEvents = true
+            panel.hidesOnDeactivate = false
+            panel.isOpaque = false
+            panel.backgroundColor = .clear
+            panel.hasShadow = false
+            panel.contentView = NSHostingView(rootView: ScreenAlertView(label: label, color: color, end: end, intensity: intensity))
+            panel.orderFrontRegardless()
+            panels.append(panel)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
+            guard let self, self.generation == currentGeneration else { return }
+            self.panels.forEach { $0.orderOut(nil) }
+            self.panels.removeAll()
+        }
+    }
+}
+
+private struct ScreenAlertView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let label: String
+    let color: Color
+    let end: Date
+    let intensity: Double
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 0.08)) { context in
+            let remaining = max(0, end.timeIntervalSince(context.date))
+            let pulse = reduceMotion ? 0.55 : 0.42 + 0.36 * abs(sin(context.date.timeIntervalSinceReferenceDate * 7))
+            let strength = (0.35 + 0.65 * min(1, max(0, intensity))) * pulse * min(1, remaining * 2)
+            GeometryReader { geometry in
+                ZStack(alignment: .top) {
+                    RoundedRectangle(cornerRadius: 14)
+                        .strokeBorder(color.opacity(strength), lineWidth: 5)
+                        .shadow(color: color.opacity(strength), radius: 22)
+                        .shadow(color: color.opacity(strength * 0.75), radius: 45)
+                        .padding(3)
+                    if geometry.size.height > 300 {
+                        Label(label, systemImage: "sparkle")
+                            .font(.system(size: 14, weight: .semibold))
+                            .padding(.horizontal, 18).padding(.vertical, 10)
+                            .background(.regularMaterial, in: Capsule())
+                            .overlay(Capsule().strokeBorder(color.opacity(strength), lineWidth: 1))
+                            .opacity(remaining > 0 ? min(1, remaining * 2) : 0)
+                            .padding(.top, 28)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+@MainActor
 final class FloatingPanelManager: ObservableObject {
     static let shared = FloatingPanelManager()
     private var panels: [String: NSPanel] = [:]
@@ -240,18 +309,6 @@ private struct FloatingPanelChrome: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.regularMaterial)
-        .overlay {
-            if id == "pomodoro" || id == "ripple" {
-                TimelineView(.periodic(from: .now, by: 0.1)) { timeline in
-                    let active = (state.alertGlowUntil ?? .distantPast) > timeline.date
-                    let pulse = reduceMotion ? 0.45 : 0.35 + 0.35 * abs(sin(timeline.date.timeIntervalSinceReferenceDate * 7))
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(accent.opacity(active ? pulse : 0), lineWidth: 2)
-                        .shadow(color: accent.opacity(active && !reduceMotion ? pulse * 0.6 : 0), radius: 8)
-                        .allowsHitTesting(false)
-                }
-            }
-        }
     }
 }
 
